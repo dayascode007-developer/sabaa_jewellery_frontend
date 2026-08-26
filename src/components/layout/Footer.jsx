@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { USEFUL_LINKS, COMPANY_INFO, LEGAL_LINKS } from "@/constants/footerData";
+import sabaaLogo from "@/assets/logo/High Quality Sabaa Logo.webp";
 
 const FOOTER_BG = "#3D0F0F";
 
@@ -68,44 +70,51 @@ const GLYPHS = {
 };
 
 // Ornate knot mark above the wordmark.
+// Same logo file as the header. Its artwork is maroon, which would vanish on
+// this dark background, so brightness(0) invert(1) flattens it to pure white —
+// the transparent areas stay transparent.
 function Wordmark() {
   return (
     <div className="flex flex-col items-center">
-      <svg viewBox="0 0 80 80" className="h-16 w-16 text-white" aria-hidden="true">
-        <g fill="none" stroke="currentColor" strokeWidth="1.6">
-          <path d="M40 16c-7 0-12 5-12 11s5 10 12 10 12-4 12-10-5-11-12-11Z" />
-          <path d="M40 64c-7 0-12-5-12-11s5-10 12-10 12 4 12 10-5 11-12 11Z" />
-          <path d="M16 40c0-7 5-12 11-12s10 5 10 12-4 12-10 12-11-5-11-12Z" />
-          <path d="M64 40c0-7-5-12-11-12s-10 5-10 12 4 12 10 12 11-5 11-12Z" />
-          <circle cx="40" cy="40" r="7" />
-        </g>
-      </svg>
-      <span className="mt-1 font-[family-name:var(--font-display)] text-4xl leading-none text-white">
-        Sabaa
-      </span>
+      <Image
+        src={sabaaLogo}
+        alt="Sabaa Jewel Arts"
+        className="h-32 w-auto sm:h-40"
+        style={{ filter: "brightness(0) invert(1)" }}
+      />
     </div>
   );
 }
 
-// The notch bitten out of the top and bottom edges. Two arcs sweeping down from
-// each side and meeting at a sharp cusp in the middle — not a single rounded
-// hump, which is what makes it read as two petals rather than a dome.
+// The notch bitten out of the top and bottom edges: two deep, rounded lobes
+// meeting at a sharp cusp in the middle.
+//
+// Offset by 1px beyond the edge (-top-px / -bottom-px) on purpose. However
+// steep the curve, the shape must taper to zero thickness where it meets the
+// footer edge, and that sub-pixel tail antialiases into a faint hairline
+// running out to both sides — very visible at mobile widths and at browser
+// zoom. Pushing it 1px out lets the footer's overflow-hidden swallow exactly
+// that tail; everything thicker than 1px is unaffected.
 function Notch({ position }) {
   const isTop = position === "top";
   return (
     <svg
-      viewBox="0 0 120 40"
+      viewBox="0 0 120 44"
       preserveAspectRatio="none"
-      className={`pointer-events-none absolute left-1/2 h-10 w-40 -translate-x-1/2 text-white ${
-        isTop ? "top-0" : "bottom-0 rotate-180"
+      className={`pointer-events-none absolute left-1/2 h-8 w-40 -translate-x-1/2 text-white sm:h-11 sm:w-56 ${
+        // -scale-y-100 mirrors vertically only. rotate-180 flips both axes and
+        // composes with the -translate-x-1/2 above it, which made the bottom
+        // notch render differently from the top instead of mirroring it.
+        isTop ? "-top-px" : "-bottom-px -scale-y-100"
       }`}
       aria-hidden="true"
     >
-      {/* The control points next to each endpoint must sit below y=0. With them
-          on the baseline the shape tapers to a sub-pixel sliver either side of
-          the notch, which antialiases into a visible 1px line. */}
+      {/* An S-curve: it leaves the edge almost flat (control 102,3 — a rounded
+          shoulder) then steepens into the centre (control 76,10 -> 60,32), so
+          the two halves meet at a point. Arriving level would round the bottom
+          off; arriving straight would make a triangle. This is between. */}
       <path
-        d="M0 0 L120 0 C113 5 86 10 60 34 C34 10 7 5 0 0 Z"
+        d="M0 0 L120 0 C102 3 76 10 60 32 C44 10 18 3 0 0 Z"
         fill="currentColor"
       />
     </svg>

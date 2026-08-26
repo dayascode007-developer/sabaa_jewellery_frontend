@@ -1,42 +1,193 @@
 // Static imports let Next optimise the assets and gives each one intrinsic
 // dimensions, so no width/height guessing is needed at the call site.
-import engrave from "@/assets/jewels/engrave.png";
-import faceAndPhotoRing from "@/assets/jewels/faceAndPhotoRing.png";
-import symbolsRing from "@/assets/jewels/symbolsRing.png";
-import mensChain from "@/assets/jewels/mensChain.png";
-import womensChain from "@/assets/jewels/womensChain.png";
-import kids from "@/assets/jewels/Kids.png";
-import earings from "@/assets/jewels/earings.png";
+import engrave from "@/assets/jewels/engrave.webp";
+import faceAndPhotoRing from "@/assets/jewels/faceAndPhotoRing.webp";
+import symbolsRing from "@/assets/jewels/symbolsRing.webp";
+import mensChain from "@/assets/jewels/mensChain.webp";
+import womensChain from "@/assets/jewels/womensChain.webp";
+import kids from "@/assets/jewels/Kids.webp";
+import earings from "@/assets/jewels/earings.webp";
 
-import earringWidget from "@/assets/widget/Earing.jpg";
-import ringWidget from "@/assets/widget/Ring.jpg";
-import chainWidget from "@/assets/widget/Chain.jpg";
+import earringWidget from "@/assets/widget/Earing.jpg.webp";
+import ringWidget from "@/assets/widget/Ring.jpg.webp";
+import chainWidget from "@/assets/widget/Chain.jpg.webp";
 
-import panchalogaRings from "@/assets/jewels/image.png";
-import divineRings from "@/assets/jewels/sabaa New arrival ring.png";
-import godEngravedRings from "@/assets/jewels/sabaa god ring.png";
-import templePendants from "@/assets/jewels/sabaa new divine temple  (1).png";
+import panchalogaRings from "@/assets/jewels/image.webp";
+import divineRings from "@/assets/jewels/sabaa New arrival ring (1).webp";
+import godEngravedRings from "@/assets/jewels/sabaa god ring (1).webp";
+import templePendants from "@/assets/jewels/sabaa new divine temple  (1).webp";
 
-import murugaRing from "@/assets/CustomizeRing/muruga ring.png";
-import craftedRing from "@/assets/CustomizeRing/crafted with tradition ring.png";
-import vijayRing from "@/assets/CustomizeRing/vijay ring (1).png";
+// Feature panels for the nav mega-menus. All four are portrait, so they sit in
+// the panel's 3/4 box with only light top/bottom cropping.
+import ringsMenuImage from "@/assets/jewels/ring.jpg";
+import imponMenuImage from "@/assets/jewels/Ipoon_Chain.jpg";
+import pendantMenuImage from "@/assets/jewels/pendent.jpg";
+import earringsMenuImage from "@/assets/jewels/earings.jpg";
 
-import heroBanner from "@/assets/banner/heroBanner.jpg";
+// 3D slider slides. Prefixed `style*` because widget/earings.webp collides by
+// name with jewels/earings.webp, which is a different file.
+import styleChain from "@/assets/widget/chain.webp";
+import styleChain2 from "@/assets/widget/chain2.webp";
+import styleEarings from "@/assets/widget/earings.webp";
+import styleEarings2 from "@/assets/widget/earings2.webp";
+import styleNeckless from "@/assets/widget/neckless.webp";
+import stylePendent from "@/assets/widget/pendent.webp";
+import stylePendent2 from "@/assets/widget/pendent2.webp";
 
-import banner from "@/assets/banner/banner.png";
-import banner1 from "@/assets/banner/banner1.jpg";
-import banner3 from "@/assets/banner/banner3.jpg";
-import banner4 from "@/assets/banner/banner4.jpg";
-import banner5 from "@/assets/banner/banner5.jpg";
+// Customer feedback photos. Only three supplied, so the fourth card keeps
+// its placeholder until an image for Aravind arrives.
+import testimonialPriya from "@/assets/testimonial_image/image.png";
+import testimonialKarthik from "@/assets/testimonial_image/image1.png";
+import testimonialManikandan from "@/assets/testimonial_image/image2.png";
+
+import murugaRing from "@/assets/CustomizeRing/muruga ring (1).webp";
+import craftedRing from "@/assets/CustomizeRing/crafted with tradition ring (1).webp";
+import vijayRing from "@/assets/CustomizeRing/vijay ring (1).webp";
+
+import newArrivalsBg from "@/assets/banner/Bg card image (1).webp";
+import heroBanner from "@/assets/banner/heroBanner.jpg.webp";
+
+import banner from "@/assets/banner/banner.webp";
+import banner1 from "@/assets/banner/banner1.jpg.webp";
+import banner3 from "@/assets/banner/banner3.jpg.webp";
+import banner4 from "@/assets/banner/banner4.jpg.webp";
+import banner5 from "@/assets/banner/banner5.jpg.webp";
+
+// Square (1:1) re-cuts of the same artwork for phones. The desktop files are
+// 2.67 wide, so their baked-in copy becomes unreadable at phone widths.
+import bannerMobile from "@/assets/banner/banner_Mobile.webp";
+import bannerMobile1 from "@/assets/banner/banner_Mobile_1.webp";
+import bannerMobile3 from "@/assets/banner/banner_Mobile_3.webp";
+import bannerMobile4 from "@/assets/banner/banner_Mobile_4.webp";
+import bannerMobile5 from "@/assets/banner/banner_Mobile_5.webp";
+
+// Nav bar icons — SVG, 560x560 viewBox. Vectors stay crisp at any size, and
+// NavIcon serves them unoptimised since Next refuses SVG through the image
+// optimiser by default. No Bracelet icon yet, so that one keeps its glyph.
+import navAllJewellery from "@/assets/svg_nav_icon/All Jewellery.svg";
+import navRings from "@/assets/svg_nav_icon/Rings.svg";
+import navImpon from "@/assets/svg_nav_icon/Impon Chains.svg";
+import navPendant from "@/assets/svg_nav_icon/pandant.svg";
+import navEarrings from "@/assets/svg_nav_icon/Ear Ring.svg";
+import navMore from "@/assets/svg_nav_icon/More.svg";
+
+// Nav items. An item with a `menu` opens a mega panel; without one it is a
+// plain link. Each menu has up to three link columns, an optional promo strip
+// under them and an optional feature panel on the right.
+//   columns: [{ heading?, items: [{ label, href }] }]
+const PROMO = {
+  title: "From Classic to Contemporary.",
+  subtitle: "Explore 6000+ Stunning Designs.",
+  cta: "View All",
+  href: "#",
+};
 
 export const NAV_ITEMS = [
-  { id: "all", label: "All Jewellery", href: "#" },
-  { id: "rings", label: "Rings", href: "#" },
-  { id: "impon", label: "Impon Chain", href: "#" },
-  { id: "pendant", label: "Pendant", href: "#" },
+  { id: "all", label: "All Jewellery", href: "#", icon: navAllJewellery },
+  {
+    id: "rings",
+    label: "Rings",
+    href: "#",
+    icon: navRings,
+    menu: {
+      columns: [
+        {
+          items: [
+            { label: "Name Engrave ring", href: "/category/name-engrave-ring" },
+            { label: "Astrology Raasi Rings", href: "/category/astrology-raasi-rings" },
+            { label: "Face & Photo Ring", href: "/category/face-photo-ring" },
+          ],
+        },
+        {
+          heading: "God Symbol Rings",
+          items: [
+            { label: "Hindu Rings", href: "/category/hindu-rings" },
+            { label: "Christian Rings", href: "/category/christian-rings" },
+            { label: "Muslim Rings", href: "/category/muslim-rings" },
+          ],
+        },
+      ],
+      promo: PROMO,
+      feature: {
+        caption: "Handcrafted Panchaloga rings, personalized for you",
+        cta: "Explore Now",
+        href: "#",
+        image: ringsMenuImage,
+      },
+    },
+  },
+  {
+    id: "impon",
+    label: "Impon Chain",
+    href: "#",
+    icon: navImpon,
+    menu: {
+      columns: [
+        {
+          items: [
+            { label: "MensChain", href: "/category/mens-chain" },
+            { label: "FemaleChain", href: "/category/female-chain" },
+            { label: "Kidz Chain", href: "/category/kidz-chain" },
+          ],
+        },
+      ],
+      promo: PROMO,
+      feature: {
+        caption: "Impon chains crafted in the five sacred metals",
+        cta: "Explore Now",
+        href: "#",
+        image: imponMenuImage,
+      },
+    },
+  },
+  {
+    id: "pendant",
+    label: "Pendant",
+    href: "#",
+    icon: navPendant,
+    menu: {
+      columns: [
+        {
+          items: [
+            { label: "Hindu Pendants", href: "/category/hindu-pendants" },
+            { label: "Christian Pendants", href: "/category/christian-pendants" },
+          ],
+        },
+      ],
+      promo: PROMO,
+      feature: {
+        caption: "Divine temple pendants for every occasion",
+        cta: "Explore Now",
+        href: "#",
+        image: pendantMenuImage,
+      },
+    },
+  },
   { id: "bracelet", label: "Bracelet", href: "#" },
-  { id: "earrings", label: "Earrings", href: "#" },
-  { id: "more", label: "More", href: "#" },
+  {
+    id: "earrings",
+    label: "Earrings",
+    href: "#",
+    icon: navEarrings,
+    menu: {
+      columns: [
+        {
+          items: [
+            { label: "Stud", href: "/category/stud" },
+            { label: "Jimikki", href: "/category/jimikki" },
+          ],
+        },
+      ],
+      promo: PROMO,
+      feature: {
+        caption: "Traditional studs and jimikki in Panchaloga",
+        cta: "Explore Now",
+        href: "#",
+        image: earringsMenuImage,
+      },
+    },
+  },
+  { id: "more", label: "More", href: "#", icon: navMore },
 ];
 
 export const CATEGORIES = [
@@ -52,12 +203,14 @@ export const CATEGORIES = [
 // The banner artwork already contains the wordmark, headline, feature badges
 // and both buttons — so slides render as images only. Anything overlaid in
 // HTML would duplicate what is painted into the file.
+// `image` is the wide desktop cut, `mobileImage` the square phone cut. The
+// carousel swaps between them at the sm breakpoint.
 export const HERO_SLIDES = [
-  { id: "banner", image: banner, alt: "Crafted by tradition, personalized for you", href: "#" },
-  { id: "banner1", image: banner1, alt: "Customized Panchaloga rings", href: "#" },
-  { id: "banner3", image: banner3, alt: "Handcrafted by skilled smiths", href: "#" },
-  { id: "banner4", image: banner4, alt: "Laser engraved Panchaloga jewellery", href: "#" },
-  { id: "banner5", image: banner5, alt: "Authentic Panchaloga craftsmanship", href: "#" },
+  { id: "banner", image: banner, mobileImage: bannerMobile, alt: "Crafted by tradition, personalized for you", href: "#" },
+  { id: "banner1", image: banner1, mobileImage: bannerMobile1, alt: "Customized Panchaloga rings", href: "#" },
+  { id: "banner3", image: banner3, mobileImage: bannerMobile3, alt: "Handcrafted by skilled smiths", href: "#" },
+  { id: "banner4", image: banner4, mobileImage: bannerMobile4, alt: "Laser engraved Panchaloga jewellery", href: "#" },
+  { id: "banner5", image: banner5, mobileImage: bannerMobile5, alt: "Authentic Panchaloga craftsmanship", href: "#" },
 ];
 
 // Newly-launched collection tiles.
@@ -243,13 +396,13 @@ export const PROMO_BANNER = {
 // placeholder at the same size, so dropping real artwork in is a swap:
 //   { id: "s1", image: myReel, alt: "..." }
 export const STYLE_SLIDES = [
-  { id: "s1", image: null, alt: "Styling look 1", tone: "from-[#1B3A6B] via-[#12294D] to-[#0B1A33]" },
-  { id: "s2", image: null, alt: "Styling look 2", tone: "from-[#1F6F6B] via-[#155450] to-[#0C3835]" },
-  { id: "s3", image: null, alt: "Styling look 3", tone: "from-[#6B4A2A] via-[#4E351E] to-[#2E1F12]" },
-  { id: "s4", image: null, alt: "Styling look 4", tone: "from-[#1A2360] via-[#131A45] to-[#0A0E28]" },
-  { id: "s5", image: null, alt: "Styling look 5", tone: "from-[#2E5B6B] via-[#20404C] to-[#132830]" },
-  { id: "s6", image: null, alt: "Styling look 6", tone: "from-[#5B2540] via-[#411A2E] to-[#26101B]" },
-  { id: "s7", image: null, alt: "Styling look 7", tone: "from-[#3F5B25] via-[#2D411A] to-[#1A2610]" },
+  { id: "s1", image: styleChain, alt: "Impon chain styling look", tone: "from-[#1B3A6B] via-[#12294D] to-[#0B1A33]" },
+  { id: "s2", image: styleEarings, alt: "Earrings styling look", tone: "from-[#1F6F6B] via-[#155450] to-[#0C3835]" },
+  { id: "s3", image: styleNeckless, alt: "Necklace styling look", tone: "from-[#6B4A2A] via-[#4E351E] to-[#2E1F12]" },
+  { id: "s4", image: stylePendent, alt: "Pendant styling look", tone: "from-[#1A2360] via-[#131A45] to-[#0A0E28]" },
+  { id: "s5", image: styleChain2, alt: "Gold chain styling look", tone: "from-[#2E5B6B] via-[#20404C] to-[#132830]" },
+  { id: "s6", image: styleEarings2, alt: "Jimikki earrings styling look", tone: "from-[#5B2540] via-[#411A2E] to-[#26101B]" },
+  { id: "s7", image: stylePendent2, alt: "Temple pendant styling look", tone: "from-[#3F5B25] via-[#2D411A] to-[#1A2610]" },
 ];
 
 export const TRUST_ITEMS = [
@@ -258,6 +411,15 @@ export const TRUST_ITEMS = [
   { id: "delivery", icon: "truck", lines: ["Fast & Secure", "Delivery"] },
   { id: "satisfaction", icon: "heart", lines: ["Customer Satisfaction", "is Our Priority"] },
 ];
+
+// Backdrop for the New Arrivals block. The "New Arrivals" heading, the
+// "500+ New Items" badge and both copy lines are painted into this file, so
+// nothing is overlaid in HTML — that would print the whole block twice.
+export const NEW_ARRIVALS_BANNER = {
+  image: newArrivalsBg,
+  alt: "New Arrivals — dropping daily, Monday through Friday",
+  ratio: "1717/916",
+};
 
 // New-arrival tiles. The caption and its diamond rule are painted into each
 // file, so nothing is overlaid in HTML — that would print every label twice.
@@ -300,7 +462,7 @@ export const TESTIMONIALS = [
     rating: 5,
     name: "Priya S.",
     city: "Coimbatore",
-    image: null,
+    image: testimonialPriya,
   },
   {
     id: "karthik",
@@ -308,7 +470,7 @@ export const TESTIMONIALS = [
     rating: 5,
     name: "Karthik R.",
     city: "Madurai",
-    image: null,
+    image: testimonialKarthik,
   },
   {
     id: "manikandan",
@@ -316,7 +478,7 @@ export const TESTIMONIALS = [
     rating: 5,
     name: "Manikandan",
     city: "Madurai",
-    image: null,
+    image: testimonialManikandan,
   },
   {
     id: "aravind",

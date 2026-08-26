@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { CATEGORIES } from "@/constants/homeData";
 
+const MAROON = "#7B1E2B";
+
 function Arrow({ direction, onClick, disabled }) {
   const isLeft = direction === "left";
   return (
@@ -12,7 +14,9 @@ function Arrow({ direction, onClick, disabled }) {
       onClick={onClick}
       disabled={disabled}
       aria-label={isLeft ? "Previous categories" : "Next categories"}
-      className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-neutral-500 transition hover:border-neutral-400 hover:text-neutral-700 disabled:cursor-default disabled:opacity-30 disabled:hover:border-neutral-300 lg:flex"
+      // Hidden below lg: on phones the peeking third card already signals that
+      // the row scrolls, and swiping is the natural gesture there.
+      className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-500 shadow-sm transition hover:border-neutral-400 hover:text-neutral-700 disabled:cursor-default disabled:opacity-30 disabled:hover:border-neutral-300 lg:flex lg:h-10 lg:w-10"
     >
       <svg
         viewBox="0 0 24 24"
@@ -34,20 +38,30 @@ function CategoryCard({ category }) {
   return (
     <a
       href={category.href}
-      className="group block w-[46%] shrink-0 snap-start sm:w-[30%] lg:w-[calc((100%-5rem)/6)]"
+      // 40% on phones so a third card peeks in at the edge — that sliver is
+      // what tells people the row scrolls. At 46% two cards filled the width
+      // and the row looked complete.
+      className="group block w-[40%] shrink-0 snap-start sm:w-[30%] lg:w-[calc((100%-5rem)/6)]"
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-neutral-100">
-        <Image
-          src={category.image}
-          alt={category.label}
-          fill
-          sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 16vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-        />
+      {/* One rounded card holding image and label, rather than a bare image
+          with the caption floating underneath. */}
+      <div className="overflow-hidden rounded-xl bg-white ring-1 ring-neutral-200">
+        <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
+          <Image
+            src={category.image}
+            alt={category.label}
+            fill
+            sizes="(max-width: 640px) 40vw, (max-width: 1024px) 30vw, 16vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+        <p
+          className="px-2.5 py-2 font-[family-name:var(--font-category)] text-[12px] leading-tight sm:text-[13px]"
+          style={{ color: MAROON }}
+        >
+          {category.label}
+        </p>
       </div>
-      <p className="mt-2.5 text-center font-[family-name:var(--font-category)] text-[13px] text-neutral-700">
-        {category.label}
-      </p>
     </a>
   );
 }
@@ -84,7 +98,9 @@ export default function ShopByCategories() {
 
   return (
     <section className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
-      <div className="flex items-center gap-3 lg:gap-5">
+      {/* Tighter gap on phones so the arrows take as little width from the
+          cards as possible now that they are always visible. */}
+      <div className="flex items-center gap-2 sm:gap-3 lg:gap-5">
         <Arrow direction="left" onClick={() => scrollByCard("left")} disabled={atStart} />
 
         <div

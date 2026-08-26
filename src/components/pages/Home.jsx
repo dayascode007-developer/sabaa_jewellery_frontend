@@ -1,5 +1,4 @@
-import Header from "@/components/layout/Header";
-import CategoryNav from "@/components/layout/CategoryNav";
+import SiteHeader from "@/components/layout/SiteHeader";
 import SectionTitle from "@/components/common/SectionTitle";
 import ShopByCategories from "@/components/pages/home/ShopByCategories";
 import HeroBanner from "@/components/pages/home/HeroBanner";
@@ -15,15 +14,18 @@ import StylingCustomizations from "@/components/pages/home/StylingCustomizations
 import SabaaAssurance from "@/components/pages/home/SabaaAssurance";
 import MemoriesInMetal from "@/components/pages/home/MemoriesInMetal";
 import Footer from "@/components/layout/Footer";
+import BottomNav from "@/components/layout/BottomNav";
+import FloatingWidgets from "@/components/common/FloatingWidgets";
 
 // Header and CategoryNav are rendered here rather than in app/layout.js so this
 // pass touches no shared files. Hoist them into the root layout once the other
 // routes exist.
 export default function Home() {
   return (
-    <div className="min-h-screen w-full bg-white">
-      <Header />
-      <CategoryNav />
+    // pb-16 clears the fixed bottom bar on phones so the footer is not hidden
+    // behind it; from lg up the bar is gone and the padding with it.
+    <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
+      <SiteHeader />
 
       <main>
         <div className="pt-6 pb-5">
@@ -36,10 +38,10 @@ export default function Home() {
         <ShopByCategories />
         <HeroBanner />
         <Collections />
-        <PromoBanner />
+        <Card3DSlider />
         <CustomerLove />
         <CustomerUnboxing />
-        <Card3DSlider />
+        <PromoBanner />
         <CustomerVoices />
         <TrustBar />
         <NewArrivals />
@@ -49,6 +51,8 @@ export default function Home() {
       </main>
 
       <Footer />
+      <BottomNav />
+      <FloatingWidgets />
     </div>
   );
 }

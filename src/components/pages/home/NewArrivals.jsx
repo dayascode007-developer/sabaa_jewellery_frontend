@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { NEW_ARRIVALS } from "@/constants/homeData";
+import { NEW_ARRIVALS, NEW_ARRIVALS_BANNER } from "@/constants/homeData";
 
 // The caption and its diamond rule are part of the artwork, so the tile is just
 // the image. Sizing to the file's own aspect ratio stops object-cover trimming
@@ -25,36 +25,28 @@ function ArrivalTile({ item }) {
 export default function NewArrivals() {
   return (
     <section className="mx-auto w-full max-w-[1400px] px-4 pb-8 sm:px-6">
-      {/* Banner block. Its height is what the tiles below overlap into. */}
-      <div className="relative overflow-hidden rounded-sm pt-7 pb-28 sm:pt-9 sm:pb-32">
-        {/* Stand-in for the ring photography behind the banner */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#B39F86] via-[#A08A6E] to-[#7C6448]" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/35 to-transparent" />
-
-        <div className="relative px-5 sm:px-10">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="font-[family-name:var(--font-heading)] text-[32px] leading-none text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
-              New Arrivals
-            </h2>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/25 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
-              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor" aria-hidden="true">
-                <path d="M6 3h12l3 5-9 13L3 8l3-5Z" />
-              </svg>
-              500+ New Items
-            </span>
-          </div>
-
-          <p className="mt-2 text-[13px] leading-relaxed text-white/90">
-            New Arrivals Dropping Daily, Monday through Friday.
-            <br />
-            Explore the Latest Launches Now!
-          </p>
-        </div>
+      {/* Heading, badge and copy are painted into the file, so nothing is
+          overlaid here. The source is 1717x916 (1.87) — rendering that natively
+          makes the banner roughly twice as tall as the design, so it is cropped
+          to a 5:2 strip. object-cover centres the crop, which keeps the copy
+          and both engraved rings and trims only the empty top and bottom. */}
+      {/* On phones the crop is relaxed toward the file's native 1.87 so less of
+          the artwork is thrown away; the 5:2 strip returns from sm up. */}
+      <div className="relative aspect-[16/9] overflow-hidden rounded-sm sm:aspect-[5/2]">
+        <Image
+          src={NEW_ARRIVALS_BANNER.image}
+          alt={NEW_ARRIVALS_BANNER.alt}
+          fill
+          sizes="(max-width: 1400px) 100vw, 1400px"
+          className="object-cover"
+        />
       </div>
 
-      {/* Pulled up so the first row sits over the banner and the second lands
-          on the white page below it, as in the design. */}
-      <div className="relative z-10 -mt-24 px-2 sm:-mt-28 sm:px-8">
+      {/* Pulled up so the first row overlaps the banner's empty lower band. A
+          percentage margin tracks the banner height as it scales, which a fixed
+          -mt would not. 7% leaves the engraved rings (which end at 79% of the
+          banner) clear; 8% clipped them by a few pixels. */}
+      <div className="relative z-10 -mt-[7%] px-2 sm:px-8">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {NEW_ARRIVALS.map((item) => (
             <ArrivalTile key={item.id} item={item} />

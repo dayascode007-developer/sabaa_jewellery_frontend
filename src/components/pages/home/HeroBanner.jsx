@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import { HERO_SLIDES } from "@/constants/homeData";
 
 const MAROON = "#7B1E2B";
@@ -36,6 +36,31 @@ function NavArrow({ direction, onClick }) {
         <path d={isLeft ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} />
       </svg>
     </button>
+  );
+}
+
+// Art direction via <picture>: the browser picks one source and fetches only
+// that. Two <Image> tags toggled with hidden/block would make phones download
+// the wide desktop cut as well — the mobile files run up to 736KB, so that
+// waste is worth avoiding. getImageProps still routes both through Next's
+// optimiser, so each variant keeps its generated srcset.
+function SlideMedia({ slide, priority }) {
+  const common = { alt: slide.alt, sizes: "84vw", priority };
+
+  const {
+    props: { srcSet: desktopSrcSet },
+  } = getImageProps({ ...common, src: slide.image });
+
+  const {
+    props: { srcSet: mobileSrcSet, ...rest },
+  } = getImageProps({ ...common, src: slide.mobileImage });
+
+  return (
+    <picture>
+      <source media="(min-width: 640px)" srcSet={desktopSrcSet} />
+      <source media="(max-width: 639px)" srcSet={mobileSrcSet} />
+      <img {...rest} alt={slide.alt} className="absolute inset-0 h-full w-full object-cover" />
+    </picture>
   );
 }
 
@@ -97,18 +122,12 @@ export default function HeroBanner() {
                   goTo(i);
                 }
               }}
-              className="relative block aspect-[8/3] overflow-hidden rounded-lg bg-neutral-900"
+              // Square on phones to match the mobile cut, wide from sm up.
+              className="relative block aspect-square overflow-hidden rounded-lg bg-neutral-900 sm:aspect-[8/3]"
               tabIndex={i === index ? 0 : -1}
               aria-hidden={i !== index}
             >
-              <Image
-                src={slide.image}
-                alt={slide.alt}
-                fill
-                sizes="(max-width: 768px) 84vw, 84vw"
-                className="object-cover object-left"
-                priority={i === 0}
-              />
+              <SlideMedia slide={slide} priority={i === 0} />
             </a>
           </div>
         ))}

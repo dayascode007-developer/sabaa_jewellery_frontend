@@ -175,7 +175,7 @@ export default function CustomerUnboxing({ videos = UNBOXING_VIDEOS }) {
           </p>
 
           <h2
-            className="mt-1 font-[family-name:var(--font-heading)] text-[40px] leading-tight"
+            className="mt-1 font-[family-name:var(--font-heading)] text-[26px] leading-tight sm:text-[32px] lg:text-[40px]"
             style={{ color: MAROON }}
           >
             Customer Unboxing
@@ -189,7 +189,7 @@ export default function CustomerUnboxing({ videos = UNBOXING_VIDEOS }) {
             <span className="h-px w-14 bg-[#E0CDBA]" />
           </div>
 
-          <p className="mt-1.5 text-[13px] text-neutral-600">
+          <p className="mt-1.5 text-[16px] text-neutral-600">
             Watch our customers unbox their orders and share their joy!
           </p>
         </div>

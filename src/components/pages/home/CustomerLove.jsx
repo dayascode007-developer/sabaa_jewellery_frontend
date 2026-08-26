@@ -143,10 +143,10 @@ export default function CustomerLove() {
           </p>
 
           <h2
-            className="mt-2 font-[family-name:var(--font-heading)] text-[40px] leading-tight"
+            className="mt-2 font-[family-name:var(--font-heading)] text-[26px] leading-tight sm:text-[32px] lg:text-[40px]"
             style={{ color: MAROON }}
           >
-            Customer Love
+            Customer Feedback
           </h2>
 
           {/* Ornament divider */}
@@ -158,7 +158,7 @@ export default function CustomerLove() {
             <span className="h-px w-16 bg-[#E0CDBA]" />
           </div>
 
-          <p className="mt-3 text-[13px] leading-relaxed text-neutral-600">
+          <p className="mt-3 text-[16px] leading-relaxed text-neutral-600">
             See how our customers are flaunting their love with our rings!
             <br />
             Real moments, real smiles, real satisfaction.

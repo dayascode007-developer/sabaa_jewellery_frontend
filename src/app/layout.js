@@ -49,6 +49,12 @@ export const metadata = {
   title: "Sabaa Jewel Arts — Customized Panchaloga Jewellery",
   description:
     "Handcrafted, laser-engraved Panchaloga rings and chains, personalized for you. Crafted by tradition since 1984.",
+  // Browser tab icon. The scaffold's src/app/favicon.ico was removed so it
+  // cannot take precedence over this.
+  icons: {
+    icon: [{ url: "/logo_hd.webp", type: "image/webp" }],
+    apple: "/logo_hd.webp",
+  },
 };
 
 export default function RootLayout({ children }) {

@@ -7,7 +7,7 @@ import { PROMO_BANNER } from "@/constants/homeData";
 export default function PromoBanner() {
   return (
     <section className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6">
-      <h2 className="mb-4 text-center font-[family-name:var(--font-heading)] text-[28px] leading-tight font-semibold text-neutral-800">
+      <h2 className="mb-4 text-center font-[family-name:var(--font-heading)] text-[26px] leading-tight font-semibold sm:text-[32px] lg:text-[40px] text-neutral-800">
         Crafted for You
       </h2>
 

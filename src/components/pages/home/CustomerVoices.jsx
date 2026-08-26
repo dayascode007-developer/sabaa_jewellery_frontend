@@ -122,8 +122,10 @@ function VoicePlayer({ voice }) {
           )}
         </button>
 
-        {/* Bars before the playhead stay solid, the rest fade */}
-        <div className="flex h-6 min-w-0 flex-1 items-center gap-[2px]" aria-hidden="true">
+        {/* Bars before the playhead stay solid, the rest fade. The bars are
+            shrink-0 and need ~158px; a phone card leaves ~101px, so the track
+            clips instead of pushing the card wider. */}
+        <div className="flex h-6 min-w-0 flex-1 items-center gap-[2px] overflow-hidden" aria-hidden="true">
           {BARS.map((height, i) => (
             <span
               key={i}
@@ -217,7 +219,7 @@ export default function CustomerVoices({ voices = CUSTOMER_VOICES }) {
           <div className="mt-1 flex items-center justify-center gap-3">
             <MicIcon className="hidden h-14 w-14 text-neutral-700 sm:block" />
             <h2
-              className="font-[family-name:var(--font-heading)] text-[40px] leading-tight"
+              className="font-[family-name:var(--font-heading)] text-[26px] leading-tight sm:text-[32px] lg:text-[40px]"
               style={{ color: MAROON }}
             >
               Customer Voices
@@ -233,7 +235,7 @@ export default function CustomerVoices({ voices = CUSTOMER_VOICES }) {
             <span className="h-px w-14 bg-[#E7D2C4]" />
           </div>
 
-          <p className="mt-2 text-[13px] leading-relaxed text-neutral-600">
+          <p className="mt-2 text-[16px] leading-relaxed text-neutral-600">
             Listen to genuine feedback from our happy customers
             <br />
             who love our rings and our service.

@@ -1,3 +1,14 @@
+"use client";
+
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { selectCartCount } from "@/store/slices/cartSlice";
+import { selectWishlistCount } from "@/store/slices/wishlistSlice";
+import Image from "next/image";
+import Link from "next/link";
+import MobileDrawer from "@/components/layout/MobileDrawer";
+import sabaaLogo from "@/assets/logo/High Quality Sabaa Logo.webp";
+
 const MAROON = "#7B1E2B";
 
 function Icon({ path, className = "h-6 w-6" }) {
@@ -56,35 +67,20 @@ const ICONS = {
   ),
 };
 
+// The artwork already contains the ornament, wordmark, "JEWEL ARTS" and
+// "since 1984", so nothing is drawn in HTML — that would duplicate the lockup.
 function Logo() {
   return (
-    <a href="#" className="flex shrink-0 flex-col items-center leading-none">
-      {/* Ornament above the wordmark */}
-      <svg viewBox="0 0 40 12" className="mb-0.5 h-3 w-10" style={{ color: MAROON }} aria-hidden="true">
-        <path
-          d="M20 1c-3 0-5 2.2-5 4.6 0 2 1.6 3.4 3.3 3.4 1.2 0 2-.7 2-1.6 0-.8-.6-1.3-1.3-1.3M20 1c3 0 5 2.2 5 4.6 0 2-1.6 3.4-3.3 3.4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-        />
-      </svg>
-      <span
-        className="font-[family-name:var(--font-display)] text-2xl tracking-wide"
-        style={{ color: MAROON }}
-      >
-        Sabaa
-      </span>
-      <span
-        className="mt-0.5 text-[9px] tracking-[0.3em]"
-        style={{ color: MAROON }}
-      >
-        JEWEL ARTS
-      </span>
-      <span className="mt-0.5 text-[6px] tracking-[0.2em] text-neutral-400">
-        since 1984
-      </span>
-    </a>
+    <Link href="/" className="flex shrink-0 items-center" aria-label="Sabaa Jewel Arts — home">
+      <Image
+        src={sabaaLogo}
+        alt="Sabaa Jewel Arts"
+        priority
+        // The lockup carries "JEWEL ARTS" and "since 1984" as fine print, so it
+        // needs real height to stay legible.
+        className="h-16 w-auto sm:h-20"
+      />
+    </Link>
   );
 }
 
@@ -96,24 +92,45 @@ export default function Header() {
     { key: "user", icon: ICONS.user, label: "Account" },
   ];
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const cartCount = useSelector(selectCartCount);
+  const wishlistCount = useSelector(selectWishlistCount);
+
   return (
     <header className="w-full bg-white">
-      <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-3 sm:gap-8 sm:px-6">
+      {/* Below md the search drops to its own row — three items in one row at
+          phone widths squeezes the input to almost nothing. */}
+      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-3 px-4 py-4 sm:gap-x-4 sm:px-6 sm:py-5 md:flex-nowrap md:gap-8">
+        {/* Hamburger — opens the left drawer. Phones and tablets only; the
+            category bar handles navigation from lg up. */}
+        <button
+          type="button"
+          onClick={() => setMenuOpen(true)}
+          aria-label="Open menu"
+          aria-expanded={menuOpen}
+          className="shrink-0 p-1 lg:hidden"
+          style={{ color: MAROON }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="h-6 w-6" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
+
         <Logo />
 
-        {/* Search */}
-        <div className="mx-auto w-full max-w-2xl">
-          <div className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 shadow-[0_1px_6px_rgba(0,0,0,0.06)] focus-within:border-neutral-300">
-            <span className="text-neutral-400">
+        {/* Search — full width on its own row until md, then inline */}
+        <div className="order-last w-full min-w-0 md:order-none md:mx-auto md:max-w-2xl">
+          <div className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-2 shadow-[0_1px_6px_rgba(0,0,0,0.06)] focus-within:border-neutral-300 sm:px-4">
+            <span className="shrink-0 text-neutral-400">
               <Icon path={ICONS.search} className="h-[18px] w-[18px]" />
             </span>
             <input
               type="text"
               placeholder="Search for gold necklace"
               aria-label="Search"
-              className="min-w-0 flex-1 bg-transparent text-sm text-neutral-700 outline-none placeholder:text-neutral-400"
+              className="min-w-0 flex-1 bg-transparent text-[13px] text-neutral-700 outline-none placeholder:text-neutral-400 sm:text-sm"
             />
-            <span className="flex items-center gap-3 text-neutral-400">
+            <span className="flex shrink-0 items-center gap-2.5 text-neutral-400 sm:gap-3">
               <button type="button" aria-label="Search by image" className="hover:text-neutral-600">
                 <Icon path={ICONS.camera} className="h-[18px] w-[18px]" />
               </button>
@@ -125,28 +142,47 @@ export default function Header() {
         </div>
 
         {/* Actions */}
-        <nav className="flex shrink-0 items-center gap-4 sm:gap-5" style={{ color: MAROON }}>
+        <nav className="ml-auto flex shrink-0 items-center gap-3.5 sm:gap-5 md:ml-0" style={{ color: MAROON }}>
           {actions.map((a) => (
             <button
               key={a.key}
               type="button"
               aria-label={a.label}
-              className="hidden transition-opacity hover:opacity-70 sm:block"
+              // Wishlist is the only action kept on phones. Account lives in
+              // the bottom bar below lg, so showing it here too would duplicate
+              // it; collections and stores appear once there is room.
+              className={`transition-opacity hover:opacity-70 ${
+                a.key === "heart" ? "block" : a.key === "user" ? "hidden lg:block" : "hidden sm:block"
+              }`}
             >
-              <Icon path={a.icon} />
+              <span className="relative block">
+                <Icon path={a.icon} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
+                {a.key === "heart" && wishlistCount > 0 ? (
+                  <span
+                    className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-white"
+                    style={{ backgroundColor: MAROON }}
+                  >
+                    {wishlistCount}
+                  </span>
+                ) : null}
+              </span>
             </button>
           ))}
+          {/* Visible at every width. It is also in the bottom bar on phones,
+              but a cart in the header is the convention shoppers reach for. */}
           <button type="button" aria-label="Cart" className="relative transition-opacity hover:opacity-70">
-            <Icon path={ICONS.cart} />
+            <Icon path={ICONS.cart} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
             <span
               className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-white"
               style={{ backgroundColor: MAROON }}
             >
-              0
+              {cartCount}
             </span>
           </button>
         </nav>
       </div>
+
+      <MobileDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
     </header>
   );
 }

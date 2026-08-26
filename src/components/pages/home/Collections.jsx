@@ -34,13 +34,13 @@ export default function Collections() {
         <span className="h-px flex-1 bg-neutral-200" />
         <div className="shrink-0 text-center">
           <h2
-            className="flex items-baseline justify-center gap-3 font-[family-name:var(--font-heading)] text-[40px] leading-tight"
+            className="flex items-baseline justify-center gap-3 font-[family-name:var(--font-heading)] text-[26px] leading-tight sm:text-[32px] lg:text-[40px]"
             style={{ color: MAROON }}
           >
             <span className="tracking-[0.08em]">SABAA</span>
             <span>Collections</span>
           </h2>
-          <p className="mt-0.5 font-[family-name:var(--font-heading)] text-[24px] leading-tight text-neutral-700">
+          <p className="mt-0.5 font-[family-name:var(--font-heading)] text-[16px] leading-tight sm:text-[20px] lg:text-[24px] text-neutral-700">
             Explore Our Newly launched
           </p>
         </div>

@@ -24,16 +24,16 @@ export default function SabaaAssurance() {
       <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 lg:grid-cols-2">
         {/* Left: the promise */}
         <div className="flex flex-col items-center justify-center px-6 py-12 text-center lg:border-r lg:border-neutral-200">
-          <h2 className="font-[family-name:var(--font-heading)] text-[40px] leading-tight text-neutral-800">
+          <h2 className="font-[family-name:var(--font-heading)] text-[26px] leading-tight sm:text-[32px] lg:text-[40px] text-neutral-800">
             Sabaa <span style={{ color: MAROON }}>Assurance</span>
           </h2>
-          <p className="mt-1 font-[family-name:var(--font-heading)] text-[15px] text-neutral-500">
+          <p className="mt-1 font-[family-name:var(--font-heading)] text-[15px] text-neutral-500 sm:text-[19px] lg:text-[24px]">
             Crafted by experts, cherished by you
           </p>
         </div>
 
         {/* Right: the three guarantees */}
-        <ul className="grid grid-cols-3 items-start gap-4 px-6 py-12">
+        <ul className="grid grid-cols-3 items-start gap-3 px-4 pb-12 sm:gap-4 sm:px-6 lg:py-12">
           {ASSURANCE_ITEMS.map((item) => (
             <li key={item.id} className="flex flex-col items-center text-center">
               <svg

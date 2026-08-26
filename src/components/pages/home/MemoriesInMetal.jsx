@@ -72,7 +72,7 @@ export default function MemoriesInMetal() {
             <span className="h-px w-20" style={{ backgroundColor: "#E3C89A" }} />
           </div>
 
-          <h2 className="mt-3 font-[family-name:var(--font-heading)] text-[28px] leading-tight text-neutral-900 sm:text-[34px]">
+          <h2 className="mt-3 font-[family-name:var(--font-heading)] text-[26px] leading-tight text-neutral-900 sm:text-[32px] lg:text-[40px]">
             Memories in Metal. Bonds for Generations.
           </h2>
 

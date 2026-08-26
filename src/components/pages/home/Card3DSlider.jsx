@@ -79,7 +79,7 @@ export default function Card3DSlider({ slides = STYLE_SLIDES }) {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <div className="relative mx-auto h-[420px] w-full max-w-[1400px] sm:h-[500px]">
+      <div className="relative mx-auto h-[300px] w-full max-w-[1400px] sm:h-[420px] lg:h-[500px]">
         <Arrow direction="left" onClick={() => goTo(index - 1)} />
         <Arrow direction="right" onClick={() => goTo(index + 1)} />
 
@@ -99,7 +99,7 @@ export default function Card3DSlider({ slides = STYLE_SLIDES }) {
                 aria-label={isActive ? slide.alt : `Show ${slide.alt}`}
                 aria-hidden={hidden}
                 tabIndex={hidden ? -1 : 0}
-                className="absolute top-0 left-1/2 h-full w-[220px] overflow-hidden rounded-xl shadow-2xl transition-all duration-500 ease-out sm:w-[270px]"
+                className="absolute top-0 left-1/2 h-full w-[150px] overflow-hidden rounded-xl shadow-2xl transition-all duration-500 ease-out sm:w-[220px] lg:w-[270px]"
                 style={{
                   transform: `translateX(-50%) translateX(${offset * STEP_X}%) translateZ(${-distance * STEP_Z}px) scale(${(1 - distance * STEP_SCALE).toFixed(2)})`,
                   zIndex: count - distance,

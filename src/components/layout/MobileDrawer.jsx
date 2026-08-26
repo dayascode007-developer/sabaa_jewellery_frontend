@@ -1,0 +1,147 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { NAV_ITEMS } from "@/constants/homeData";
+
+const MAROON = "#7B1E2B";
+
+function Chevron({ open }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+export default function MobileDrawer({ open, onClose }) {
+  const [expandedId, setExpandedId] = useState(null);
+
+  // Escape closes, and the page behind must not scroll while the drawer is up.
+  // The `open` guard lives inside the effect because hooks run unconditionally —
+  // without it this would lock body scroll on every page load.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+    };
+  }, [open, onClose]);
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        aria-hidden="true"
+        className={`fixed inset-0 z-50 bg-black/50 transition-opacity duration-300 lg:hidden ${
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
+
+      {/* Panel — always mounted so it can slide rather than pop */}
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        className={`fixed inset-y-0 left-0 z-50 flex w-[82%] max-w-[320px] flex-col bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
+          <span
+            className="font-[family-name:var(--font-display)] text-xl"
+            style={{ color: MAROON }}
+          >
+            Sabaa
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+            className="p-1 text-neutral-500 transition-colors hover:text-neutral-800"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+
+        <nav className="min-h-0 flex-1 overflow-y-auto py-2">
+          <ul>
+            {NAV_ITEMS.map((item) => {
+              const isExpanded = expandedId === item.id;
+              // Flatten the mega-menu columns into one list for the drawer.
+              const links = item.menu
+                ? item.menu.columns.flatMap((c) =>
+                    c.heading
+                      ? [{ label: c.heading, href: "#", isHeading: true }, ...c.items]
+                      : c.items,
+                  )
+                : null;
+
+              return (
+                <li key={item.id} className="border-b border-neutral-100">
+                  {links ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                        aria-expanded={isExpanded}
+                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left font-[family-name:var(--font-category)] text-[14px] text-neutral-800"
+                      >
+                        {item.label}
+                        <Chevron open={isExpanded} />
+                      </button>
+
+                      {isExpanded ? (
+                        <ul className="bg-neutral-50 pb-2">
+                          {links.map((link) => (
+                            <li key={link.label}>
+                              <Link
+                                href={link.href}
+                                onClick={onClose}
+                                className={`block py-2 pr-4 pl-7 text-[13px] ${
+                                  link.isHeading
+                                    ? "font-semibold text-[#7B1E2B]"
+                                    : "text-neutral-600"
+                                }`}
+                              >
+                                {link.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={onClose}
+                      className="block px-4 py-3 font-[family-name:var(--font-category)] text-[14px] text-neutral-800"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </aside>
+    </>
+  );
+}
