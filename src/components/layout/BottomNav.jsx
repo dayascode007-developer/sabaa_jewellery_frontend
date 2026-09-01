@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { selectCartCount } from "@/store/slices/cartSlice";
+import AuthModal from "@/components/common/AuthModal";
 
 const MAROON = "#7B1E2B";
 
@@ -60,6 +61,7 @@ const ITEMS = [
 
 export default function BottomNav() {
   const [activeId, setActiveId] = useState("home");
+  const [authOpen, setAuthOpen] = useState(false);
   const cartCount = useSelector(selectCartCount);
 
   return (
@@ -72,15 +74,23 @@ export default function BottomNav() {
       <ul className="mx-auto flex max-w-[600px] items-stretch">
         {ITEMS.map((item) => {
           const isActive = activeId === item.id;
+          // Account opens the login dialog rather than going anywhere — the
+          // desktop header does the same thing, and on a phone this is the
+          // only way in.
+          const isAccount = item.id === "account";
+          const Tag = isAccount ? "button" : Link;
+          const tagProps = isAccount
+            ? { type: "button", "aria-haspopup": "dialog", onClick: () => setAuthOpen(true) }
+            : { href: item.href, onClick: () => setActiveId(item.id) };
+
           return (
             <li key={item.id} className="flex-1 p-1.5">
-              <Link
-                href={item.href}
-                onClick={() => setActiveId(item.id)}
+              <Tag
+                {...tagProps}
                 aria-current={isActive ? "page" : undefined}
                 // Active item is a filled maroon pill with white content,
                 // rather than only recolouring the icon and label.
-                className="flex flex-col items-center gap-1 rounded-lg py-2 transition-colors"
+                className="flex w-full flex-col items-center gap-1 rounded-lg py-2 transition-colors"
                 style={{
                   backgroundColor: isActive ? MAROON : "transparent",
                   color: isActive ? "#FFFFFF" : "#6B6B6B",
@@ -114,11 +124,13 @@ export default function BottomNav() {
                   ) : null}
                 </span>
                 <span className="text-[10px] leading-none font-medium">{item.label}</span>
-              </Link>
+              </Tag>
             </li>
           );
         })}
       </ul>
+
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </nav>
   );
 }

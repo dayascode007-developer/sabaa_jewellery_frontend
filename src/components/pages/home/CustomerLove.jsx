@@ -164,15 +164,38 @@ export default function CustomerLove() {
             Real moments, real smiles, real satisfaction.
           </p>
 
-          <span
-            className="mt-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-medium text-white"
-            style={{ backgroundColor: MAROON }}
-          >
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
+          {/* A figure, not a control. The filled pill it replaced read as a
+              button people could press — this is set as a statistic instead,
+              which is also why it can be larger without shouting. */}
+          <div className="mt-6 flex items-center justify-center gap-3 sm:gap-4">
+            <span className="hidden h-px w-10 bg-[#E0CDBA] sm:block lg:w-16" />
+
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5 shrink-0"
+              fill="currentColor"
+              style={{ color: MAROON }}
+              aria-hidden="true"
+            >
               <path d="M8.5 11a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Zm7.5.5a2.7 2.7 0 1 0 0-5.4 2.7 2.7 0 0 0 0 5.4ZM8.5 12.8c-3 0-6 1.5-6 3.6V19h12v-2.6c0-2.1-3-3.6-6-3.6Zm7.5.4c-.8 0-1.7.1-2.4.4 1.2.8 2 1.8 2 3v2.4h6V17c0-1.9-2.7-3.8-5.6-3.8Z" />
             </svg>
-            5000+ Happy Customers
-          </span>
+
+            {/* Only a small step between the two sizes — a big jump was what
+                made the number look like it had been pasted in. */}
+            <p className="flex items-baseline gap-1.5">
+              <span
+                className="font-[family-name:var(--font-heading)] text-[17px] leading-none sm:text-[19px]"
+                style={{ color: MAROON }}
+              >
+                1 Lakh+
+              </span>
+              <span className="text-[14px] text-neutral-600 sm:text-[15px]">
+                Happy Customers
+              </span>
+            </p>
+
+            <span className="hidden h-px w-10 bg-[#E0CDBA] sm:block lg:w-16" />
+          </div>
         </div>
 
         {/* Testimonial carousel */}

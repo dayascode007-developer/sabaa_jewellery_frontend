@@ -83,7 +83,7 @@ const PROMO = {
 };
 
 export const NAV_ITEMS = [
-  { id: "all", label: "All Jewellery", href: "#", icon: navAllJewellery },
+  { id: "all", label: "All Jewellery", href: "/category/all-jewellery", icon: navAllJewellery },
   {
     id: "rings",
     label: "Rings",
@@ -163,7 +163,7 @@ export const NAV_ITEMS = [
       },
     },
   },
-  { id: "bracelet", label: "Bracelet", href: "#" },
+  { id: "bracelet", label: "Bracelet", href: "/category/bracelet" },
   {
     id: "earrings",
     label: "Earrings",
@@ -190,14 +190,17 @@ export const NAV_ITEMS = [
   { id: "more", label: "More", href: "#", icon: navMore },
 ];
 
+// Each tile opens its own listing page. The slug is the id, and the matching
+// label lives in CATEGORY_LABELS in productData.js — add one there whenever a
+// tile is added here, or the page falls back to the heading "Products".
 export const CATEGORIES = [
-  { id: "engraving-rings", label: "Engraving Rings", image: engrave, href: "#" },
-  { id: "face-photo-rings", label: "Face & Photo Rings", image: faceAndPhotoRing, href: "#" },
-  { id: "symbol-rings", label: "Symbol Rings", image: symbolsRing, href: "#" },
-  { id: "mens-chain", label: "Mens Chain", image: mensChain, href: "#" },
-  { id: "womens-chain", label: "Womens Chain", image: womensChain, href: "#" },
-  { id: "kids-chain", label: "Kids Chain", image: kids, href: "#" },
-  { id: "earrings", label: "Earrings", image: earings, href: "#" },
+  { id: "engraving-rings", label: "Engraving Rings", image: engrave, href: "/category/engraving-rings" },
+  { id: "face-photo-rings", label: "Face & Photo Rings", image: faceAndPhotoRing, href: "/category/face-photo-rings" },
+  { id: "symbol-rings", label: "Symbol Rings", image: symbolsRing, href: "/category/symbol-rings" },
+  { id: "mens-chain", label: "Mens Chain", image: mensChain, href: "/category/mens-chain" },
+  { id: "womens-chain", label: "Womens Chain", image: womensChain, href: "/category/womens-chain" },
+  { id: "kids-chain", label: "Kids Chain", image: kids, href: "/category/kids-chain" },
+  { id: "earrings", label: "Earrings", image: earings, href: "/category/earrings" },
 ];
 
 // The banner artwork already contains the wordmark, headline, feature badges
@@ -406,10 +409,10 @@ export const STYLE_SLIDES = [
 ];
 
 export const TRUST_ITEMS = [
-  { id: "trusted", icon: "shield", lines: ["Trusted by 5000+", "Happy Customers"] },
+  { id: "trusted", icon: "people", lines: ["Trusted by 5000+", "Happy Customers"] },
   { id: "quality", icon: "ring", lines: ["Premium Quality", "Rings"] },
   { id: "delivery", icon: "truck", lines: ["Fast & Secure", "Delivery"] },
-  { id: "satisfaction", icon: "heart", lines: ["Customer Satisfaction", "is Our Priority"] },
+  { id: "satisfaction", icon: "smile", lines: ["Customer Satisfaction", "is Our Priority"] },
 ];
 
 // Backdrop for the New Arrivals block. The "New Arrivals" heading, the

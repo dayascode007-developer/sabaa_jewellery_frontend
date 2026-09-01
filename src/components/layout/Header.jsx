@@ -6,6 +6,7 @@ import { selectCartCount } from "@/store/slices/cartSlice";
 import { selectWishlistCount } from "@/store/slices/wishlistSlice";
 import Image from "next/image";
 import Link from "next/link";
+import AuthModal from "@/components/common/AuthModal";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import sabaaLogo from "@/assets/logo/High Quality Sabaa Logo.webp";
 
@@ -40,13 +41,6 @@ const ICONS = {
     <>
       <rect x="9.5" y="3" width="5" height="10" rx="2.5" />
       <path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V21" />
-    </>
-  ),
-  gem: <path d="M6 3h12l3 5-9 13L3 8l3-5Zm-3 5h18M9 3 6 8l6 13M15 3l3 5-6 13" />,
-  store: (
-    <>
-      <path d="M3 9.5 4.5 4h15L21 9.5M3 9.5h18M3 9.5v9A1.5 1.5 0 0 0 4.5 20h15a1.5 1.5 0 0 0 1.5-1.5v-9" />
-      <path d="M9 20v-5.5h6V20" />
     </>
   ),
   heart: (
@@ -86,13 +80,12 @@ function Logo() {
 
 export default function Header() {
   const actions = [
-    { key: "gem", icon: ICONS.gem, label: "Collections" },
-    { key: "store", icon: ICONS.store, label: "Stores" },
     { key: "heart", icon: ICONS.heart, label: "Wishlist" },
     { key: "user", icon: ICONS.user, label: "Account" },
   ];
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
   const cartCount = useSelector(selectCartCount);
   const wishlistCount = useSelector(selectWishlistCount);
 
@@ -143,31 +136,46 @@ export default function Header() {
 
         {/* Actions */}
         <nav className="ml-auto flex shrink-0 items-center gap-3.5 sm:gap-5 md:ml-0" style={{ color: MAROON }}>
-          {actions.map((a) => (
-            <button
-              key={a.key}
-              type="button"
-              aria-label={a.label}
-              // Wishlist is the only action kept on phones. Account lives in
-              // the bottom bar below lg, so showing it here too would duplicate
-              // it; collections and stores appear once there is room.
-              className={`transition-opacity hover:opacity-70 ${
-                a.key === "heart" ? "block" : a.key === "user" ? "hidden lg:block" : "hidden sm:block"
-              }`}
-            >
-              <span className="relative block">
+          {actions.map((a) =>
+            // Account is a real destination now, so it is a link with a visible
+            // "Login" label — icon and word are one target, not two.
+            a.key === "user" ? (
+              // Opens the dialog rather than navigating — the visitor keeps the
+              // page they were on behind it.
+              <button
+                key={a.key}
+                type="button"
+                onClick={() => setAuthOpen(true)}
+                aria-label="Login to your account"
+                aria-haspopup="dialog"
+                className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex"
+              >
                 <Icon path={a.icon} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
-                {a.key === "heart" && wishlistCount > 0 ? (
-                  <span
-                    className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-white"
-                    style={{ backgroundColor: MAROON }}
-                  >
-                    {wishlistCount}
-                  </span>
-                ) : null}
-              </span>
-            </button>
-          ))}
+                <span className="text-[14px] font-medium">Login</span>
+              </button>
+            ) : (
+              <button
+                key={a.key}
+                type="button"
+                aria-label={a.label}
+                // Wishlist is the only action kept on phones. Account lives in
+                // the bottom bar below lg, so showing it here too would duplicate it.
+                className="block transition-opacity hover:opacity-70"
+              >
+                <span className="relative block">
+                  <Icon path={a.icon} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
+                  {a.key === "heart" && wishlistCount > 0 ? (
+                    <span
+                      className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-white"
+                      style={{ backgroundColor: MAROON }}
+                    >
+                      {wishlistCount}
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+            )
+          )}
           {/* Visible at every width. It is also in the bottom bar on phones,
               but a cart in the header is the convention shoppers reach for. */}
           <button type="button" aria-label="Cart" className="relative transition-opacity hover:opacity-70">
@@ -183,6 +191,7 @@ export default function Header() {
       </div>
 
       <MobileDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </header>
   );
 }

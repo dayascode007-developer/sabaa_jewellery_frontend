@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import RingSizeGuide from "@/components/products/RingSizeGuide";
+import CareGuide from "@/components/products/CareGuide";
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
@@ -31,8 +33,10 @@ function Placeholder({ label }) {
 
 function Gallery({ product }) {
   const [active, setActive] = useState(0);
-  // One entry per thumbnail. Real photography drops straight in here.
-  const shots = [product.image, null, null, null];
+  // The product shot first, then the workshop images shot for its category.
+  // Padded to four so the thumbnail row keeps its shape on sparse categories.
+  const shots = [...(product.gallery ?? [product.image])];
+  while (shots.length < 4) shots.push(null);
 
   return (
     <div>
@@ -129,6 +133,7 @@ export default function ProductDetail({ product }) {
       : 0;
 
   return (
+    <>
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
       <Gallery product={product} />
 
@@ -178,11 +183,17 @@ export default function ProductDetail({ product }) {
         </div>
         <p className="mt-0.5 text-[11px] text-neutral-500">MRP inclusive of all taxes</p>
 
-        {/* Ring size */}
+        {/* Ring size — rings only. A chain, pendant or pair of earrings has no
+            finger size, so the whole block is left out rather than shown with
+            values that mean nothing for the piece. */}
+        {product.hasRingSize ? (
         <div className="mt-5">
-          <label htmlFor="ring-size" className="block text-[13px] font-medium" style={{ color: MAROON }}>
-            Ring Size
-          </label>
+          <div className="flex items-center justify-between gap-3">
+            <label htmlFor="ring-size" className="text-[13px] font-medium" style={{ color: MAROON }}>
+              Ring Size
+            </label>
+            <RingSizeGuide />
+          </div>
           <select
             id="ring-size"
             value={size}
@@ -202,6 +213,7 @@ export default function ProductDetail({ product }) {
             </svg>
           </button>
         </div>
+        ) : null}
 
         {/* WhatsApp assist + Add to cart */}
         <div className="mt-5 flex flex-wrap items-start gap-4">
@@ -282,5 +294,11 @@ export default function ProductDetail({ product }) {
         <Accordion sections={product.sections} description={product.description} />
       </div>
     </div>
+
+    {/* Full width below the product grid — it needs the room, and it is the
+        same on every product, so it reads as page content rather than as one
+        more thing to click through. */}
+    <CareGuide />
+    </>
   );
 }

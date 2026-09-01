@@ -1,8 +1,30 @@
 import Image from "next/image";
+import Link from "next/link";
 import { USEFUL_LINKS, COMPANY_INFO, LEGAL_LINKS } from "@/constants/footerData";
 import sabaaLogo from "@/assets/logo/High Quality Sabaa Logo.webp";
+import instagramQr from "@/assets/logo/Untitled.svg";
 
 const FOOTER_BG = "#3D0F0F";
+
+// X and YouTube were dropped; WhatsApp took their place. All three render
+// identically — same white disc, same size — so nothing looks bolted on.
+// The Instagram URL is the clean profile link. The ?ig_mid=… and utm_source
+// parameters on the one you sent are your own browser's session identifiers —
+// they belong to whoever copied the link, not to the profile, and should not be
+// published on the site.
+const SOCIAL_LINKS = [
+  {
+    key: "instagram",
+    label: "Instagram",
+    href: "https://www.instagram.com/sabajewelarts/",
+  },
+  {
+    key: "facebook",
+    label: "Facebook",
+    href: "https://www.facebook.com/sabaajewelarts",
+  },
+  { key: "whatsapp", label: "WhatsApp", href: `https://wa.me/${COMPANY_INFO.whatsapp}` },
+];
 
 function Icon({ path, className = "h-5 w-5", filled = false }) {
   return (
@@ -29,25 +51,12 @@ const GLYPHS = {
       <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
     </>
   ),
-  x: (
-    <path
-      d="M4 3h4.2l4 5.6L17 3h3l-6.4 8.6L20.5 21h-4.2l-4.4-6.1L6.6 21H3.5l6.8-9.1L4 3Z"
-      fill="currentColor"
-      stroke="none"
-    />
-  ),
   facebook: (
     <path
       d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.3-.13-2.45-.13-2.43 0-4.1 1.48-4.1 4.2v2.23H7.4V13h2.75v8h3.35Z"
       fill="currentColor"
       stroke="none"
     />
-  ),
-  youtube: (
-    <>
-      <rect x="2.5" y="5.5" width="19" height="13" rx="4" fill="currentColor" stroke="none" />
-      <path d="M10.3 9.2v5.6l5-2.8-5-2.8Z" fill={FOOTER_BG} stroke="none" />
-    </>
   ),
   whatsapp: (
     <path
@@ -140,9 +149,18 @@ export default function Footer() {
               Follow us on Instagram
             </p>
 
-            {/* Placeholder for the Instagram QR image */}
-            <div className="mt-4 flex aspect-square w-full max-w-[240px] items-center justify-center rounded-sm bg-white text-[11px] text-neutral-500">
-              QR code
+            {/* The QR is black on white, so it keeps its own white card to stay
+                scannable against the maroon. The padding is the quiet zone a
+                scanner needs around the code. */}
+            <div className="mt-4 aspect-square w-full max-w-[240px] rounded-sm bg-white p-2">
+              <Image
+                src={instagramQr}
+                alt="Scan to follow Sabaa Jewel Arts on Instagram"
+                // next/image refuses to optimise SVG unless dangerouslyAllowSVG
+                // is set, so this one is served as-is.
+                unoptimized
+                className="h-full w-full"
+              />
             </div>
 
             <span className="mt-6 hidden h-px w-full max-w-[340px] bg-white/15 lg:block" />
@@ -157,20 +175,25 @@ export default function Footer() {
                   Useful Links
                 </h3>
                 <ul className="mt-5 space-y-4">
-                  {USEFUL_LINKS.map((link) => (
-                    <li key={link.id}>
-                      <a
-                        href={link.href}
-                        className="font-[family-name:var(--font-heading)] text-[15px] leading-snug text-neutral-200 transition-colors hover:text-white"
-                      >
-                        {link.label.split("\n").map((line) => (
-                          <span key={line} className="block">
-                            {line}
-                          </span>
-                        ))}
-                      </a>
-                    </li>
-                  ))}
+                  {USEFUL_LINKS.map((link) => {
+                    // Real routes go through next/link so they navigate on the
+                    // client; the ones still parked on "#" stay plain anchors.
+                    const Tag = link.href.startsWith("/") ? Link : "a";
+                    return (
+                      <li key={link.id}>
+                        <Tag
+                          href={link.href}
+                          className="font-[family-name:var(--font-heading)] text-[15px] leading-snug text-neutral-200 transition-colors hover:text-white"
+                        >
+                          {link.label.split("\n").map((line) => (
+                            <span key={line} className="block">
+                              {line}
+                            </span>
+                          ))}
+                        </Tag>
+                      </li>
+                    );
+                  })}
                 </ul>
               </nav>
 
@@ -200,10 +223,20 @@ export default function Footer() {
                 <span className="mt-4 block h-px w-40 bg-white/25" />
 
                 <div className="mt-4 flex items-center gap-6 text-white">
-                  <a href="#" aria-label="WhatsApp" className="transition-opacity hover:opacity-70">
+                  <a
+                    href={`https://wa.me/${COMPANY_INFO.whatsapp}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="WhatsApp"
+                    className="transition-opacity hover:opacity-70"
+                  >
                     <Icon path={GLYPHS.whatsapp} filled className="h-6 w-6" />
                   </a>
-                  <a href="#" aria-label="Email" className="transition-opacity hover:opacity-70">
+                  <a
+                    href={`mailto:${COMPANY_INFO.email}`}
+                    aria-label="Email"
+                    className="transition-opacity hover:opacity-70"
+                  >
                     <Icon path={GLYPHS.mail} className="h-6 w-6" />
                   </a>
                   <a href="#" aria-label="Chat" className="transition-opacity hover:opacity-70">
@@ -224,12 +257,23 @@ export default function Footer() {
                   {COMPANY_INFO.phone}
                 </a>
 
-                {/* Placeholder for the embedded Google map */}
-                <div className="mt-4 flex aspect-[5/3] w-full max-w-[260px] items-center justify-center rounded-sm bg-neutral-300 text-[11px] text-neutral-600 sm:mx-auto">
-                  Map
+                {/* Embedded Google map. The iframe is absolutely positioned so
+                    it fills the ratio box — its own width/height attributes are
+                    600x450 and would otherwise blow out the footer column. */}
+                <div className="relative mt-4 aspect-[5/3] w-full max-w-[260px] overflow-hidden rounded-sm bg-neutral-300 sm:mx-auto">
+                  <iframe
+                    src={COMPANY_INFO.mapEmbedUrl}
+                    title="Sabaa Jewel Arts on Google Maps"
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    className="absolute inset-0 h-full w-full border-0"
+                  />
                 </div>
                 <a
                   href={COMPANY_INFO.mapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="mt-2 block max-w-[260px] font-[family-name:var(--font-heading)] text-[15px] text-neutral-200 transition-colors hover:text-white sm:mx-auto"
                 >
                   Google Map
@@ -243,14 +287,19 @@ export default function Footer() {
                 Social
               </span>
               <div className="flex items-center gap-3">
-                {["instagram", "x", "facebook", "youtube"].map((key) => (
+                {SOCIAL_LINKS.map((social) => (
                   <a
-                    key={key}
-                    href="#"
-                    aria-label={key}
+                    key={social.key}
+                    href={social.href}
+                    // The placeholders stay in-page; the live WhatsApp link opens
+                    // in a new tab like every other outbound link on the site.
+                    {...(social.href.startsWith("http")
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                    aria-label={social.label}
                     className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#3D0F0F] transition-opacity hover:opacity-80"
                   >
-                    <Icon path={GLYPHS[key]} className="h-4 w-4" />
+                    <Icon path={GLYPHS[social.key]} className="h-4 w-4" />
                   </a>
                 ))}
               </div>

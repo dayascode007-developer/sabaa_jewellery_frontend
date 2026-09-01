@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { CATEGORIES } from "@/constants/homeData";
 
 const MAROON = "#7B1E2B";
@@ -36,7 +37,7 @@ function Arrow({ direction, onClick, disabled }) {
 
 function CategoryCard({ category }) {
   return (
-    <a
+    <Link
       href={category.href}
       // 40% on phones so a third card peeks in at the edge — that sliver is
       // what tells people the row scrolls. At 46% two cards filled the width
@@ -62,7 +63,7 @@ function CategoryCard({ category }) {
           {category.label}
         </p>
       </div>
-    </a>
+    </Link>
   );
 }
 
