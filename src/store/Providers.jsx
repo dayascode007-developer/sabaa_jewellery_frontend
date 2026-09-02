@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Provider } from "react-redux";
 import { makeStore } from "@/store/store";
+import AuthInitializer from "@/components/common/AuthInitializer";
 
 // Client boundary for Redux. The root layout is a Server Component and cannot
 // hold the store, so it renders this instead.
@@ -14,5 +15,9 @@ export default function Providers({ children }) {
     storeRef.current = makeStore();
   }
 
-  return <Provider store={storeRef.current}>{children}</Provider>;
+  return (
+    <Provider store={storeRef.current}>
+      <AuthInitializer>{children}</AuthInitializer>
+    </Provider>
+  );
 }

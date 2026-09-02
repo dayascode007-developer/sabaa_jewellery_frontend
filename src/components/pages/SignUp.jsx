@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
 import Link from "next/link";
 import sabaaLogo from "@/assets/logo/High Quality Sabaa Logo.webp";
 import OtpStep from "@/components/common/OtpStep";
+import { signup, resendOtp, verifyOtp, clearError } from "@/store/slices/authSlice";
 
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
@@ -68,6 +70,10 @@ export default function SignUp({
   onDone,
 }) {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { loading, error, otpSent, identifier, customer, token } = useSelector(
+    (state) => state.auth
+  );
 
   // Closes the dialog as well as navigating. A plain link to "/" did nothing
   // visible when the visitor was already on the home page — the route did not
@@ -79,16 +85,26 @@ export default function SignUp({
   const [values, setValues] = useState(EMPTY);
   const [touched, setTouched] = useState({});
   const [agreed, setAgreed] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [serverError, setServerError] = useState("");
   // "form" → "otp" → "done"
   const [step, setStep] = useState("form");
 
   const errors = validate(values);
-  const canSubmit = agreed && Object.keys(errors).length === 0 && !submitting;
+  const canSubmit = agreed && Object.keys(errors).length === 0 && !loading;
 
   const setField = (name) => (e) => {
-    setValues((v) => ({ ...v, [name]: e.target.value }));
+    let value = e.target.value;
+
+    // Name field: capitalize first letter
+    if (name === "name" && value.length > 0) {
+      value = value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    // Mobile field: only allow digits
+    if (name === "mobile") {
+      value = value.replace(/\D/g, "");
+    }
+
+    setValues((v) => ({ ...v, [name]: value }));
     setServerError("");
   };
 
@@ -104,28 +120,21 @@ export default function SignUp({
       name: values.name.trim(),
       email: values.email.trim().toLowerCase(),
       mobile: values.mobile.replace(/\D/g, "").replace(/^(91|0)/, ""),
+      terms_agreed: agreed,
     };
 
-    if (!onSubmit) {
-      // No API wired yet — go to the code step so the flow can still be seen.
-      setStep("otp");
-      return;
-    }
-
-    setSubmitting(true);
-    setServerError("");
     try {
-      await onSubmit(payload);
-      setStep("otp");
+      const result = await dispatch(signup(payload));
+      if (result.type === signup.fulfilled.type) {
+        setStep("otp");
+      }
     } catch (err) {
-      setServerError(err?.message || "Something went wrong. Please try again.");
-    } finally {
-      setSubmitting(false);
+      // Error is handled by Redux
     }
   };
 
   // Stripped to the 10 digits the API and the OTP step both want.
-  const mobile = values.mobile.replace(/\D/g, "").replace(/^(91|0)/, "");
+  const mobile = identifier || values.mobile.replace(/\D/g, "").replace(/^(91|0)/, "");
 
   // Built once, used two ways: on its own route it gets the page wrapper below,
   // and inside AuthModal it is dropped straight into the dialog.
@@ -142,22 +151,20 @@ export default function SignUp({
           {step === "otp" ? (
             <OtpStep
               identifier={mobile}
-              onVerify={
-                onVerifyOtp ? ({ code }) => onVerifyOtp({ code, mobile }) : undefined
+              onVerify={({ code }) =>
+                dispatch(verifyOtp({ mobile, otp: code }))
+                  .then((result) => {
+                    if (result.type === verifyOtp.fulfilled.type) {
+                      return;
+                    }
+                    throw new Error(result.payload || "Verification failed");
+                  })
               }
-              onResend={
-                onResendOtp
-                  ? () => onResendOtp({ mobile })
-                  : onSubmit
-                    ? () =>
-                        onSubmit({
-                          name: values.name.trim(),
-                          email: values.email.trim().toLowerCase(),
-                          mobile,
-                        })
-                    : undefined
-              }
-              onVerified={() => setStep("done")}
+              onResend={() => dispatch(resendOtp({ mobile }))}
+              onVerified={() => {
+                setStep("done");
+                setTimeout(() => goHome(), 1600);
+              }}
               onBack={() => setStep("form")}
               backLabel="Change my details"
             />
@@ -268,21 +275,21 @@ export default function SignUp({
                   </span>
                 </label>
 
-                {serverError ? (
+                {error ? (
                   <p role="alert" className="text-[13px] text-[#C0392B]">
-                    {serverError}
+                    {error}
                   </p>
                 ) : null}
 
                 <button
                   type="submit"
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || loading}
                   // Muted until the form is valid and the terms are ticked, so
                   // the button itself shows what is still missing.
                   className="w-full rounded-md py-3 text-[15px] font-medium text-white transition-opacity disabled:cursor-not-allowed"
-                  style={{ backgroundColor: canSubmit ? MAROON : "#CFA9B0" }}
+                  style={{ backgroundColor: canSubmit && !loading ? MAROON : "#CFA9B0" }}
                 >
-                  {submitting ? "Signing up…" : "Sign Up"}
+                  {loading ? "Signing up…" : "Sign Up"}
                 </button>
               </form>
 

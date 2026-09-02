@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectCartCount } from "@/store/slices/cartSlice";
 import { selectWishlistCount } from "@/store/slices/wishlistSlice";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import AuthModal from "@/components/common/AuthModal";
@@ -79,6 +80,8 @@ function Logo() {
 }
 
 export default function Header() {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const actions = [
     { key: "heart", icon: ICONS.heart, label: "Wishlist" },
     { key: "user", icon: ICONS.user, label: "Account" },
@@ -88,6 +91,15 @@ export default function Header() {
   const [authOpen, setAuthOpen] = useState(false);
   const cartCount = useSelector(selectCartCount);
   const wishlistCount = useSelector(selectWishlistCount);
+  const { customer, token } = useSelector((state) => state.auth);
+
+  // Fix hydration mismatch: only render auth UI after hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isLoggedIn = !!token && !!customer;
+  const userInitial = customer?.name?.charAt(0).toUpperCase() || "U";
 
   return (
     <header className="w-full bg-white">
@@ -140,19 +152,42 @@ export default function Header() {
             // Account is a real destination now, so it is a link with a visible
             // "Login" label — icon and word are one target, not two.
             a.key === "user" ? (
-              // Opens the dialog rather than navigating — the visitor keeps the
-              // page they were on behind it.
-              <button
-                key={a.key}
-                type="button"
-                onClick={() => setAuthOpen(true)}
-                aria-label="Login to your account"
-                aria-haspopup="dialog"
-                className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex"
-              >
-                <Icon path={a.icon} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
-                <span className="text-[14px] font-medium">Login</span>
-              </button>
+              // Render nothing during hydration to prevent mismatch
+              !mounted ? (
+                <div key={a.key} className="hidden lg:block w-[100px]" />
+              ) : isLoggedIn ? (
+                // Show avatar with first letter when logged in
+                <button
+                  key={a.key}
+                  type="button"
+                  onClick={() => router.push("/account")}
+                  aria-label={`Account for ${customer.name}`}
+                  className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex"
+                >
+                  <div
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-white font-medium text-sm"
+                    style={{ backgroundColor: MAROON }}
+                    title={customer.name}
+                  >
+                    {userInitial}
+                  </div>
+                  <span className="text-[14px] font-medium">{customer.name}</span>
+                </button>
+              ) : (
+                // Opens the dialog rather than navigating — the visitor keeps the
+                // page they were on behind it.
+                <button
+                  key={a.key}
+                  type="button"
+                  onClick={() => setAuthOpen(true)}
+                  aria-label="Login to your account"
+                  aria-haspopup="dialog"
+                  className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex cursor-pointer"
+                >
+                  <Icon path={a.icon} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
+                  <span className="text-[14px] font-medium">Login</span>
+                </button>
+              )
             ) : (
               <button
                 key={a.key}

@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
 import { NAV_ITEMS } from "@/constants/homeData";
+import { logout } from "@/store/slices/authSlice";
+import { AiOutlineLogout } from "react-icons/ai";
 
 const MAROON = "#7B1E2B";
 
@@ -25,6 +29,16 @@ function Chevron({ open }) {
 
 export default function MobileDrawer({ open, onClose }) {
   const [expandedId, setExpandedId] = useState(null);
+  const { customer, token } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const isLoggedIn = !!token && !!customer;
+
+  const handleLogout = () => {
+    dispatch(logout(token));
+    onClose();
+    router.push("/");
+  };
 
   // Escape closes, and the page behind must not scroll while the drawer is up.
   // The `open` guard lives inside the effect because hooks run unconditionally —
@@ -141,6 +155,20 @@ export default function MobileDrawer({ open, onClose }) {
             })}
           </ul>
         </nav>
+
+        {/* Logout Section - Only show if logged in */}
+        {isLoggedIn && (
+          <div className="border-t border-neutral-200 p-4">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex w-full items-center justify-start gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors rounded font-[family-name:var(--font-category)] text-[14px] font-medium"
+            >
+              <AiOutlineLogout className="h-5 w-5" />
+              <span>Logout</span>
+            </button>
+          </div>
+        )}
       </aside>
     </>
   );
