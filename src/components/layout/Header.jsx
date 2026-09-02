@@ -162,7 +162,7 @@ export default function Header() {
                   type="button"
                   onClick={() => router.push("/account")}
                   aria-label={`Account for ${customer.name}`}
-                  className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex"
+                  className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex font-[family-name:var(--font-category)]"
                 >
                   <div
                     className="flex h-8 w-8 items-center justify-center rounded-full text-white font-medium text-sm"
