@@ -46,6 +46,7 @@ function readIdentifier(raw) {
 export default function Login({
   onRequestOtp,
   onVerifyOtp,
+  onResend,
   onGoogleLogin,
   embedded = false,
   onSwitchToSignUp,
@@ -172,7 +173,9 @@ export default function Login({
               onVerify={onVerifyOtp}
               onVerified={() => setSignedIn(true)}
               onResend={
-                onRequestOtp
+                onResend
+                  ? onResend
+                  : onRequestOtp
                   ? () => onRequestOtp({ kind: parsed.kind, value: parsed.value })
                   : undefined
               }

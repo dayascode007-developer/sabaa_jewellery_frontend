@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
 
-const LENGTH = 6;
+const LENGTH = 4;
 const RESEND_SECONDS = 30;
 
 /**

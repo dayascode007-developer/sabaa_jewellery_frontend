@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDispatch, useSelector } from "react-redux";
 import Login from "@/components/pages/Login";
 import SignUp from "@/components/pages/SignUp";
+import { login, resendLoginOtp, verifyLoginOtp } from "@/store/slices/authSlice";
 
 /**
  * Login / signup as a dialog over whatever page the visitor is on, so they are
@@ -18,12 +20,88 @@ import SignUp from "@/components/pages/SignUp";
  */
 export default function AuthModal({ open, initialView = "login", onClose }) {
   const [view, setView] = useState(initialView);
+
   // Portals need a DOM to target, so nothing is portalled during SSR.
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => setMounted(true), []);
 
+  const dispatch = useDispatch();
+  const { identifier } = useSelector((state) => state.auth);
+
   const close = useCallback(() => onClose?.(), [onClose]);
+
+  // Redux login handlers
+  const handleLoginRequest = useCallback(
+    async ({ value }) => {
+      const result = await dispatch(login({ emailOrPhone: value, recaptchaToken: "placeholder" }));
+      if (result.type === login.rejected.type) {
+        // Map backend errors to user-friendly messages
+        const errorMessage = result.payload;
+        let userMessage = "Login failed";
+
+        if (errorMessage?.includes("not found") || errorMessage?.includes("404")) {
+          userMessage = "Please enter a valid email or phone number and sign up first";
+        } else if (errorMessage?.includes("invalid") || errorMessage?.includes("Invalid")) {
+          userMessage = "Please enter a valid email or phone number";
+        } else if (errorMessage?.includes("network") || errorMessage?.includes("Network")) {
+          userMessage = "Network error. Please check your connection and try again";
+        } else {
+          userMessage = errorMessage || "Login failed. Please try again";
+        }
+
+        throw new Error(userMessage);
+      }
+    },
+    [dispatch]
+  );
+
+  const handleVerifyLoginOtp = useCallback(
+    async ({ code }) => {
+      const result = await dispatch(verifyLoginOtp({ emailOrPhone: identifier, otp: code }));
+      if (result.type === verifyLoginOtp.rejected.type) {
+        // Map backend errors to user-friendly messages
+        const errorMessage = result.payload;
+        let userMessage = "Verification failed";
+
+        if (errorMessage?.includes("invalid") || errorMessage?.includes("Invalid") || errorMessage?.includes("incorrect")) {
+          userMessage = "Incorrect OTP. Please check and try again";
+        } else if (errorMessage?.includes("expired") || errorMessage?.includes("Expired")) {
+          userMessage = "OTP has expired. Please request a new code";
+        } else if (errorMessage?.includes("maximum") || errorMessage?.includes("Maximum")) {
+          userMessage = "Too many failed attempts. Please request a new code";
+        } else {
+          userMessage = errorMessage || "Verification failed. Please try again";
+        }
+
+        throw new Error(userMessage);
+      }
+    },
+    [dispatch, identifier]
+  );
+
+  const handleResendLoginOtp = useCallback(async () => {
+    const result = await dispatch(resendLoginOtp({ emailOrPhone: identifier }));
+    if (result.type === resendLoginOtp.rejected.type) {
+      // Map backend errors to user-friendly messages
+      const errorMessage = result.payload;
+      let userMessage = "Failed to send OTP";
+
+      if (errorMessage?.includes("rate limit") || errorMessage?.includes("Rate limit")) {
+        userMessage = "Please wait before requesting another code";
+      } else if (errorMessage?.includes("not found") || errorMessage?.includes("404")) {
+        userMessage = "Account not found. Please sign up first";
+      } else {
+        userMessage = errorMessage || "Failed to send OTP. Please try again";
+      }
+
+      throw new Error(userMessage);
+    }
+  }, [dispatch, identifier]);
+
+  const handleGoogleLogin = useCallback(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    window.location.href = `${apiUrl}/auth/google`;
+  }, []);
 
   // Reopening should always start from whichever view the trigger asked for,
   // not from wherever the visitor left off last time.
@@ -83,6 +161,10 @@ export default function AuthModal({ open, initialView = "login", onClose }) {
         {view === "login" ? (
           <Login
             embedded
+            onRequestOtp={handleLoginRequest}
+            onVerifyOtp={handleVerifyLoginOtp}
+            onResend={handleResendLoginOtp}
+            onGoogleLogin={handleGoogleLogin}
             onSwitchToSignUp={() => setView("signup")}
             onDone={close}
           />

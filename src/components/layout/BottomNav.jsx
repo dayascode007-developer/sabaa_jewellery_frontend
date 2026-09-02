@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectCartCount } from "@/store/slices/cartSlice";
 import AuthModal from "@/components/common/AuthModal";
@@ -12,7 +13,7 @@ const ITEMS = [
   {
     id: "home",
     label: "Home",
-    href: "#",
+    href: "/",
     icon: (
       <>
         <path d="M4 11 12 4l8 7" />
@@ -23,7 +24,7 @@ const ITEMS = [
   {
     id: "categories",
     label: "Categories",
-    href: "#",
+    href: "/all-jewellery",
     icon: (
       <>
         <rect x="4" y="4" width="7" height="7" rx="1.2" />
@@ -36,7 +37,7 @@ const ITEMS = [
   {
     id: "cart",
     label: "Cart",
-    href: "#",
+    href: "/cart",
     badge: 0,
     icon: (
       <>
@@ -60,9 +61,25 @@ const ITEMS = [
 ];
 
 export default function BottomNav() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [activeId, setActiveId] = useState("home");
   const [authOpen, setAuthOpen] = useState(false);
   const cartCount = useSelector(selectCartCount);
+  const customer = useSelector((state) => state.auth.customer);
+
+  // Sync activeId with current pathname
+  useEffect(() => {
+    if (pathname === "/" || pathname === "/") {
+      setActiveId("home");
+    } else if (pathname === "/all-jewellery") {
+      setActiveId("categories");
+    } else if (pathname === "/cart") {
+      setActiveId("cart");
+    } else if (pathname === "/account") {
+      setActiveId("account");
+    }
+  }, [pathname]);
 
   return (
     // Fixed to the viewport bottom on phones and tablets; the desktop nav takes
@@ -79,8 +96,16 @@ export default function BottomNav() {
           // only way in.
           const isAccount = item.id === "account";
           const Tag = isAccount ? "button" : Link;
+          const handleAccountClick = () => {
+            if (customer) {
+              router.push("/account");
+              setActiveId("account");
+            } else {
+              setAuthOpen(true);
+            }
+          };
           const tagProps = isAccount
-            ? { type: "button", "aria-haspopup": "dialog", onClick: () => setAuthOpen(true) }
+            ? { type: "button", "aria-haspopup": "dialog", onClick: handleAccountClick }
             : { href: item.href, onClick: () => setActiveId(item.id) };
 
           return (
