@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import AuthModal from "@/components/common/AuthModal";
 import MobileDrawer from "@/components/layout/MobileDrawer";
-import sabaaLogo from "@/assets/logo/High Quality Sabaa Logo.webp";
+import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
 
 const MAROON = "#7B1E2B";
 

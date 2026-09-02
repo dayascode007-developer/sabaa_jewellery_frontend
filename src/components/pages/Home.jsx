@@ -1,5 +1,4 @@
 import SiteHeader from "@/components/layout/SiteHeader";
-import SectionTitle from "@/components/common/SectionTitle";
 import ShopByCategories from "@/components/pages/home/ShopByCategories";
 import HeroBanner from "@/components/pages/home/HeroBanner";
 import Collections from "@/components/pages/home/Collections";
@@ -28,12 +27,10 @@ export default function Home() {
       <SiteHeader />
 
       <main>
-        <div className="pt-6 pb-5">
-          <SectionTitle
-            title="Customize Your Perfect Masterpiece"
-            subtitle="Shop by Categories"
-          />
-        </div>
+        {/* The "Customize Your Perfect Masterpiece / Shop by Categories"
+            heading used to sit here. Removed — the category row now opens the
+            page directly. */}
+        <div className="pt-6" />
 
         <ShopByCategories />
         <HeroBanner />

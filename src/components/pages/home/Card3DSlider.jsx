@@ -20,7 +20,10 @@ function Arrow({ direction, onClick }) {
       type="button"
       onClick={onClick}
       aria-label={isLeft ? "Previous slide" : "Next slide"}
-      className={`absolute top-1/2 z-50 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-700 shadow-md transition hover:bg-white ${
+      // z-20 is enough to clear the slides beside it. At z-50 it tied with the
+      // sticky header and, being later in the DOM, painted over it — the arrow
+      // showed on top of the nav bar as the page scrolled past.
+      className={`absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-700 shadow-md transition hover:bg-white ${
         isLeft ? "left-2 sm:left-6" : "right-2 sm:right-6"
       }`}
     >

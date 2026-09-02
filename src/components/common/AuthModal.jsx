@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Login from "@/components/pages/Login";
 import SignUp from "@/components/pages/SignUp";
 
@@ -8,9 +9,19 @@ import SignUp from "@/components/pages/SignUp";
  * Login / signup as a dialog over whatever page the visitor is on, so they are
  * not taken away from it. The routes /login and /signup still exist for direct
  * links — the same components render both ways.
+ *
+ * Rendered through a portal into <body>. Its triggers live inside the sticky
+ * header and the fixed bottom bar, and both of those set a z-index, which makes
+ * each a stacking context — so a z-[95] on the dialog only ever meant "95
+ * within the header", and it lost to anything on the page with a higher one.
+ * The portal lifts it out of both.
  */
 export default function AuthModal({ open, initialView = "login", onClose }) {
   const [view, setView] = useState(initialView);
+  // Portals need a DOM to target, so nothing is portalled during SSR.
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const close = useCallback(() => onClose?.(), [onClose]);
 
@@ -34,9 +45,9 @@ export default function AuthModal({ open, initialView = "login", onClose }) {
     };
   }, [open, close]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -79,6 +90,7 @@ export default function AuthModal({ open, initialView = "login", onClose }) {
           <SignUp embedded onSwitchToLogin={() => setView("login")} onDone={close} />
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

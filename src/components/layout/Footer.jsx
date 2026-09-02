@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { USEFUL_LINKS, COMPANY_INFO, LEGAL_LINKS } from "@/constants/footerData";
-import sabaaLogo from "@/assets/logo/High Quality Sabaa Logo.webp";
+import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
 import instagramQr from "@/assets/logo/Untitled.svg";
 
 const FOOTER_BG = "#3D0F0F";

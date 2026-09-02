@@ -2,13 +2,16 @@
 // loader for .mp4, and a video wants range requests, which static serving gives.
 //
 // Two loaders, used in different places:
-//   mark  — the rotating Sabaa mark.        Home page and the footer-link pages.
+//   mark  — rings assembling into the Sabaa mark. Home page and the
+//           footer-link pages (about, policy, blogs).
 //   strip — the jewellery line-art strip.   Nav links, categories and products.
 const LOADERS = {
   mark: {
-    src: "/sabaa-loader.mp4",
-    // Square, so one dimension sizes it.
-    box: "h-[88px] w-[88px] sm:h-[104px] sm:w-[104px]",
+    src: "/sabaa-loader-home.mp4",
+    // Square. The source is 1920x1080 with the animation centred in a lot of
+    // white, so it is cropped square during encoding rather than letterboxed
+    // here — otherwise the mark would sit tiny in the middle of the box.
+    box: "h-[112px] w-[112px] sm:h-[132px] sm:w-[132px]",
   },
   strip: {
     src: "/sabaa-loader-v2.mp4",

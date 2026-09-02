@@ -7,10 +7,13 @@ import { HERO_SLIDES } from "@/constants/homeData";
 const MAROON = "#7B1E2B";
 const AUTOPLAY_MS = 5000;
 
-// Each slide takes SLIDE_W% of the track; the remainder is split so the
-// previous and next slides peek at both edges.
-const SLIDE_W = 84;
-const EDGE = (100 - SLIDE_W) / 2;
+// Slide width and the centring offset differ by breakpoint, so they are CSS
+// variables rather than JS constants: phones run the banner full-bleed
+// (100% wide, no offset) while sm and up keep the 84% slide with the previous
+// and next peeking at both edges. The transform below reads whichever pair the
+// media query has set.
+//   --slide-w : how much of the track one slide takes
+//   --edge    : half the leftover, to centre the active slide
 
 function NavArrow({ direction, onClick }) {
   const isLeft = direction === "left";
@@ -45,7 +48,12 @@ function NavArrow({ direction, onClick }) {
 // waste is worth avoiding. getImageProps still routes both through Next's
 // optimiser, so each variant keeps its generated srcset.
 function SlideMedia({ slide, priority }) {
-  const common = { alt: slide.alt, sizes: "84vw", priority };
+  // Phones show the slide at full width; sm and up at 84%.
+  const common = {
+    alt: slide.alt,
+    sizes: "(max-width: 639px) 100vw, 84vw",
+    priority,
+  };
 
   const {
     props: { srcSet: desktopSrcSet },
@@ -95,7 +103,9 @@ export default function HeroBanner() {
 
   return (
     <section
-      className="relative w-full overflow-hidden py-6"
+      // No top padding on phones — the banner sits directly under the category
+      // row, edge to edge, the way the reference does.
+      className="relative w-full overflow-hidden pb-5 sm:py-6"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
@@ -107,11 +117,13 @@ export default function HeroBanner() {
       <NavArrow direction="right" onClick={next} />
 
       <div
-        className="flex transition-transform duration-700 ease-out"
-        style={{ transform: `translateX(calc(${EDGE}% - ${index * SLIDE_W}%))` }}
+        className="flex transition-transform duration-700 ease-out [--edge:0%] [--slide-w:100%] sm:[--edge:8%] sm:[--slide-w:84%]"
+        style={{
+          transform: `translateX(calc(var(--edge) - ${index} * var(--slide-w)))`,
+        }}
       >
         {HERO_SLIDES.map((slide, i) => (
-          <div key={slide.id} className="w-[84%] shrink-0 px-2">
+          <div key={slide.id} className="w-full shrink-0 sm:w-[84%] sm:px-2">
             <a
               href={slide.href}
               // Clicking a peeking neighbour brings it to centre rather than
@@ -123,7 +135,9 @@ export default function HeroBanner() {
                 }
               }}
               // Square on phones to match the mobile cut, wide from sm up.
-              className="relative block aspect-square overflow-hidden rounded-lg bg-neutral-900 sm:aspect-[8/3]"
+              // Square corners on phones so it meets the screen edges; the
+              // rounded card returns from sm up.
+              className="relative block aspect-square overflow-hidden bg-neutral-900 sm:aspect-[8/3] sm:rounded-lg"
               tabIndex={i === index ? 0 : -1}
               aria-hidden={i !== index}
             >
@@ -135,7 +149,7 @@ export default function HeroBanner() {
 
       {/* Diamonds are squares turned 45°. The rotation lives on an inner span
           so the button keeps a comfortably square tap target. */}
-      <div className="mt-5 flex items-center justify-center gap-1">
+      <div className="mt-4 flex items-center justify-center gap-1 sm:mt-5">
         {HERO_SLIDES.map((slide, i) => (
           <button
             key={slide.id}

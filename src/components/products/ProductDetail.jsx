@@ -124,7 +124,6 @@ function Accordion({ sections, description }) {
 export default function ProductDetail({ product }) {
   const [size, setSize] = useState(product.sizes?.[2] ?? "");
   const [qty, setQty] = useState(1);
-  const [intl, setIntl] = useState(false);
   const [giftWrap, setGiftWrap] = useState(false);
 
   const discount =
@@ -279,11 +278,6 @@ export default function ProductDetail({ product }) {
             </svg>
             <span className="text-[12px] text-neutral-700">Precious Gifting</span>
           </div>
-
-          <label className="flex items-center gap-2 text-[12px] text-neutral-700">
-            <input type="checkbox" checked={intl} onChange={(e) => setIntl(e.target.checked)} className="h-3.5 w-3.5" />
-            For international shipment
-          </label>
         </div>
 
         <label className="mt-4 flex items-center gap-2 text-[12px] text-neutral-700">

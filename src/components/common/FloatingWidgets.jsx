@@ -27,27 +27,10 @@ function Sparkle({ size }) {
   );
 }
 
-function CloseIcon({ className = "h-3.5 w-3.5" }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
-  );
-}
-
 export default function FloatingWidgets() {
   // Both start off-screen and slide in just after mount, so the movement is a
   // CSS transition rather than a keyframe added to globals.css.
   const [entered, setEntered] = useState(false);
-  const [showChatPrompt, setShowChatPrompt] = useState(true);
 
   useEffect(() => {
     const id = window.setTimeout(() => setEntered(true), 400);
@@ -75,8 +58,15 @@ export default function FloatingWidgets() {
           0%, 100% { transform: translateY(0);    animation-timing-function: cubic-bezier(0.3, 0, 0.5, 1); }
           50%      { transform: translateY(-7px); animation-timing-function: cubic-bezier(0.5, 0, 0.7, 1); }
         }
+        /* A slow ring breathing outwards. Tailwind's animate-ping is faster and
+           harder-edged; this is closer to a glow than a pulse. */
+        @keyframes sabaaGlow {
+          0%   { transform: scale(0.95); opacity: 0.55; }
+          70%  { transform: scale(1.55); opacity: 0; }
+          100% { transform: scale(1.55); opacity: 0; }
+        }
         @media (prefers-reduced-motion: reduce) {
-          [data-shine], [data-hop] { animation: none !important; }
+          [data-shine], [data-hop], [data-glow] { animation: none !important; }
         }
       `}</style>
 
@@ -125,7 +115,8 @@ export default function FloatingWidgets() {
         </div>
       </div>
 
-      {/* Right — WhatsApp, then the chat prompt, then the chat button */}
+      {/* Right — WhatsApp. The chat prompt and chat button that used to sit
+          under it are gone; nothing was wired behind them. */}
       <div
         className={`fixed right-3 bottom-20 z-40 flex flex-col items-end gap-2 transition-transform duration-700 ease-out lg:right-6 lg:bottom-6 ${
           entered ? "translate-x-0" : "translate-x-[130%]"
@@ -143,61 +134,56 @@ export default function FloatingWidgets() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Chat on WhatsApp"
-            // Glass, but opaque enough to hold its shape against a white page —
-            // at 45% it disappeared wherever there was nothing behind it to blur.
-            className="flex h-12 w-12 items-center justify-center rounded-full border text-white backdrop-blur-md backdrop-saturate-150 transition-transform hover:scale-105"
+            // Solid and lit rather than translucent. The frosted version had to
+            // borrow whatever was behind it, so it looked different on every
+            // section of the page and washed out over white.
+            className="group/wa relative flex h-14 w-14 items-center justify-center rounded-full text-white transition-transform duration-300 hover:scale-110"
             style={{
-              backgroundColor: "rgba(37, 211, 102, 0.82)",
-              borderColor: "rgba(255, 255, 255, 0.6)",
+              // Lit from the top-left: bright mint on the highlight side, deep
+              // WhatsApp green through the middle, darker on the shadow side.
+              backgroundImage:
+                "linear-gradient(145deg, #5BE68C 0%, #25D366 45%, #0F9D48 100%)",
               boxShadow:
-                "0 6px 20px rgba(37,211,102,0.35), 0 2px 8px rgba(0,0,0,0.18), inset 0 1px 1px rgba(255,255,255,0.55)",
+                "0 10px 26px rgba(18,140,74,0.42), 0 3px 8px rgba(0,0,0,0.20), inset 0 1px 2px rgba(255,255,255,0.55), inset 0 -2px 6px rgba(0,0,0,0.12)",
             }}
           >
-            <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor" aria-hidden="true">
+            {/* Ring breathing outwards behind the button. -z-10 keeps it under
+                the glyph, and pointer-events-none keeps it out of the way of
+                the tap target. */}
+            <span
+              data-glow
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 -z-10 rounded-full"
+              style={{
+                backgroundColor: "#25D366",
+                animation: "sabaaGlow 2.6s ease-out infinite",
+              }}
+            />
+
+            {/* Crisp white rim, drawn as a ring rather than a border so it sits
+                outside the gradient instead of eating into it. */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-white/85"
+            />
+
+            <svg
+              viewBox="0 0 24 24"
+              className="relative h-8 w-8 drop-shadow-[0_1px_1px_rgba(0,0,0,0.18)]"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <path d="M12 2.1a9.9 9.9 0 0 0-8.5 15L2.1 22l5-1.3A9.9 9.9 0 1 0 12 2.1Zm0 1.9a8 8 0 1 1-4.2 14.8l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 0 1 12 4Zm4.6 11.1c-.1-.2-.4-.3-.9-.6l-1.9-.9c-.2-.1-.4-.1-.6.1l-.8 1c-.2.2-.3.2-.6.1a8 8 0 0 1-2.3-1.4 8.7 8.7 0 0 1-1.6-1.9c-.2-.3 0-.4.1-.6l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.7 1.1 2.9c.2.2 2 3.2 5 4.4 2.4 1 2.9.8 3.4.7.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4Z" />
             </svg>
+
+            {/* Label on hover, desktop only — a floating icon with no words is
+                easy to mistake for decoration. */}
+            <span className="pointer-events-none absolute right-[calc(100%+10px)] hidden whitespace-nowrap rounded-full bg-white px-3 py-1.5 text-[13px] font-medium text-neutral-800 opacity-0 shadow-lg ring-1 ring-black/5 transition-opacity duration-200 group-hover/wa:opacity-100 lg:block">
+              Chat with us
+            </span>
           </a>
         </span>
 
-        {showChatPrompt ? (
-          <div className="flex items-center gap-2 rounded-md bg-white px-3 py-2 shadow-lg ring-1 ring-neutral-200">
-            <span className="text-[12px] font-medium whitespace-nowrap text-neutral-800 sm:text-[13px]">
-              How can I help you?
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowChatPrompt(false)}
-              aria-label="Dismiss chat prompt"
-              className="shrink-0 text-neutral-400 transition-colors hover:text-neutral-700"
-            >
-              <CloseIcon />
-            </button>
-          </div>
-        ) : null}
-
-        <button
-          type="button"
-          aria-label="Open chat"
-          className="relative flex h-12 w-12 items-center justify-center rounded-full text-white shadow-xl transition-transform hover:scale-105"
-          style={{ backgroundColor: MAROON }}
-        >
-          {/* Soft halo so the button reads as live without animating itself */}
-          <span
-            className="absolute inset-0 animate-ping rounded-full opacity-30"
-            style={{ backgroundColor: MAROON }}
-          />
-          {/* Filled bubble with typing dots — reads more clearly at this size
-              than the previous thin outline. */}
-          <svg viewBox="0 0 24 24" className="relative h-6 w-6" aria-hidden="true">
-            <path
-              fill="currentColor"
-              d="M12 3.2c-5 0-9 3.2-9 7.2 0 2.2 1.2 4.2 3.1 5.5-.1 1.1-.6 2.3-1.5 3.3-.2.2 0 .6.3.5 2-.3 3.6-1.1 4.7-1.9.8.2 1.6.3 2.4.3 5 0 9-3.2 9-7.2s-4-7.7-9-7.7Z"
-            />
-            <circle cx="8.3" cy="10.6" r="1.15" fill={MAROON} />
-            <circle cx="12" cy="10.6" r="1.15" fill={MAROON} />
-            <circle cx="15.7" cy="10.6" r="1.15" fill={MAROON} />
-          </svg>
-        </button>
       </div>
     </>
   );
