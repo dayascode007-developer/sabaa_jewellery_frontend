@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
 import { toggleItem, selectIsWishlisted } from "@/store/slices/wishlistSlice";
 import ShareMenu from "@/components/products/ShareMenu";
+import SuccessModal from "@/components/common/SuccessModal";
 import { getCategoryLabel } from "@/constants/productData";
 
 const MAROON = "#7B1E2B";
@@ -16,6 +19,14 @@ const rupees = (n) =>
 export default function ProductCard({ product }) {
   const dispatch = useDispatch();
   const wishlisted = useSelector(selectIsWishlisted(product.id));
+
+  // Without this the click looked like it had done nothing — the item went in
+  // silently and only the header badge changed.
+  const [added, setAdded] = useState(false);
+  // The dialog is portalled to <body>, which does not exist during the server
+  // render, so it can only be mounted once we are on the client.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Derived rather than stored, so the badge can never contradict the prices.
   const discount =
@@ -48,6 +59,7 @@ export default function ProductCard({ product }) {
         quantity: 1,
       })
     );
+    setAdded(true);
   };
 
   return (
@@ -161,6 +173,21 @@ export default function ProductCard({ product }) {
           </button>
         </div>
       </div>
+
+      {/* Portalled to <body> rather than rendered here: the card lives inside
+          the 3D slider on the home page, and a transformed ancestor makes a
+          position:fixed overlay lay itself out inside the card instead of the
+          viewport. */}
+      {mounted && added
+        ? createPortal(
+            <SuccessModal
+              isOpen
+              message={`${product.title} has been added to your cart.`}
+              onClose={() => setAdded(false)}
+            />,
+            document.body
+          )
+        : null}
     </article>
   );
 }

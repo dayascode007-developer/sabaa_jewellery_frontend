@@ -23,6 +23,9 @@ import ringsMenuImage from "@/assets/jewels/ring.jpg";
 import imponMenuImage from "@/assets/jewels/Ipoon_Chain.jpg";
 import pendantMenuImage from "@/assets/jewels/pendent.jpg";
 import earringsMenuImage from "@/assets/jewels/earings.jpg";
+// No lifestyle shot for bracelets yet, so the panel uses the product
+// photography. Swap this import when a model image arrives.
+import braceletMenuImage from "@/assets/products/kaapu/panchaloga-kaapu-kada-silver-impon-sabaa-jewel.webp";
 
 // 3D slider slides. Prefixed `style*` because widget/earings.webp collides by
 // name with jewels/earings.webp, which is a different file.
@@ -163,7 +166,30 @@ export const NAV_ITEMS = [
       },
     },
   },
-  { id: "bracelet", label: "Bracelet", href: "/category/bracelet" },
+  {
+    id: "bracelet",
+    label: "Bracelet",
+    // "#" like its neighbours — the dropdown does the navigating, and the
+    // "View All" button covers the whole category.
+    href: "#",
+    menu: {
+      columns: [
+        {
+          items: [
+            { label: "Mens Bracelet", href: "/category/mens-bracelet" },
+            { label: "Womens Bracelet", href: "/category/womens-bracelet" },
+          ],
+        },
+      ],
+      promo: PROMO,
+      feature: {
+        caption: "Panchaloga kaapu and kada, handcrafted for every wrist",
+        cta: "Explore Now",
+        href: "#",
+        image: braceletMenuImage,
+      },
+    },
+  },
   {
     id: "earrings",
     label: "Earrings",
@@ -227,21 +253,21 @@ export const COLLECTIONS = [
     image: earringWidget,
     alt: "Stunning every ear — gold earrings collection",
     ratio: "813/945",
-    href: "#",
+    href: "/category/all-earrings",
   },
   {
     id: "initials",
     image: ringWidget,
     alt: "Initials — personalised signet rings",
     ratio: "1666/944",
-    href: "#",
+    href: "/category/name-engrave-ring",
   },
   {
     id: "art-jewellery",
     image: chainWidget,
     alt: "Art Jewellery — handcrafted gold chains",
     ratio: "801/457",
-    href: "#",
+    href: "/category/all-impon-chain",
   },
 ];
 
@@ -429,10 +455,10 @@ export const NEW_ARRIVALS_BANNER = {
 // `ratio` mirrors the file's native aspect so the baked-in caption is never
 // cropped off the bottom-left corner.
 export const NEW_ARRIVALS = [
-  { id: "panchaloga-rings", alt: "Panchaloga Rings", image: panchalogaRings, ratio: "1416/595", href: "#" },
-  { id: "divine-rings", alt: "Divine Rings Collection", image: divineRings, ratio: "1415/592", href: "#" },
-  { id: "god-engraved", alt: "God Engraved Rings", image: godEngravedRings, ratio: "1411/595", href: "#" },
-  { id: "temple-pendants", alt: "Divine Temple Pendants", image: templePendants, ratio: "1407/597", href: "#" },
+  { id: "panchaloga-rings", alt: "Panchaloga Rings", image: panchalogaRings, ratio: "1416/595", href: "/category/all-rings" },
+  { id: "divine-rings", alt: "Divine Rings Collection", image: divineRings, ratio: "1415/592", href: "/category/symbol-rings" },
+  { id: "god-engraved", alt: "God Engraved Rings", image: godEngravedRings, ratio: "1411/595", href: "/category/hindu-rings" },
+  { id: "temple-pendants", alt: "Divine Temple Pendants", image: templePendants, ratio: "1407/597", href: "/category/all-pendants" },
 ];
 
 export const ASSURANCE_ITEMS = [

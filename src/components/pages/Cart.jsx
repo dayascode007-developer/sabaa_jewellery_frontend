@@ -7,7 +7,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   selectCartItems,
   selectCartCount,
-  selectCartSubtotal,
   setQuantity,
   removeItem,
   clearCart,
@@ -47,7 +46,7 @@ function Stepper({ item }) {
   );
 }
 
-function CartLine({ item }) {
+function CartLine({ item, selected, onToggle }) {
   const dispatch = useDispatch();
 
   // Only the parts that were actually recorded, joined with a dot — an empty
@@ -61,7 +60,24 @@ function CartLine({ item }) {
     .join(" • ");
 
   return (
-    <article className="flex gap-4 rounded-lg border border-neutral-200 bg-white p-3 sm:p-4">
+    <article
+      className={`flex gap-3 rounded-lg border bg-white p-3 transition-colors sm:gap-4 sm:p-4 ${
+        selected ? "border-[#7B1E2B]/40" : "border-neutral-200"
+      }`}
+    >
+      {/* Ticked pieces are the ones that get ordered — the rest stay in the
+          cart for later. Sits before the image so a long list can be scanned
+          down a single column of boxes. */}
+      <label className="flex shrink-0 cursor-pointer items-start pt-0.5">
+        <span className="sr-only">Select {item.title} for checkout</span>
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={() => onToggle(item.id)}
+          className="h-[18px] w-[18px] cursor-pointer accent-[#7B1E2B]"
+        />
+      </label>
+
       <Link
         href={`/product/${item.id}`}
         className="relative h-24 w-24 shrink-0 overflow-hidden rounded bg-neutral-100 sm:h-28 sm:w-28"
@@ -134,8 +150,30 @@ function SummaryRow({ label, value, accent }) {
 export default function Cart() {
   const dispatch = useDispatch();
   const items = useSelector(selectCartItems);
-  const count = useSelector(selectCartCount);
-  const subtotal = useSelector(selectCartSubtotal);
+  // Everything in the cart — the heading counts that, the summary counts only
+  // what is ticked.
+  const totalCount = useSelector(selectCartCount);
+
+  // Tracked as the pieces that are NOT ticked, so anything added to the cart
+  // afterwards arrives selected without this state having to be kept in sync.
+  const [unselected, setUnselected] = useState(() => new Set());
+
+  const toggleOne = (id) =>
+    setUnselected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const selectedItems = items.filter((i) => !unselected.has(i.id));
+  const allSelected = selectedItems.length === items.length;
+  const toggleAll = () =>
+    setUnselected(allSelected ? new Set(items.map((i) => i.id)) : new Set());
+
+  // The summary prices what is ticked, not what is in the cart.
+  const count = selectedItems.reduce((n, i) => n + i.quantity, 0);
+  const subtotal = selectedItems.reduce((t, i) => t + i.price * i.quantity, 0);
 
   const [coupon, setCoupon] = useState("");
   // Nothing validates a code yet — the API decides what is valid, so the field
@@ -184,7 +222,7 @@ export default function Cart() {
         >
           My Cart{" "}
           <span className="text-[16px] font-normal text-neutral-500">
-            ({count} {count === 1 ? "Item" : "Items"})
+            ({totalCount} {totalCount === 1 ? "Item" : "Items"})
           </span>
         </h1>
 
@@ -216,8 +254,33 @@ export default function Cart() {
       <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_340px]">
         {/* Lines */}
         <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3">
+            <label className="flex cursor-pointer items-center gap-2.5 text-[14px] font-medium text-neutral-800">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                // Some ticked but not all — shown as a dash rather than a tick.
+                ref={(el) => {
+                  if (el) el.indeterminate = !allSelected && selectedItems.length > 0;
+                }}
+                onChange={toggleAll}
+                className="h-[18px] w-[18px] cursor-pointer accent-[#7B1E2B]"
+              />
+              Select All
+            </label>
+
+            <span className="text-[13px] text-neutral-500">
+              {selectedItems.length} of {items.length} selected
+            </span>
+          </div>
+
           {items.map((item) => (
-            <CartLine key={item.id} item={item} />
+            <CartLine
+              key={item.id}
+              item={item}
+              selected={!unselected.has(item.id)}
+              onToggle={toggleOne}
+            />
           ))}
         </div>
 
@@ -288,12 +351,19 @@ export default function Cart() {
               </span>
             </div>
 
+            {/* Muted with nothing ticked — there is no order to place, and the
+                button itself says so rather than failing on click. */}
             <button
               type="button"
-              className="mt-4 w-full rounded-md py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: MAROON }}
+              disabled={selectedItems.length === 0}
+              className="mt-4 w-full rounded-md py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:hover:opacity-100"
+              style={{
+                backgroundColor: selectedItems.length ? MAROON : "#CFA9B0",
+              }}
             >
-              Place Order
+              {selectedItems.length
+                ? `Place Order (${selectedItems.length})`
+                : "Select items to order"}
             </button>
 
             <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[12px] text-neutral-500">

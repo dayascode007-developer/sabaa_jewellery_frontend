@@ -21,6 +21,7 @@ export const CATEGORY_LABELS = {
   "all-impon-chain": "All Impon Chain",
   "all-pendants": "All Pendants",
   "all-earrings": "All Earrings",
+  "all-bracelets": "All Bracelets",
 
   // The "Shop by Categories" tiles on the home page.
   "engraving-rings": "Engraving Rings",
@@ -43,6 +44,8 @@ export const CATEGORY_LABELS = {
   "christian-pendants": "Christian Pendants",
   "stud": "Stud",
   "jimikki": "Jimikki",
+  "mens-bracelet": "Mens Bracelet",
+  "womens-bracelet": "Womens Bracelet",
 };
 
 const SAMPLE_PRODUCTS = [
@@ -73,6 +76,13 @@ const CATEGORY_ALIASES = {
   "all-impon-chain": ["mens-chain", "female-chain", "kidz-chain"],
   "all-pendants": ["hindu-pendants", "christian-pendants", "photo-pendants"],
   "all-earrings": ["jimikki"],
+  "all-bracelets": ["bracelet"],
+
+  // Bracelets are not tagged by gender in the product data yet, so both
+  // sub-category pages draw from the one "bracelet" set. Once the pieces carry
+  // their own categories, point each of these at it and nothing else changes.
+  "mens-bracelet": ["bracelet"],
+  "womens-bracelet": ["bracelet"],
 
   "engraving-rings": ["name-engrave-ring"],
   "face-photo-rings": ["face-photo-ring"],

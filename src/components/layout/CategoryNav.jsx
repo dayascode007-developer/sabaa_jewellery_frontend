@@ -14,6 +14,7 @@ const VIEW_ALL_SLUG = {
   impon: "all-impon-chain",
   pendant: "all-pendants",
   earrings: "all-earrings",
+  bracelet: "all-bracelets",
 };
 
 const MAROON = "#7B1E2B";
@@ -142,6 +143,14 @@ const ITEM_MARKS = {
       <circle cx="16" cy="6" r="1.9" />
       <path d="M8 7.9 5 14.6h6L8 7.9Z" />
       <path d="M16 7.9 13 14.6h6L16 7.9Z" />
+    </>
+  ),
+  // A bangle seen at an angle, with the clasp bead at the top — the same
+  // ellipse the nav item itself uses, so the row and its children match.
+  bracelet: (
+    <>
+      <ellipse cx="12" cy="13" rx="7.5" ry="5.5" />
+      <circle cx="12" cy="7.5" r="1.5" />
     </>
   ),
 };

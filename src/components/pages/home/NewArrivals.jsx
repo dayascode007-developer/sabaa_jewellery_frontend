@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { NEW_ARRIVALS, NEW_ARRIVALS_BANNER } from "@/constants/homeData";
 
 // The caption and its diamond rule are part of the artwork, so the tile is just
@@ -6,19 +7,24 @@ import { NEW_ARRIVALS, NEW_ARRIVALS_BANNER } from "@/constants/homeData";
 // the baked-in label off the bottom-left corner.
 function ArrivalTile({ item }) {
   return (
-    <a
+    // Link, not <a> — a plain anchor reloads the whole page and the category
+    // loader never gets a chance to show.
+    <Link
       href={item.href}
+      aria-label={item.alt}
       className="group relative block overflow-hidden rounded-sm ring-1 ring-white/60"
       style={{ aspectRatio: item.ratio }}
     >
+      {/* The link carries the name now, so repeating it here would read it
+          out twice. */}
       <Image
         src={item.image}
-        alt={item.alt}
+        alt=""
         fill
         sizes="(max-width: 768px) 90vw, 44vw"
         className="object-cover transition-transform duration-500 group-hover:scale-105"
       />
-    </a>
+    </Link>
   );
 }
 

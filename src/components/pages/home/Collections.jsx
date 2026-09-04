@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { COLLECTIONS } from "@/constants/homeData";
 
 const MAROON = "#7B1E2B";
@@ -8,19 +9,24 @@ const MAROON = "#7B1E2B";
 // the baked-in text off an edge.
 function Tile({ collection, className, style, sizes }) {
   return (
-    <a
+    // Link, not <a> — a plain anchor reloads the whole page and the category
+    // loader never gets a chance to show.
+    <Link
       href={collection.href}
+      aria-label={collection.alt}
       className={`group relative block overflow-hidden rounded-lg bg-neutral-100 ${className}`}
       style={style}
     >
+      {/* The link carries the name now, so repeating it here would read it
+          out twice. */}
       <Image
         src={collection.image}
-        alt={collection.alt}
+        alt=""
         fill
         sizes={sizes}
         className="object-cover transition-transform duration-500 group-hover:scale-105"
       />
-    </a>
+    </Link>
   );
 }
 

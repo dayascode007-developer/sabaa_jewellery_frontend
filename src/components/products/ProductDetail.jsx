@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useDispatch } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
 import Image from "next/image";
 import RingSizeGuide from "@/components/products/RingSizeGuide";
 import CareGuide from "@/components/products/CareGuide";
+import SuccessModal from "@/components/common/SuccessModal";
 import { FONT_STYLES, SYMBOLS, NAME_MAX_LENGTH } from "@/constants/productData";
 import qualityBadge from "@/assets/batch/Sabaa Quality Batch.png";
 
@@ -425,9 +427,15 @@ export default function ProductDetail({ product }) {
 
   const dispatch = useDispatch();
 
+  // The button gave no sign it had worked — the same gap the product cards had.
+  const [added, setAdded] = useState(false);
+  // Portalled to <body>, which does not exist during the server render.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // Everything the workshop needs to make this exact piece travels with the
   // line, not just the product id — otherwise the engraving is lost at checkout.
-  const onAddToCart = () =>
+  const onAddToCart = () => {
     dispatch(
       addItem({
         id: product.id,
@@ -442,6 +450,8 @@ export default function ProductDetail({ product }) {
           : {}),
       })
     );
+    setAdded(true);
+  };
 
   const discount =
     product.mrp && product.mrp > product.price
@@ -689,23 +699,55 @@ export default function ProductDetail({ product }) {
             <label htmlFor="qty" className="mt-3 block text-[12px] text-neutral-700">
               Quantity
             </label>
-            <input
-              id="qty"
-              type="number"
-              min={1}
-              max={product.maxQty}
-              value={qty}
-              // Clamped at both ends. The previous version only capped the top,
-              // so a typed "-5" went straight through as -5.
-              onChange={(e) =>
-                setQty(
-                  Math.min(Math.max(1, Number(e.target.value) || 1), product.maxQty)
-                )
-              }
-              // The number had no colour of its own, so it inherited the pale
-              // grey from the surrounding text and read as disabled.
-              className="mt-1 w-20 rounded border border-neutral-300 bg-white px-3 py-2 text-center text-[15px] font-semibold text-neutral-900 outline-none focus:border-[#7B1E2B]"
-            />
+            {/* The browser's own spinner only paints on hover in Chrome, and
+                behaves differently again in Firefox and Safari, so it is
+                switched off and replaced with arrows of our own that are always
+                on screen. Typing still works. */}
+            <div className="mt-1 flex w-24 items-stretch overflow-hidden rounded border border-neutral-300 bg-white focus-within:border-[#7B1E2B]">
+              <input
+                id="qty"
+                type="number"
+                min={1}
+                max={product.maxQty}
+                value={qty}
+                // Clamped at both ends. The previous version only capped the top,
+                // so a typed "-5" went straight through as -5.
+                onChange={(e) =>
+                  setQty(
+                    Math.min(Math.max(1, Number(e.target.value) || 1), product.maxQty)
+                  )
+                }
+                // The number had no colour of its own, so it inherited the pale
+                // grey from the surrounding text and read as disabled.
+                className="min-w-0 flex-1 bg-transparent py-2 pl-3 text-center text-[15px] font-semibold text-neutral-900 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+
+              <span className="flex w-6 shrink-0 flex-col border-l border-neutral-200">
+                <button
+                  type="button"
+                  onClick={() => setQty((q) => Math.min(q + 1, product.maxQty))}
+                  disabled={qty >= product.maxQty}
+                  aria-label="Increase quantity"
+                  className="flex flex-1 items-center justify-center transition-colors hover:bg-[#FDF0F2] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                >
+                  <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke={MAROON} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m6 15 6-6 6 6" />
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setQty((q) => Math.max(q - 1, 1))}
+                  disabled={qty <= 1}
+                  aria-label="Decrease quantity"
+                  className="flex flex-1 items-center justify-center border-t border-neutral-200 transition-colors hover:bg-[#FDF0F2] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                >
+                  <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke={MAROON} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -745,6 +787,23 @@ export default function ProductDetail({ product }) {
         same on every product, so it reads as page content rather than as one
         more thing to click through. */}
     <CareGuide />
+
+    {/* Portalled to <body> so the overlay is measured against the viewport and
+        not against any transformed ancestor on the page. */}
+    {mounted && added
+      ? createPortal(
+          <SuccessModal
+            isOpen
+            message={
+              qty > 1
+                ? `${qty} × ${product.title} have been added to your cart.`
+                : `${product.title} has been added to your cart.`
+            }
+            onClose={() => setAdded(false)}
+          />,
+          document.body
+        )
+      : null}
     </>
   );
 }
