@@ -1,7 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getImageProps } from "next/image";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchBanners } from "@/store/slices/bannerSlice";
+import { BannerShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import { HERO_SLIDES } from "@/constants/homeData";
 
 const MAROON = "#7B1E2B";
@@ -42,42 +45,107 @@ function NavArrow({ direction, onClick }) {
   );
 }
 
-// Art direction via <picture>: the browser picks one source and fetches only
-// that. Two <Image> tags toggled with hidden/block would make phones download
-// the wide desktop cut as well — the mobile files run up to 736KB, so that
-// waste is worth avoiding. getImageProps still routes both through Next's
-// optimiser, so each variant keeps its generated srcset.
 function SlideMedia({ slide, priority }) {
-  // Phones show the slide at full width; sm and up at 84%.
-  const common = {
-    alt: slide.alt,
-    sizes: "(max-width: 639px) 100vw, 84vw",
-    priority,
-  };
+  const [imageError, setImageError] = React.useState(false);
 
-  const {
-    props: { srcSet: desktopSrcSet },
-  } = getImageProps({ ...common, src: slide.image });
+  // For API banners, use simple img tag; for static imports, use next/image optimization
+  const isApiImage =
+    typeof slide.image === "string" && slide.image.startsWith("http");
 
-  const {
-    props: { srcSet: mobileSrcSet, ...rest },
-  } = getImageProps({ ...common, src: slide.mobileImage });
+  if (isApiImage || imageError) {
+    return (
+      <img
+        src={slide.image}
+        alt={slide.alt}
+        className="absolute inset-0 h-full w-full object-cover"
+        onError={() => setImageError(true)}
+        loading={priority ? "eager" : "lazy"}
+      />
+    );
+  }
 
-  return (
-    <picture>
-      <source media="(min-width: 640px)" srcSet={desktopSrcSet} />
-      <source media="(max-width: 639px)" srcSet={mobileSrcSet} />
-      <img {...rest} alt={slide.alt} className="absolute inset-0 h-full w-full object-cover" />
-    </picture>
-  );
+  // For static images with intrinsic dimensions, use Next.js optimization
+  try {
+    const common = {
+      alt: slide.alt,
+      sizes: "(max-width: 639px) 100vw, 84vw",
+      priority,
+      width: 2400,
+      height: 900,
+    };
+
+    const {
+      props: { srcSet: desktopSrcSet },
+    } = getImageProps({ ...common, src: slide.image });
+
+    const mobileCommon = {
+      ...common,
+      width: 736,
+      height: 736,
+    };
+
+    const {
+      props: { srcSet: mobileSrcSet, ...rest },
+    } = getImageProps({ ...mobileCommon, src: slide.mobileImage });
+
+    return (
+      <picture>
+        <source media="(min-width: 640px)" srcSet={desktopSrcSet} />
+        <source media="(max-width: 639px)" srcSet={mobileSrcSet} />
+        <img
+          {...rest}
+          alt={slide.alt}
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={() => setImageError(true)}
+        />
+      </picture>
+    );
+  } catch (error) {
+    console.warn(
+      "SlideMedia optimization failed, using fallback:",
+      error.message
+    );
+    return (
+      <img
+        src={slide.image}
+        alt={slide.alt}
+        className="absolute inset-0 h-full w-full object-cover"
+        onError={() => setImageError(true)}
+        loading={priority ? "eager" : "lazy"}
+      />
+    );
+  }
 }
 
 export default function HeroBanner() {
+  const dispatch = useDispatch();
+  const { banners, loading } = useSelector((state) => state.banners);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const count = HERO_SLIDES.length;
 
-  const goTo = useCallback((i) => setIndex(((i % count) + count) % count), [count]);
+  // Use API banners if available, fallback to static slides
+  const slides =
+    banners && banners.length > 0
+      ? banners.map((banner, idx) => ({
+          id: `banner-${banner.id}`,
+          image: banner.image_url,
+          mobileImage: banner.image_url,
+          alt: `Banner ${idx + 1}`,
+          href: "#",
+        }))
+      : HERO_SLIDES;
+
+  const count = slides.length;
+
+  // Fetch banners on mount
+  useEffect(() => {
+    dispatch(fetchBanners());
+  }, [dispatch]);
+
+  const goTo = useCallback(
+    (i) => setIndex(((i % count) + count) % count),
+    [count]
+  );
   const next = useCallback(() => goTo(index + 1), [goTo, index]);
   const prev = useCallback(() => goTo(index - 1), [goTo, index]);
 
@@ -85,7 +153,10 @@ export default function HeroBanner() {
   // interval before the next auto-advance.
   useEffect(() => {
     if (paused) return;
-    const timer = setInterval(() => setIndex((i) => (i + 1) % count), AUTOPLAY_MS);
+    const timer = setInterval(
+      () => setIndex((i) => (i + 1) % count),
+      AUTOPLAY_MS
+    );
     return () => clearInterval(timer);
   }, [paused, count, index]);
 
@@ -101,11 +172,13 @@ export default function HeroBanner() {
     touchX.current = null;
   };
 
+  if (loading) {
+    return <BannerShimmer />;
+  }
+
   return (
     <section
-      // No top padding on phones — the banner sits directly under the category
-      // row, edge to edge, the way the reference does.
-      className="relative w-full overflow-hidden pb-5 sm:py-6"
+      className="relative w-full overflow-hidden pb-0"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
@@ -122,22 +195,17 @@ export default function HeroBanner() {
           transform: `translateX(calc(var(--edge) - ${index} * var(--slide-w)))`,
         }}
       >
-        {HERO_SLIDES.map((slide, i) => (
+        {slides.map((slide, i) => (
           <div key={slide.id} className="w-full shrink-0 sm:w-[84%] sm:px-2">
             <a
               href={slide.href}
-              // Clicking a peeking neighbour brings it to centre rather than
-              // navigating, which is what that affordance implies.
               onClick={(e) => {
                 if (i !== index) {
                   e.preventDefault();
                   goTo(i);
                 }
               }}
-              // Square on phones to match the mobile cut, wide from sm up.
-              // Square corners on phones so it meets the screen edges; the
-              // rounded card returns from sm up.
-              className="relative block aspect-square overflow-hidden bg-neutral-900 sm:aspect-[8/3] sm:rounded-lg"
+              className="relative block aspect-[4/2] overflow-hidden bg-neutral-900 sm:aspect-[8/3] sm:rounded-lg"
               tabIndex={i === index ? 0 : -1}
               aria-hidden={i !== index}
             >
@@ -150,7 +218,7 @@ export default function HeroBanner() {
       {/* Diamonds are squares turned 45°. The rotation lives on an inner span
           so the button keeps a comfortably square tap target. */}
       <div className="mt-4 flex items-center justify-center gap-1 sm:mt-5">
-        {HERO_SLIDES.map((slide, i) => (
+        {slides.map((slide, i) => (
           <button
             key={slide.id}
             type="button"

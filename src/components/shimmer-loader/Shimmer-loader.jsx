@@ -228,4 +228,48 @@ export function BlogDetailShimmer() {
   );
 }
 
+export function BannerShimmer() {
+  return (
+    <section className="relative w-full overflow-hidden pb-5 sm:py-6">
+      <div className="flex transition-transform duration-700 ease-out [--edge:0%] [--slide-w:100%] sm:[--edge:8%] sm:[--slide-w:84%]">
+        <div className="w-full shrink-0 sm:w-[84%] sm:px-2">
+          <div className="relative block aspect-square overflow-hidden bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 sm:aspect-[8/3] sm:rounded-lg"
+            style={{
+              backgroundSize: "200% 100%",
+              animation: "shimmer 2s infinite",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Indicator dots */}
+      <div className="mt-4 flex items-center justify-center gap-1 sm:mt-5">
+        {[1, 2, 3, 4, 5].map((_, i) => (
+          <div
+            key={i}
+            className="flex h-6 w-6 items-center justify-center"
+          >
+            <span
+              className="block rotate-45 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded"
+              style={{
+                width: 6,
+                height: 6,
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </section>
+  );
+}
+
 export default ShimmerLoader;

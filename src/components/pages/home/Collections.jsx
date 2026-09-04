@@ -34,7 +34,7 @@ export default function Collections() {
   const [first, ...rest] = COLLECTIONS;
 
   return (
-    <section className="mx-auto w-full max-w-[1400px] px-4 py-10 sm:px-6">
+    <section className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6">
       {/* Heading with a rule running out to both sides */}
       <div className="flex items-center gap-4 sm:gap-6">
         <span className="h-px flex-1 bg-neutral-200" />
@@ -55,7 +55,7 @@ export default function Collections() {
 
       {/* The tall tile sets the row height; the right column stretches to match
           it and splits that height between its two tiles. */}
-      <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
         <Tile
           collection={first}
           style={{ aspectRatio: first.ratio }}
