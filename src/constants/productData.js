@@ -16,6 +16,12 @@ export const CATEGORY_LABELS = {
   "all-jewellery": "All Jewellery",
   bracelet: "Bracelet",
 
+  // Headings for the "View All" pages reached from each dropdown.
+  "all-rings": "All Rings",
+  "all-impon-chain": "All Impon Chain",
+  "all-pendants": "All Pendants",
+  "all-earrings": "All Earrings",
+
   // The "Shop by Categories" tiles on the home page.
   "engraving-rings": "Engraving Rings",
   "face-photo-rings": "Face & Photo Rings",
@@ -54,6 +60,20 @@ const SAMPLE_PRODUCTS = [
 // separate names for the same thing. Rather than break either set of links,
 // each alias resolves to the real category (or categories) it means.
 const CATEGORY_ALIASES = {
+  // "View All" from a dropdown lands on one of these — every sub-category of
+  // that parent, on one page.
+  "all-rings": [
+    "name-engrave-ring",
+    "astrology-raasi-rings",
+    "face-photo-ring",
+    "hindu-rings",
+    "christian-rings",
+    "muslim-rings",
+  ],
+  "all-impon-chain": ["mens-chain", "female-chain", "kidz-chain"],
+  "all-pendants": ["hindu-pendants", "christian-pendants", "photo-pendants"],
+  "all-earrings": ["jimikki"],
+
   "engraving-rings": ["name-engrave-ring"],
   "face-photo-rings": ["face-photo-ring"],
   "symbol-rings": ["hindu-rings", "christian-rings", "muslim-rings"],
@@ -63,8 +83,10 @@ const CATEGORY_ALIASES = {
   stud: ["jimikki"],
 };
 
-// Only these are worn on a finger. Chains, pendants, earrings, anklets and
-// bracelets get no ring-size selector and no ring-size guide.
+// Two separate questions, so two separate sets.
+
+// 1. Is it worn on a finger? Everything here gets the ring-size selector and
+//    the size guide. Chains, pendants, earrings, anklets and bracelets do not.
 const RING_CATEGORIES = new Set([
   "name-engrave-ring",
   "astrology-raasi-rings",
@@ -74,7 +96,13 @@ const RING_CATEGORIES = new Set([
   "muslim-rings",
 ]);
 
+// 2. Is it engraved to order? Only these get ring name, font style, symbol,
+//    symbol direction and the style preview. The other rings are finished
+//    designs — there is nothing to engrave on them.
+const CUSTOMISABLE_CATEGORIES = new Set(["name-engrave-ring"]);
+
 export const isRingCategory = (category) => RING_CATEGORIES.has(category);
+export const isCustomisable = (category) => CUSTOMISABLE_CATEGORIES.has(category);
 
 export function getCategoryLabel(slug) {
   return CATEGORY_LABELS[slug] ?? GENERATED_CATEGORY_LABELS[slug] ?? "Products";
@@ -95,6 +123,36 @@ export function getProductsBySlug(slug) {
 
 // Detail-page fields. Kept separate from the card fields so the grid payload
 // stays small; a real API would return these only on the detail endpoint.
+/* ------------------------------------------------------------------ *
+ *  Personalisation — the engraving options on a ring product page.
+ * ------------------------------------------------------------------ */
+
+// Each style points at a font the site already loads, so choosing one costs
+// nothing extra to download. --font-script (Pinyon Script) was declared in
+// layout.js and previously used nowhere.
+export const FONT_STYLES = [
+  { id: "script", label: "Signature Script", cssVar: "--font-script" },
+  { id: "engraved", label: "Engraved Serif", cssVar: "--font-display" },
+  { id: "classic", label: "Classic", cssVar: "--font-heading" },
+  { id: "modern", label: "Modern", cssVar: "--font-category" },
+];
+
+// Glyphs are rendered in the page's own font rather than the chosen style —
+// a Latin-only script face has no Om or crescent, and would show a blank box.
+export const SYMBOLS = [
+  { id: "none", label: "No symbol", glyph: "" },
+  { id: "om", label: "Om", glyph: "ॐ" },
+  { id: "heart", label: "Heart", glyph: "♥" },
+  { id: "cross", label: "Cross", glyph: "✝" },
+  { id: "star", label: "Star", glyph: "✦" },
+  { id: "flower", label: "Flower", glyph: "✻" },
+  { id: "infinity", label: "Infinity", glyph: "∞" },
+];
+
+// Engraving space on a band is limited; longer names have to be cut smaller
+// than we are willing to cut.
+export const NAME_MAX_LENGTH = 10;
+
 // Shown in full on every product page. Panchaloga behaves differently from
 // plain gold or silver, and most returns start with someone not knowing that —
 // so this is deliberately visible rather than hidden behind an accordion.
@@ -148,7 +206,9 @@ const PRODUCT_DETAIL = {
   productCode: "PGRG00525",
   rating: 4,
   sizes: ["16", "17", "18", "19", "20", "21", "22"],
-  maxQty: 1,
+  // How many of one piece a customer may order. At 1 the quantity box looked
+  // broken — every increment clamped straight back down.
+  maxQty: 10,
   bestseller: true,
   sections: [
     {
@@ -193,6 +253,7 @@ export function getProductById(id) {
     categoryLabel: getCategoryLabel(base.category),
     // Drives whether the page shows the ring-size selector and guide at all.
     hasRingSize: isRingCategory(base.category),
+    isCustomisable: isCustomisable(base.category),
     // Main shot first, then any workshop/detail images shot for that category.
     gallery: [base.image, ...(CATEGORY_GALLERY[base.category] ?? [])].slice(0, 5),
   };

@@ -104,8 +104,13 @@ export default function Header() {
   return (
     <header className="w-full bg-white">
       {/* Below md the search drops to its own row — three items in one row at
-          phone widths squeezes the input to almost nothing. */}
-      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-3 px-4 py-4 sm:gap-x-4 sm:px-6 sm:py-5 md:flex-nowrap md:gap-8">
+          phone widths squeezes the input to almost nothing.
+
+          lg:pb-2 — the category row only appears from lg up, and the header's
+          full bottom padding stacked with the nav's own, leaving a wide gap
+          between the search bar and the links. Trimmed only at that breakpoint,
+          so spacing below lg (where the search has its own row) is unchanged. */}
+      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-3 px-4 py-4 sm:gap-x-4 sm:px-6 sm:py-5 md:flex-nowrap md:gap-8 lg:pb-2">
         {/* Hamburger — opens the left drawer. Phones and tablets only; the
             category bar handles navigation from lg up. */}
         <button
@@ -213,7 +218,9 @@ export default function Header() {
           )}
           {/* Visible at every width. It is also in the bottom bar on phones,
               but a cart in the header is the convention shoppers reach for. */}
-          <button type="button" aria-label="Cart" className="relative transition-opacity hover:opacity-70">
+          {/* A link, not a button — it was a <button> with no handler, so
+              clicking the cart did nothing at all. */}
+          <Link href="/cart" aria-label="Cart" className="relative transition-opacity hover:opacity-70">
             <Icon path={ICONS.cart} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
             <span
               className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-white"
@@ -221,7 +228,7 @@ export default function Header() {
             >
               {cartCount}
             </span>
-          </button>
+          </Link>
         </nav>
       </div>
 

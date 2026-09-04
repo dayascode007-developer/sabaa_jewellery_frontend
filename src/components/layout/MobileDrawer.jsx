@@ -32,7 +32,17 @@ export default function MobileDrawer({ open, onClose }) {
   const { customer, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
-  const isLoggedIn = !!token && !!customer;
+
+  // Fix hydration mismatch: only render auth UI after hydration.
+  // The store starts empty on the server, then AuthInitializer fills it from
+  // localStorage on the client — so a logged-in visitor would hydrate with a
+  // Logout button the server never sent. Same guard Header.jsx uses.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isLoggedIn = mounted && !!token && !!customer;
 
   const handleLogout = () => {
     dispatch(logout(token));

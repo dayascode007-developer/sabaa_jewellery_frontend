@@ -21,7 +21,19 @@ export default async function ProductPage({ params }) {
     <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
       <SiteHeader />
 
-      <Breadcrumb items={[{ label: "Home", href: "/" }, { label: product.title }]} />
+      {/* The category sits between Home and the product, so a visitor can step
+          back to the shelf they came from instead of only to the home page.
+          It is read from the product itself, so every category gets it. */}
+      <Breadcrumb
+        items={[
+          { label: "Home", href: "/" },
+          {
+            label: product.categoryLabel,
+            href: `/category/${product.category}`,
+          },
+          { label: product.title },
+        ]}
+      />
 
       <main>
         <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">

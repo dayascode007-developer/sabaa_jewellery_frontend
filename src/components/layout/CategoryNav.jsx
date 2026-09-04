@@ -2,10 +2,29 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { NAV_ITEMS } from "@/constants/homeData";
+import { getProductsBySlug } from "@/constants/productData";
+
+// Each dropdown's "View All" lands on the aggregate page for that parent, and
+// the three thumbnails beside it are the first products from the same set.
+const VIEW_ALL_SLUG = {
+  rings: "all-rings",
+  impon: "all-impon-chain",
+  pendant: "all-pendants",
+  earrings: "all-earrings",
+};
 
 const MAROON = "#7B1E2B";
+
+// The underline is an ::after bar that scales out from the left. Drawn on the
+// element itself rather than as a border, so it can animate and so it does not
+// change the item's height when it appears.
+const NAV_LINK =
+  "relative flex items-center gap-2 py-1 font-[family-name:var(--font-category)] text-[16px] whitespace-nowrap transition-colors " +
+  "after:absolute after:inset-x-0 after:-bottom-1.5 after:h-[2.5px] after:origin-left after:rounded-full after:bg-[#7B1E2B] " +
+  "after:scale-x-0 after:transition-transform after:duration-200 hover:after:scale-x-100";
 
 // One glyph per nav item, keyed by the ids in NAV_ITEMS.
 const GLYPHS = {
@@ -89,18 +108,69 @@ function NavIcon({ item }) {
 }
 
 // Small ringed mark beside each menu link, echoing the reference layout.
-function ItemMark() {
+// One mark per kind of jewellery. Every dropdown item used to carry the ring
+// glyph, so chains and pendants were marked with a ring.
+const ITEM_MARKS = {
+  rings: (
+    <>
+      <circle cx="12" cy="14" r="6" />
+      <path d="M9.5 5.5 12 8l2.5-2.5" />
+    </>
+  ),
+  // A hanging chain — a curve of links across the top.
+  impon: (
+    <>
+      <path d="M3.5 7c0 6.5 3.8 11 8.5 11s8.5-4.5 8.5-11" />
+      <circle cx="6" cy="11" r="1.4" />
+      <circle cx="12" cy="15.4" r="1.4" />
+      <circle cx="18" cy="11" r="1.4" />
+    </>
+  ),
+  // A dollar hanging from a chain. The first attempt drew the cord as a curve
+  // meeting a circle, which at 14px read as a pair of horns.
+  pendant: (
+    <>
+      <path d="M3.5 6.5h17" />
+      <path d="M12 6.5v2.6" />
+      <path d="M12 9.1 8.2 14.4 12 20.2l3.8-5.8L12 9.1Z" />
+    </>
+  ),
+  // A pair, not one — "Earrings" is plural, and a single drop read as a lamp.
+  earrings: (
+    <>
+      <circle cx="8" cy="6" r="1.9" />
+      <circle cx="16" cy="6" r="1.9" />
+      <path d="M8 7.9 5 14.6h6L8 7.9Z" />
+      <path d="M16 7.9 13 14.6h6L16 7.9Z" />
+    </>
+  ),
+};
+
+function ItemMark({ kind }) {
   return (
     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-200">
-      <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.6" style={{ color: "#C9A227" }} aria-hidden="true">
-        <circle cx="12" cy="14" r="6" />
-        <path d="M9.5 5.5 12 8l2.5-2.5" />
+      <svg
+        viewBox="0 0 24 24"
+        className="h-3.5 w-3.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ color: "#C9A227" }}
+        aria-hidden="true"
+      >
+        {ITEM_MARKS[kind] ?? ITEM_MARKS.rings}
       </svg>
     </span>
   );
 }
 
-function MegaPanel({ menu, onNavigate }) {
+function MegaPanel({ menu, kind, onNavigate }) {
+  const allSlug = VIEW_ALL_SLUG[kind];
+  const viewAllHref = allSlug ? `/category/${allSlug}` : menu.promo?.href ?? "#";
+  const samples = allSlug ? getProductsBySlug(allSlug).slice(0, 3) : [];
+
   return (
     <div className="absolute inset-x-0 top-full z-40 border-t border-neutral-200 bg-white shadow-[0_14px_28px_rgba(0,0,0,0.10)]">
       <div className="mx-auto grid w-full max-w-[1400px] lg:grid-cols-[1fr_300px]">
@@ -125,7 +195,7 @@ function MegaPanel({ menu, onNavigate }) {
                         onClick={onNavigate}
                         className="flex items-center gap-2.5 rounded px-1 py-2 text-[13px] text-neutral-700 transition-colors hover:text-[#7B1E2B]"
                       >
-                        <ItemMark />
+                        <ItemMark kind={kind} />
                         {link.label}
                       </Link>
                     </li>
@@ -137,28 +207,32 @@ function MegaPanel({ menu, onNavigate }) {
 
           {/* Promo strip */}
           {menu.promo ? (
-            <div className="mt-4 flex items-center gap-3 rounded border border-[#F0E4D8] bg-[#FDF8F3] px-3 py-2.5">
-              <span className="flex shrink-0 -space-x-2" aria-hidden="true">
-                {["#EDE3D3", "#E3D5BE", "#D8C6A8"].map((c) => (
+            <div className="mt-4 flex items-center gap-4 rounded-lg border border-[#F0E4D8] bg-[#FDF8F3] px-4 py-4">
+              {/* Real pieces from this category, not colour swatches. Laid out
+                  side by side rather than overlapped — stacked at 40px each
+                  thumbnail was mostly hidden behind the next one. */}
+              <span className="flex shrink-0 gap-1.5" aria-hidden="true">
+                {samples.map((p) => (
                   <span
-                    key={c}
-                    className="h-8 w-8 rounded-sm ring-2 ring-white"
-                    style={{ backgroundColor: c }}
-                  />
+                    key={p.id}
+                    className="relative h-[68px] w-[68px] overflow-hidden rounded-md ring-1 ring-black/5"
+                  >
+                    <Image src={p.image} alt="" fill sizes="68px" className="object-cover" />
+                  </span>
                 ))}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[12px] font-semibold text-neutral-800">
+                <span className="block truncate text-[15px] font-semibold text-neutral-800">
                   {menu.promo.title}
                 </span>
-                <span className="block truncate text-[11px] text-neutral-500">
+                <span className="mt-0.5 block truncate text-[13px] text-neutral-500">
                   {menu.promo.subtitle}
                 </span>
               </span>
               <Link
-                href={menu.promo.href}
+                href={viewAllHref}
                 onClick={onNavigate}
-                className="shrink-0 rounded-full px-4 py-1.5 text-[11px] font-medium text-white transition-opacity hover:opacity-90"
+                className="shrink-0 rounded-full px-6 py-2.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: MAROON }}
               >
                 {menu.promo.cta}
@@ -225,6 +299,16 @@ export default function CategoryNav() {
 
   const openMenu = NAV_ITEMS.find((item) => item.id === openId)?.menu;
 
+  // A category page highlights its nav item — including when the page is one of
+  // the item's dropdown children, so /category/hindu-rings lights up "Rings".
+  const pathname = usePathname();
+  const isCurrent = (item) => {
+    if (item.href && item.href !== "#" && pathname === item.href) return true;
+    return (item.menu?.columns ?? []).some((col) =>
+      col.items.some((link) => link.href === pathname)
+    );
+  };
+
   return (
     <nav
       ref={navRef}
@@ -236,12 +320,17 @@ export default function CategoryNav() {
       <ul className="mx-auto flex max-w-[1400px] items-center gap-5 overflow-x-auto px-4 py-2 sm:gap-8 sm:px-6 lg:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {NAV_ITEMS.map((item) => {
           const isOpen = openId === item.id;
+          const current = isCurrent(item);
           return (
             <li
               key={item.id}
               className="shrink-0"
               // Hover opens on pointer devices; the button handles taps.
-              onMouseEnter={() => item.menu && setOpenId(item.id)}
+              // An item without a dropdown must CLOSE the open one rather than
+              // ignore the hover — `item.menu && …` did nothing for All
+              // Jewellery, Bracelet and More, so whichever panel was already
+              // open stayed on screen while the cursor sat over them.
+              onMouseEnter={() => setOpenId(item.menu ? item.id : null)}
             >
               {item.menu ? (
                 <button
@@ -249,9 +338,12 @@ export default function CategoryNav() {
                   onClick={() => setOpenId(isOpen ? null : item.id)}
                   aria-expanded={isOpen}
                   aria-haspopup="true"
-                  className={`flex items-center gap-2 py-1 font-[family-name:var(--font-category)] text-[16px] whitespace-nowrap transition-colors ${
-                    isOpen ? "text-[#7B1E2B]" : "text-neutral-700 hover:text-[#7B1E2B]"
-                  }`}
+                  aria-current={current ? "page" : undefined}
+                  className={`${NAV_LINK} ${
+                    isOpen || current
+                      ? "text-[#7B1E2B]"
+                      : "text-neutral-700 hover:text-[#7B1E2B]"
+                  } ${current ? "font-medium after:scale-x-100" : ""}`}
                 >
                   <NavIcon item={item} />
                   {item.label}
@@ -271,7 +363,12 @@ export default function CategoryNav() {
               ) : (
                 <Link
                   href={item.href}
-                  className="flex items-center gap-2 py-1 font-[family-name:var(--font-category)] text-[16px] whitespace-nowrap text-neutral-700 transition-colors hover:text-[#7B1E2B]"
+                  aria-current={current ? "page" : undefined}
+                  className={`${NAV_LINK} ${
+                    current
+                      ? "font-medium text-[#7B1E2B] after:scale-x-100"
+                      : "text-neutral-700 hover:text-[#7B1E2B]"
+                  }`}
                 >
                   <NavIcon item={item} />
                   {item.label}
@@ -282,7 +379,7 @@ export default function CategoryNav() {
         })}
       </ul>
 
-      {openMenu ? <MegaPanel menu={openMenu} onNavigate={close} /> : null}
+      {openMenu ? <MegaPanel menu={openMenu} kind={openId} onNavigate={close} /> : null}
     </nav>
   );
 }

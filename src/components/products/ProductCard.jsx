@@ -37,7 +37,17 @@ export default function ProductCard({ product }) {
 
   const onAddToCart = (e) => {
     stop(e);
-    dispatch(addItem({ id: product.id, title: product.title, price: product.price, quantity: 1 }));
+    dispatch(
+      addItem({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        // The cart line shows a thumbnail and an SKU, so they travel with it.
+        image: product.image,
+        code: product.code,
+        quantity: 1,
+      })
+    );
   };
 
   return (

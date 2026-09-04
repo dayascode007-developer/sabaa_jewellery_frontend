@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
+import { addItem } from "@/store/slices/cartSlice";
 import Image from "next/image";
 import RingSizeGuide from "@/components/products/RingSizeGuide";
 import CareGuide from "@/components/products/CareGuide";
+import { FONT_STYLES, SYMBOLS, NAME_MAX_LENGTH } from "@/constants/productData";
+import qualityBadge from "@/assets/batch/Sabaa Quality Batch.png";
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
@@ -31,21 +35,96 @@ function Placeholder({ label }) {
   );
 }
 
+// How much the magnifier enlarges, and how much of the frame it covers.
+const ZOOM = 2.4;
+const LENS_RATIO = 0.45;
+
 function Gallery({ product }) {
   const [active, setActive] = useState(0);
+  // null when the cursor is away; { x, y } as percentages while hovering.
+  const [lens, setLens] = useState(null);
+
   // The product shot first, then the workshop images shot for its category.
   // Padded to four so the thumbnail row keeps its shape on sparse categories.
   const shots = [...(product.gallery ?? [product.image])];
   while (shots.length < 4) shots.push(null);
 
+  const current = shots[active];
+  // The magnifier reads the original file, not the resized <Image> output —
+  // zooming a downscaled copy would only show bigger blur.
+  const fullSrc = current?.src ?? null;
+
+  // Pixel maths, not percentages — the background offset inside the lens has
+  // to be expressed against the scaled image's real size.
+  const onMove = (e) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setLens({
+      x: e.clientX - r.left,
+      y: e.clientY - r.top,
+      w: r.width,
+      h: r.height,
+    });
+  };
+
+  // The lens is a window onto the image blown up to ZOOM, so what you see
+  // inside it is the area underneath, magnified — a magnifying glass held over
+  // the photo rather than a separate panel beside it.
+  let magnifier = null;
+  if (lens && fullSrc) {
+    const lw = lens.w * LENS_RATIO;
+    const lh = lens.h * LENS_RATIO;
+    // Kept fully inside the frame, so the lens never shows blank edges.
+    const cx = Math.min(lens.w - lw / 2, Math.max(lw / 2, lens.x));
+    const cy = Math.min(lens.h - lh / 2, Math.max(lh / 2, lens.y));
+
+    magnifier = {
+      left: cx - lw / 2,
+      top: cy - lh / 2,
+      width: lw,
+      height: lh,
+      // Quoted. Next keeps the original file name in the emitted URL, and 13
+      // of the Initial Rings files contain a space ("Letter A-…"). Unquoted,
+      // that space ends the CSS url() early, the whole rule is dropped, and
+      // the lens magnifies nothing.
+      // Quotes rather than encodeURI: encodeURI also escapes "%", so a path
+      // that arrived already encoded would come out double-encoded.
+      backgroundImage: `url("${fullSrc}")`,
+      backgroundSize: `${lens.w * ZOOM}px ${lens.h * ZOOM}px`,
+      backgroundPosition: `${-(cx * ZOOM - lw / 2)}px ${-(cy * ZOOM - lh / 2)}px`,
+      backgroundRepeat: "no-repeat",
+    };
+  }
+
   return (
-    <div>
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-neutral-100">
-        {shots[active] ? (
-          <Image src={shots[active]} alt={product.title} fill sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover" priority />
-        ) : (
-          <Placeholder label={product.title} />
-        )}
+    // Fills its grid column. A max-width here left a band of empty space
+    // between the image and the details, because the column stays half the
+    // page wide whatever the image does.
+    <div className="w-full">
+      {/* relative wrapper, so the magnifier panel can sit outside the image's
+          overflow-hidden box and float over the column beside it. */}
+      <div className="relative">
+        <div
+          className="relative aspect-square w-full overflow-hidden rounded-lg bg-neutral-100"
+          onMouseMove={fullSrc ? onMove : undefined}
+          onMouseLeave={() => setLens(null)}
+        >
+          {current ? (
+            <Image src={current} alt={product.title} fill sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover" priority />
+          ) : (
+            <Placeholder label={product.title} />
+          )}
+
+          {/* The magnifier itself. Desktop only — there is no hover to follow
+              on a touch screen. The wide ring shadow darkens everything outside
+              it, so the eye goes straight to the magnified part. */}
+          {magnifier ? (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute hidden rounded-sm ring-2 ring-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.28)] lg:block"
+              style={magnifier}
+            />
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-3 flex gap-2">
@@ -72,8 +151,33 @@ function Gallery({ product }) {
       {/* Trust badges under the gallery */}
       <div className="mt-6 grid grid-cols-2 gap-4">
         {[
-          { id: "delivery", label: "Delivery in 10 Days", icon: <><path d="M2.5 6.5h10v9h-10zM12.5 10h4l3 3v2.5h-7z" /><circle cx="6.5" cy="17.5" r="1.7" /><circle cx="16" cy="17.5" r="1.7" /></> },
-          { id: "safe", label: "Safe to Use", icon: <><path d="M12 3.5 19 6v6c0 4.2-2.9 7.5-7 8.5-4.1-1-7-4.3-7-8.5V6l7-2.5Z" /><path d="M9.2 12.2 11.4 14.4 15.7 10" /></> },
+          {
+            id: "delivery",
+            label: "Delivery in 10 Days",
+            // Van with the wheels sitting clear of the body rather than cutting
+            // through it, and two speed lines behind carrying the "10 Days".
+            icon: (
+              <>
+                <rect x="2.4" y="7.4" width="9.6" height="8.5" rx="1" />
+                <path d="M12 10.4h3.7l3.3 3.3v2.2H12z" />
+                <circle cx="6.5" cy="17.7" r="1.6" />
+                <circle cx="16.3" cy="17.7" r="1.6" />
+                <path d="M0.6 9.8h1.2M0.6 13h1.2" />
+              </>
+            ),
+          },
+          {
+            id: "safe",
+            label: "Safe to Use",
+            // Narrower shield with a shorter tick sitting properly inside it —
+            // the old tick ran almost edge to edge.
+            icon: (
+              <>
+                <path d="M12 3.4 18.4 5.8v5.9c0 3.9-2.6 7-6.4 8-3.8-1-6.4-4.1-6.4-8V5.8L12 3.4Z" />
+                <path d="M9.4 11.8 11.3 13.7 14.8 10.2" />
+              </>
+            ),
+          },
         ].map((b) => (
           <div key={b.id} className="flex flex-col items-center gap-1.5 text-center">
             <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ color: MAROON }} aria-hidden="true">
@@ -121,10 +225,223 @@ function Accordion({ sections, description }) {
   );
 }
 
+/* ------------------------------------------------------------------ *
+ *  Symbol wheel — the iOS time-picker pattern.
+ * ------------------------------------------------------------------ */
+
+const ITEM_H = 44; // px per row
+const VISIBLE = 5; // rows on screen: two above, the selected one, two below
+const PAD = ITEM_H * Math.floor(VISIBLE / 2); // lets the first and last rows reach the centre
+
+function SymbolWheel({ value, onChange }) {
+  const listRef = useRef(null);
+  const index = Math.max(
+    0,
+    SYMBOLS.findIndex((s) => s.id === value)
+  );
+
+  // Line the chosen row up with the highlight on first paint only. Re-running
+  // it on every value change would yank the list while a finger is still on it.
+  useEffect(() => {
+    const el = listRef.current;
+    if (el) el.scrollTop = index * ITEM_H;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Whichever row is nearest the centre is the selection. Scroll-snap settles
+  // on exact multiples, so rounding is enough — no timer needed.
+  const onScroll = () => {
+    const el = listRef.current;
+    if (!el) return;
+    const i = Math.min(
+      SYMBOLS.length - 1,
+      Math.max(0, Math.round(el.scrollTop / ITEM_H))
+    );
+    if (SYMBOLS[i].id !== value) onChange(SYMBOLS[i].id);
+  };
+
+  const scrollTo = (i) => {
+    listRef.current?.scrollTo({ top: i * ITEM_H, behavior: "smooth" });
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      const next = Math.min(
+        SYMBOLS.length - 1,
+        Math.max(0, index + (e.key === "ArrowDown" ? 1 : -1))
+      );
+      scrollTo(next);
+      onChange(SYMBOLS[next].id);
+    }
+  };
+
+  return (
+    <div
+      className="relative mt-1.5 overflow-hidden rounded-xl border border-neutral-300 bg-white"
+      style={{ height: ITEM_H * VISIBLE }}
+    >
+      {/* The stationary selection bar the rows pass under */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-1.5 top-1/2 z-0 -translate-y-1/2 rounded-lg"
+        style={{ height: ITEM_H, backgroundColor: "#FDF0F2" }}
+      />
+
+      <div
+        ref={listRef}
+        onScroll={onScroll}
+        onKeyDown={onKeyDown}
+        tabIndex={0}
+        role="listbox"
+        aria-label="Symbol"
+        aria-activedescendant={`symbol-opt-${SYMBOLS[index].id}`}
+        // relative z-10 matters: the mask below makes this element a stacking
+        // context, so the rows inside it can no longer out-rank the selection
+        // bar on their own — the bar was painting over the chosen row and
+        // leaving the highlight looking empty.
+        //
+        // The scrollbar is deliberately left visible, and made thin, so it is
+        // obvious there is more to scroll to. Hidden, the wheel looked like a
+        // fixed list of five.
+        className="relative z-10 h-full snap-y snap-mandatory overflow-y-auto outline-none [scrollbar-color:#D6C3BB_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#D6C3BB] [&::-webkit-scrollbar-track]:bg-transparent"
+        style={{
+          paddingTop: PAD,
+          paddingBottom: PAD,
+          // Rows dissolve towards the top and bottom edges instead of being cut
+          // off — that fade is what makes it read as a wheel rather than a list.
+          maskImage:
+            "linear-gradient(to bottom, transparent, #000 26%, #000 74%, transparent)",
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent, #000 26%, #000 74%, transparent)",
+        }}
+      >
+        {SYMBOLS.map((s, i) => {
+          const active = i === index;
+          const distance = Math.abs(i - index);
+          return (
+            <div
+              key={s.id}
+              id={`symbol-opt-${s.id}`}
+              role="option"
+              aria-selected={active}
+              onClick={() => {
+                scrollTo(i);
+                onChange(s.id);
+              }}
+              className="relative z-20 flex cursor-pointer snap-center items-center justify-center gap-2.5 select-none"
+              style={{
+                height: ITEM_H,
+                // Further from the centre, smaller and fainter — the same cue
+                // the iOS picker uses for depth.
+                opacity: active ? 1 : distance === 1 ? 0.55 : 0.3,
+                transform: active ? "scale(1)" : "scale(0.9)",
+                transition: "opacity 150ms, transform 150ms",
+              }}
+            >
+              {s.glyph ? (
+                <span className="text-[20px] leading-none text-neutral-700">{s.glyph}</span>
+              ) : null}
+              <span
+                className={`text-[15px] leading-none ${active ? "font-semibold" : ""}`}
+                style={{ color: active ? MAROON : "#6B6B6B" }}
+              >
+                {s.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Shows what the engraving will read, in the chosen face, with the symbol on
+ * the chosen side. Sits under the gallery so the customer can watch it change
+ * while filling the fields on the right.
+ */
+function StylePreview({ name, fontId, symbolId, side }) {
+  const font = FONT_STYLES.find((f) => f.id === fontId) ?? FONT_STYLES[0];
+  const symbol = SYMBOLS.find((s) => s.id === symbolId) ?? SYMBOLS[0];
+  const text = name.trim();
+
+  return (
+    <div className="mt-5">
+      <p className="text-center text-[13px] font-medium" style={{ color: MAROON }}>
+        Style Preview
+      </p>
+
+      {/* Graph paper, drawn with two repeating gradients rather than an image */}
+      <div
+        className="mt-2 flex min-h-[104px] items-center justify-center rounded-lg border border-[#EFDCD4] px-4 py-5"
+        style={{
+          backgroundColor: "#FFFDFB",
+          backgroundImage:
+            "repeating-linear-gradient(0deg, #F0E4DC 0 1px, transparent 1px 14px), repeating-linear-gradient(90deg, #F0E4DC 0 1px, transparent 1px 14px)",
+        }}
+      >
+        {text ? (
+          <p className="flex items-baseline gap-2 text-center break-all">
+            {symbol.glyph && side === "left" ? (
+              <span className="text-[22px] text-neutral-700">{symbol.glyph}</span>
+            ) : null}
+
+            <span
+              className="text-[30px] leading-tight sm:text-[36px]"
+              style={{ color: MAROON, fontFamily: `var(${font.cssVar})` }}
+            >
+              {text}
+            </span>
+
+            {symbol.glyph && side === "right" ? (
+              <span className="text-[22px] text-neutral-700">{symbol.glyph}</span>
+            ) : null}
+          </p>
+        ) : (
+          <p className="text-[13px] text-neutral-400">
+            Type a name to see it here
+          </p>
+        )}
+      </div>
+
+      <p className="mt-1.5 text-center text-[11px] text-neutral-500">
+        Indicative only — the finished engraving is cut by hand.
+      </p>
+    </div>
+  );
+}
+
 export default function ProductDetail({ product }) {
   const [size, setSize] = useState(product.sizes?.[2] ?? "");
   const [qty, setQty] = useState(1);
   const [giftWrap, setGiftWrap] = useState(false);
+
+  // Engraving options. Only rings carry them — a chain has no "ring name".
+  const [ringName, setRingName] = useState("");
+  const [fontId, setFontId] = useState(FONT_STYLES[0].id);
+  const [symbolId, setSymbolId] = useState(SYMBOLS[0].id);
+  const [symbolSide, setSymbolSide] = useState("left");
+
+  const dispatch = useDispatch();
+
+  // Everything the workshop needs to make this exact piece travels with the
+  // line, not just the product id — otherwise the engraving is lost at checkout.
+  const onAddToCart = () =>
+    dispatch(
+      addItem({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        image: product.image,
+        code: product.productCode,
+        quantity: qty,
+        ...(product.hasRingSize ? { size } : {}),
+        ...(product.isCustomisable
+          ? { ringName, fontId, symbolId, symbolSide }
+          : {}),
+      })
+    );
 
   const discount =
     product.mrp && product.mrp > product.price
@@ -134,7 +451,19 @@ export default function ProductDetail({ product }) {
   return (
     <>
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-      <Gallery product={product} />
+      <div>
+        <Gallery product={product} />
+
+        {/* Preview of the engraving — only where there is engraving to preview. */}
+        {product.isCustomisable ? (
+          <StylePreview
+            name={ringName}
+            fontId={fontId}
+            symbolId={symbolId}
+            side={symbolSide}
+          />
+        ) : null}
+      </div>
 
       <div>
         {/* Top row — bestseller flag and quick actions */}
@@ -182,6 +511,19 @@ export default function ProductDetail({ product }) {
         </div>
         <p className="mt-0.5 text-[11px] text-neutral-500">MRP inclusive of all taxes</p>
 
+        {/* Quality seal, on its own line under the tax note.
+            width/height matter here: the source is 1024px square, and without
+            them Next serves a variant sized for the full intrinsic width
+            rather than the small size this actually renders at. */}
+        <Image
+          src={qualityBadge}
+          alt="Premium product — excellent quality"
+          width={54}
+          height={54}
+          sizes="54px"
+          className="mt-2 h-[54px] w-[54px]"
+        />
+
         {/* Ring size — rings only. A chain, pendant or pair of earrings has no
             finger size, so the whole block is left out rather than shown with
             values that mean nothing for the piece. */}
@@ -214,6 +556,104 @@ export default function ProductDetail({ product }) {
         </div>
         ) : null}
 
+        {/* Engraving — Name Engrave Rings only. The other ring categories are
+            finished designs, so they get the size selector above but nothing
+            here: there is nothing to cut into them. */}
+        {product.isCustomisable ? (
+          <>
+            <div className="mt-4">
+              <label
+                htmlFor="ring-name"
+                className="block text-[13px] font-medium"
+                style={{ color: MAROON }}
+              >
+                Ring Name
+              </label>
+              <input
+                id="ring-name"
+                type="text"
+                value={ringName}
+                maxLength={NAME_MAX_LENGTH}
+                onChange={(e) => setRingName(e.target.value)}
+                placeholder="Name to engrave"
+                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
+              />
+              <p className="mt-1 text-right text-[10px] text-neutral-500">
+                {ringName.length}/{NAME_MAX_LENGTH}
+              </p>
+            </div>
+
+            <div className="mt-3">
+              <label
+                htmlFor="font-style"
+                className="block text-[13px] font-medium"
+                style={{ color: MAROON }}
+              >
+                Font Style
+              </label>
+              {/* The select shows the chosen face, so the control previews
+                  itself before you look at the panel below the photo. */}
+              <select
+                id="font-style"
+                value={fontId}
+                onChange={(e) => setFontId(e.target.value)}
+                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[15px] text-neutral-800 outline-none focus:border-neutral-500"
+                style={{
+                  fontFamily: `var(${
+                    FONT_STYLES.find((f) => f.id === fontId)?.cssVar ?? "--font-heading"
+                  })`,
+                }}
+              >
+                {FONT_STYLES.map((f) => (
+                  <option key={f.id} value={f.id} style={{ fontFamily: `var(${f.cssVar})` }}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-3">
+              <p className="block text-[13px] font-medium" style={{ color: MAROON }}>
+                Symbol Selections
+              </p>
+              {/* Scroll wheel rather than a dropdown — spin it up or down and
+                  whichever row lands in the bar is the choice. */}
+              <SymbolWheel value={symbolId} onChange={setSymbolId} />
+            </div>
+
+            {/* Which side of the name the symbol sits on. Hidden while no
+                symbol is chosen — there is nothing to place. */}
+            {symbolId !== "none" ? (
+              <fieldset className="mt-3">
+                <legend className="text-[13px] font-medium" style={{ color: MAROON }}>
+                  Symbol Direction
+                </legend>
+                <div className="mt-1.5 flex items-center gap-5">
+                  {[
+                    { value: "left", label: "Left side" },
+                    { value: "right", label: "Right side" },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className="flex items-center gap-2 text-[13px] text-neutral-700"
+                    >
+                      <input
+                        type="radio"
+                        name="symbol-side"
+                        value={opt.value}
+                        checked={symbolSide === opt.value}
+                        onChange={(e) => setSymbolSide(e.target.value)}
+                        className="h-3.5 w-3.5 accent-[#7B1E2B]"
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ) : null}
+          </>
+        ) : null}
+
         {/* WhatsApp assist + Add to cart */}
         <div className="mt-5 flex flex-wrap items-start gap-4">
           <div className="rounded border border-[#BFE9CC] bg-[#EAF9EF] p-3">
@@ -239,6 +679,7 @@ export default function ProductDetail({ product }) {
           <div>
             <button
               type="button"
+              onClick={onAddToCart}
               className="rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: MAROON }}
             >
@@ -254,10 +695,17 @@ export default function ProductDetail({ product }) {
               min={1}
               max={product.maxQty}
               value={qty}
-              onChange={(e) => setQty(Math.min(Number(e.target.value) || 1, product.maxQty))}
-              className="mt-1 w-20 rounded border border-neutral-300 px-2 py-1.5 text-[13px] outline-none focus:border-neutral-500"
+              // Clamped at both ends. The previous version only capped the top,
+              // so a typed "-5" went straight through as -5.
+              onChange={(e) =>
+                setQty(
+                  Math.min(Math.max(1, Number(e.target.value) || 1), product.maxQty)
+                )
+              }
+              // The number had no colour of its own, so it inherited the pale
+              // grey from the surrounding text and read as disabled.
+              className="mt-1 w-20 rounded border border-neutral-300 bg-white px-3 py-2 text-center text-[15px] font-semibold text-neutral-900 outline-none focus:border-[#7B1E2B]"
             />
-            <p className="mt-1 text-[10px] text-neutral-500">*Maximum allowed qty {product.maxQty}</p>
           </div>
         </div>
 
@@ -272,9 +720,13 @@ export default function ProductDetail({ product }) {
 
           <div className="flex flex-col items-center gap-1 text-center">
             <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ color: MAROON }} aria-hidden="true">
-              <rect x="4" y="10" width="16" height="9" rx="1.5" />
-              <path d="M4 13.5h16M12 10v9" />
-              <path d="M12 10c-1.6-3-3-4-4.4-3.4C6.4 7.1 6.8 9.4 12 10Zm0 0c1.6-3 3-4 4.4-3.4 1.2.5.8 2.8-4.4 3.4Z" />
+              {/* Lid, box, ribbon and a bow of two loops sitting on top — the
+                  previous bow was merged into the lid and read as a blob. */}
+              <rect x="3.6" y="9.9" width="16.8" height="3.3" rx="0.7" />
+              <path d="M5.1 13.2v6a1 1 0 0 0 1 1h11.8a1 1 0 0 0 1-1v-6" />
+              <path d="M12 9.9v10.3" />
+              <path d="M12 9.9C10.7 7.6 9.5 6.7 8.4 7.2c-1 .5-.7 2.4 3.6 2.7Z" />
+              <path d="M12 9.9c1.3-2.3 2.5-3.2 3.6-2.7 1 .5.7 2.4-3.6 2.7Z" />
             </svg>
             <span className="text-[12px] text-neutral-700">Precious Gifting</span>
           </div>
