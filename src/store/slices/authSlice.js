@@ -11,6 +11,7 @@ import {
   googleVerifyOtpApi,
   logoutApi,
 } from "@/store/api/authApi";
+import { editProfileApi } from "@/store/api/dashboardApi";
 
 export const signup = createAsyncThunk(
   "auth/signup",
@@ -116,6 +117,17 @@ export const logout = createAsyncThunk(
   async (token, { rejectWithValue }) => {
     try {
       return await logoutApi(token);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const editProfile = createAsyncThunk(
+  "auth/editProfile",
+  async (profileData, { rejectWithValue }) => {
+    try {
+      return await editProfileApi(profileData);
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -386,6 +398,8 @@ const authSlice = createSlice({
         state.token = null;
         state.identifier = null;
         state.otpSent = false;
+        state.error = null;
+        state.initialized = false;
         saveToken(null);
       })
       .addCase(logout.rejected, (state) => {
@@ -393,7 +407,24 @@ const authSlice = createSlice({
         // Clear auth even if logout fails
         state.customer = null;
         state.token = null;
+        state.error = null;
+        state.initialized = false;
         saveToken(null);
+      });
+
+    // Edit Profile
+    builder
+      .addCase(editProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.customer = action.payload;
+      })
+      .addCase(editProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
@@ -410,5 +441,5 @@ authSlice.caseReducers.clearAuth = (state) => {
 };
 
 export const { clearError, clearAuth } = authSlice.actions;
-export { initializeAuth };
+export { initializeAuth, editProfile };
 export default authSlice.reducer;

@@ -1,0 +1,313 @@
+"use client";
+
+import { useState } from "react";
+import { MdCheckCircle, MdLocalShipping, MdDeliveryDining, MdHome, MdEdit, MdCancel } from "react-icons/md";
+
+const MAROON = "#430121";
+
+const ORDER_STATUSES = [
+  { id: 1, label: "Ordered", icon: MdCheckCircle, completed: true },
+  { id: 2, label: "Shipped", icon: MdLocalShipping, completed: true },
+  { id: 3, label: "Out for delivery", icon: MdDeliveryDining, completed: false },
+  { id: 4, label: "Delivered", icon: MdHome, completed: false },
+];
+
+export default function TrackOrder() {
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [instructions, setInstructions] = useState("Leave at door");
+
+  const order = {
+    id: "171-1261698-7565901",
+    date: "29 July 2026",
+    total: "₹212.10",
+    shipTo: "Venkataesan",
+    arriving: "7 August",
+    status: 2, // Shipped
+    address: {
+      name: "Venkataesan",
+      street: "No. 90/22, Mariyamman Kovil Street",
+      city: "Tripadirupuliyur",
+      state: "Tamil Nadu",
+      zip: "607002",
+    },
+  };
+
+  // Calculate progress percentage - same for both desktop and mobile
+  const progressPercent = (order.status / ORDER_STATUSES.length) * 100;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-4 md:px-6 py-4 md:py-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          Track Order
+        </h1>
+        <p className="text-sm md:text-base text-gray-600 mt-1">
+          Order #{order.id}
+        </p>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
+        {/* Order Status Timeline */}
+        <div className="bg-white rounded-lg p-4 md:p-8 mb-6 md:mb-8">
+          <h2
+            className="text-xl md:text-2xl font-bold mb-6 md:mb-8"
+            style={{ color: MAROON }}
+          >
+            {ORDER_STATUSES.find((s) => s.id === order.status)?.label ||
+              "Ordered"}
+          </h2>
+
+          {/* Timeline */}
+          <div className="hidden md:block">
+            {/* Desktop Timeline */}
+            <div className="relative flex items-center justify-between mb-8" style={{ height: "80px" }}>
+              {/* Progress Line Background */}
+              <div
+                className="absolute top-1/2 left-0 right-0 h-1 transform -translate-y-1/2"
+                style={{ zIndex: 1 }}
+              >
+                <div className="flex h-full">
+                  {ORDER_STATUSES.map((status, index) => {
+                    const isCompleted = status.id <= order.status;
+                    return (
+                      <div
+                        key={index}
+                        className="flex-1"
+                        style={{
+                          backgroundColor: isCompleted ? MAROON : "#d1d5db",
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Status Steps */}
+              {ORDER_STATUSES.map((status) => {
+                const Icon = status.icon;
+                const isCompleted = status.completed;
+                const isCurrent = status.id === order.status;
+
+                return (
+                  <div
+                    key={status.id}
+                    className="flex flex-col items-center justify-center flex-1"
+                    style={{ zIndex: 2, position: "relative" }}
+                  >
+                    {/* Icon Circle */}
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors bg-white border-4 ${
+                        isCompleted || isCurrent
+                          ? "text-white"
+                          : "bg-gray-200 text-gray-400"
+                      }`}
+                      style={{
+                        backgroundColor: isCompleted || isCurrent ? MAROON : "#e5e7eb",
+                        borderColor: "white",
+                      }}
+                    >
+                      <Icon className="text-xl" />
+                    </div>
+
+                    {/* Label */}
+                    <p
+                      className={`text-xs md:text-sm font-medium text-center ${
+                        isCompleted || isCurrent ? "text-gray-900" : "text-gray-500"
+                      }`}
+                    >
+                      {status.label}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile Timeline */}
+          <div className="md:hidden">
+            <div className="relative">
+              {/* Vertical tracking line - background */}
+              <svg
+                className="absolute top-6 bottom-6 w-1 pointer-events-none z-0"
+                style={{
+                  height: "calc(100% - 48px)",
+                  left: "16px",
+                }}
+                preserveAspectRatio="none"
+              >
+                {/* Gray line for all steps */}
+                <line x1="2" y1="0" x2="2" y2="100%" stroke="#d1d5db" strokeWidth="2" />
+
+                {/* Maroon line overlay - shows progress through current status */}
+                <line
+                  x1="2"
+                  y1="0"
+                  x2="2"
+                  y2={`${progressPercent}%`}
+                  stroke={MAROON}
+                  strokeWidth="2"
+                />
+              </svg>
+
+              {/* Status items */}
+              <div className="space-y-6">
+                {ORDER_STATUSES.map((status) => {
+                  const Icon = status.icon;
+                  const isCompleted = status.completed;
+                  const isCurrent = status.id === order.status;
+
+                  return (
+                    <div key={status.id} className="relative z-10 flex items-start gap-4">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors border-4 bg-white ${
+                          isCompleted || isCurrent
+                            ? "text-white"
+                            : "bg-gray-200 text-gray-400"
+                        }`}
+                        style={{
+                          backgroundColor:
+                            isCompleted || isCurrent ? MAROON : "#e5e7eb",
+                          borderColor: "white",
+                        }}
+                      >
+                        <Icon className="text-lg" />
+                      </div>
+                      <div className="flex-1">
+                        <p
+                          className={`text-sm font-semibold ${
+                            isCompleted || isCurrent
+                              ? "text-gray-900"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {status.label}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {isCompleted
+                            ? "Completed"
+                            : isCurrent
+                            ? "In progress"
+                            : "Pending"}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Info Sections Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          {/* Delivery Info */}
+          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+            <h3
+              className="text-base md:text-lg font-bold mb-4"
+              style={{ color: MAROON }}
+            >
+              Delivery Info
+            </h3>
+
+            {!showInstructions ? (
+              <>
+                <p className="text-sm text-gray-600 mb-4">
+                  Estimated delivery: <strong>{order.arriving}</strong>
+                </p>
+                <button
+                  onClick={() => setShowInstructions(true)}
+                  className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70 cursor-pointer"
+                  style={{ color: MAROON }}
+                >
+                  <MdEdit className="text-base" />
+                  Update delivery instructions
+                </button>
+              </>
+            ) : (
+              <div className="space-y-3">
+                <textarea
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:outline-none"
+                  style={{ "--tw-ring-color": MAROON }}
+                  rows="3"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowInstructions(false)}
+                    className="flex-1 py-2 px-3 text-xs md:text-sm font-semibold rounded transition-all hover:opacity-90 text-white cursor-pointer"
+                    style={{ backgroundColor: MAROON }}
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setShowInstructions(false)}
+                    className="flex-1 py-2 px-3 text-xs md:text-sm font-semibold rounded border-2 transition-all hover:opacity-70 cursor-pointer"
+                    style={{ borderColor: MAROON, color: MAROON }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Shipping Address */}
+          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+            <h3
+              className="text-base md:text-lg font-bold mb-4"
+              style={{ color: MAROON }}
+            >
+              Shipping Address
+            </h3>
+            <div className="space-y-1 text-sm">
+              <p className="font-semibold text-gray-900">{order.address.name}</p>
+              <p className="text-gray-600">{order.address.street}</p>
+              <p className="text-gray-600">{order.address.city}</p>
+              <p className="text-gray-600">
+                {order.address.state} {order.address.zip}
+              </p>
+            </div>
+          </div>
+
+          {/* Order Info */}
+          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+            <h3
+              className="text-base md:text-lg font-bold mb-4"
+              style={{ color: MAROON }}
+            >
+              Order Info
+            </h3>
+            <div className="space-y-3">
+              <button
+                className="w-full text-sm font-medium transition-opacity hover:opacity-70 text-center py-2 cursor-pointer"
+                style={{ color: MAROON }}
+              >
+                View order details
+              </button>
+              <button
+                className="w-full text-sm font-medium transition-opacity hover:opacity-70 flex items-center justify-center gap-2 py-2 border-2 rounded cursor-pointer"
+                style={{ borderColor: MAROON, color: MAROON }}
+              >
+                <MdCancel className="text-base" />
+                Cancel order
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Estimated Delivery */}
+        <div className="bg-white rounded-lg p-4 md:p-6 mt-6 md:mt-8 border-2 border-green-500">
+          <p className="text-sm md:text-base text-gray-600">
+            Your order is estimated to arrive by{" "}
+            <strong className="text-gray-900" style={{ color: MAROON }}>
+              {order.arriving}
+            </strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

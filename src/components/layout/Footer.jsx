@@ -1,8 +1,14 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { useState } from "react";
 import { USEFUL_LINKS, COMPANY_INFO, LEGAL_LINKS } from "@/constants/footerData";
 import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
 import instagramQr from "@/assets/logo/Untitled.svg";
+import AuthModal from "@/components/common/AuthModal";
 
 const FOOTER_BG = "#3D0F0F";
 
@@ -131,6 +137,18 @@ function Notch({ position }) {
 }
 
 export default function Footer() {
+  const router = useRouter();
+  const { token } = useSelector((state) => state.auth);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleOrderTracking = () => {
+    if (token) {
+      router.push("/account?tab=orders");
+    } else {
+      setShowAuthModal(true);
+    }
+  };
+
   return (
     <div className="w-full bg-white px-3 pt-10 pb-3 sm:px-5 sm:pt-14 sm:pb-5">
       <footer
@@ -176,6 +194,27 @@ export default function Footer() {
                 </h3>
                 <ul className="mt-5 space-y-4">
                   {USEFUL_LINKS.map((link) => {
+                    // Order Tracking requires login check
+                    const isTrackingLink = link.id === "tracking";
+
+                    if (isTrackingLink) {
+                      return (
+                        <li key={link.id}>
+                          <button
+                            type="button"
+                            onClick={handleOrderTracking}
+                            className="font-[family-name:var(--font-heading)] text-[15px] leading-snug text-neutral-200 transition-colors hover:text-white cursor-pointer w-full text-left"
+                          >
+                            {link.label.split("\n").map((line) => (
+                              <span key={line} className="block">
+                                {line}
+                              </span>
+                            ))}
+                          </button>
+                        </li>
+                      );
+                    }
+
                     // Real routes go through next/link so they navigate on the
                     // client; the ones still parked on "#" stay plain anchors.
                     const Tag = link.href.startsWith("/") ? Link : "a";
@@ -348,6 +387,8 @@ export default function Footer() {
           </div>
         </div>
       </footer>
+
+      <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }

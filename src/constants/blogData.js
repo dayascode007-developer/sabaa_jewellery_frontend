@@ -768,8 +768,8 @@ export const getRelatedPosts = (post, limit = 3) => {
 
 // Dates are stored ISO so they sort correctly; this is display only.
 export const formatDate = (iso) =>
-  new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", {
+  new Date(iso).toLocaleDateString("en-IN", {
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
   });

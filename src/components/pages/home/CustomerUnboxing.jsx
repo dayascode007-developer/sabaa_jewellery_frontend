@@ -1,11 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
-import { UNBOXING_VIDEOS } from "@/constants/homeData";
+import { fetchUnboxingVideos } from "@/store/slices/unboxingSlice";
+import { YouTubeShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 
 const MAROON = "#7B1E2B";
 const INITIAL_COUNT = 4;
+
+function getYouTubeVideoId(url) {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube-nocookie\.com\/embed\/)([^&\n?#]+)/,
+  ];
+  for (let pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
 
 function YouTubeMark({ className }) {
   return (
@@ -148,18 +161,32 @@ function VideoModal({ video, onClose }) {
   );
 }
 
-// `videos` is a prop so API data can be passed in later; the constant is only
-// the fallback while this section is static.
-export default function CustomerUnboxing({ videos = UNBOXING_VIDEOS }) {
+export default function CustomerUnboxing() {
+  const dispatch = useDispatch();
+  const { videos, loading } = useSelector((state) => state.unboxing);
   const [expanded, setExpanded] = useState(false);
   const [activeVideo, setActiveVideo] = useState(null);
 
-  // Stable identity, so the modal's effect does not tear down and re-run on
-  // every parent render.
+  useEffect(() => {
+    dispatch(fetchUnboxingVideos({ limit: 50, offset: 0 }));
+  }, [dispatch]);
+
   const closeModal = useCallback(() => setActiveVideo(null), []);
 
-  const visible = expanded ? videos : videos.slice(0, INITIAL_COUNT);
-  const hasMore = videos.length > INITIAL_COUNT;
+  // Transform API videos to match component format
+  const transformedVideos = videos.map((video) => ({
+    id: video.id,
+    title: video.title,
+    channel: "Sabaa Jewel Arts",
+    youtubeId: getYouTubeVideoId(video.youtube_link),
+    youtube_link: video.youtube_link,
+    thumbnail: `https://img.youtube.com/vi/${getYouTubeVideoId(video.youtube_link)}/maxresdefault.jpg`,
+    duration: "0:00",
+  }));
+
+  const displayVideos = loading ? [] : transformedVideos;
+  const visible = expanded ? displayVideos : displayVideos.slice(0, INITIAL_COUNT);
+  const hasMore = displayVideos.length > INITIAL_COUNT;
 
   return (
     <section className="w-full bg-[#FAF8F6] py-10">
@@ -195,12 +222,16 @@ export default function CustomerUnboxing({ videos = UNBOXING_VIDEOS }) {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {visible.map((video) => (
-            <VideoCard key={video.id} video={video} onOpen={setActiveVideo} />
-          ))}
+          {loading ? (
+            <YouTubeShimmer count={8} />
+          ) : (
+            visible.map((video) => (
+              <VideoCard key={video.id} video={video} onOpen={setActiveVideo} />
+            ))
+          )}
         </div>
 
-        {hasMore ? (
+        {!loading && hasMore ? (
           <div className="mt-6 flex justify-center">
             <button
               type="button"
@@ -214,7 +245,7 @@ export default function CustomerUnboxing({ videos = UNBOXING_VIDEOS }) {
               </svg>
               {expanded
                 ? "Show Fewer Videos"
-                : `View More Unboxing Videos (${videos.length - INITIAL_COUNT})`}
+                : `View More Unboxing Videos (${displayVideos.length - INITIAL_COUNT})`}
             </button>
           </div>
         ) : null}

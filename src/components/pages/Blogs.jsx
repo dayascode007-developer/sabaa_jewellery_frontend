@@ -1,5 +1,10 @@
+"use client";
+
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import BlogCard from "@/components/pages/blogs/BlogCard";
-import { BLOG_CATEGORIES, BLOG_POSTS, getPostsByCategory } from "@/constants/blogData";
+import { fetchBlogs } from "@/store/slices/blogsSlice";
+import { BlogCardShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
@@ -106,97 +111,43 @@ function CategoryIcon({ name }) {
 }
 
 export default function Blogs() {
-  // Newest first. The most recent post leads the listing.
-  const sorted = [...BLOG_POSTS].sort((a, b) => b.date.localeCompare(a.date));
-  const [featured, ...rest] = sorted;
+  const dispatch = useDispatch();
+  const { blogs, loading } = useSelector((state) => state.blogs);
+
+  useEffect(() => {
+    dispatch(fetchBlogs({ limit: 50, offset: 0 }));
+  }, [dispatch]);
+
+  const transformedBlogs = blogs.map((blog) => ({
+    id: blog.id,
+    slug: blog.id.toString(),
+    title: blog.title,
+    excerpt: blog.description,
+    cover: blog.main_image,
+    date: blog.published_date,
+    category: "festival_guides",
+  }));
 
   return (
-    <main>
-      {/* Jump links to the four sub-topics. Plain anchors + scroll-mt, so this
-          needs no client JS. */}
-      <nav aria-label="Blog topics" className="border-b border-[#EFDCD4] bg-white">
-        <ul className="mx-auto flex w-full max-w-[1400px] gap-2 overflow-x-auto px-4 py-3 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <li>
-            <a
-              href="#latest"
-              className="block rounded-full border px-3.5 py-1.5 text-[13px] whitespace-nowrap transition-colors hover:bg-[#FDF0F2]"
-              style={{ borderColor: "#EFDCD4", color: MAROON }}
-            >
-              All Posts
-            </a>
-          </li>
-          {BLOG_CATEGORIES.map((category) => (
-            <li key={category.id}>
-              <a
-                href={`#${category.id}`}
-                className="block rounded-full border px-3.5 py-1.5 text-[13px] whitespace-nowrap transition-colors hover:bg-[#FDF0F2]"
-                style={{ borderColor: "#EFDCD4", color: MAROON }}
-              >
-                {category.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {/* 1 — Blog listing */}
-      <section id="latest" className="scroll-mt-28 bg-[#FDF0F2] py-12">
+    <main className="bg-[#FDF0F2]">
+      <section className="py-12">
         <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
           <SectionHead eyebrow="From the workshop" title="Sabaa Journal">
             Notes on the craft, the metal and the traditions behind it — written by
             the people at the bench, not by a marketing team.
           </SectionHead>
 
-          <div className="mt-9">
-            <BlogCard post={featured} featured />
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {rest.map((post) => (
-              <BlogCard key={post.slug} post={post} />
-            ))}
+          <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:max-w-5xl xl:mx-auto">
+            {loading ? (
+              <BlogCardShimmer count={6} />
+            ) : (
+              transformedBlogs.map((post) => (
+                <BlogCard key={post.slug} post={post} />
+              ))
+            )}
           </div>
         </div>
       </section>
-
-      {/* 3-6 — one section per sub-topic */}
-      {BLOG_CATEGORIES.map((category, i) => {
-        const posts = getPostsByCategory(category.id);
-        if (!posts.length) return null;
-
-        return (
-          <section
-            key={category.id}
-            id={category.id}
-            className={`scroll-mt-28 py-12 ${i % 2 === 0 ? "bg-white" : "bg-[#FAF8F6]"}`}
-          >
-            <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
-              <div className="flex flex-col items-center">
-                <span
-                  className="flex h-12 w-12 items-center justify-center rounded-full"
-                  style={{ backgroundColor: "#FDF0F2", color: MAROON }}
-                >
-                  <CategoryIcon name={category.icon} />
-                </span>
-                <div className="mt-3 w-full">
-                  <SectionHead title={category.label}>{category.blurb}</SectionHead>
-                </div>
-              </div>
-
-              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {posts.map((post) => (
-                  <BlogCard key={post.slug} post={post} />
-                ))}
-              </div>
-
-              <p className="mt-5 text-center text-[13px] text-neutral-500">
-                {posts.length} {posts.length === 1 ? "article" : "articles"} in{" "}
-                <span style={{ color: GOLD }}>{category.label}</span>
-              </p>
-            </div>
-          </section>
-        );
-      })}
     </main>
   );
 }

@@ -1,55 +1,96 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import SiteHeader from "@/components/layout/SiteHeader";
 import Footer from "@/components/layout/Footer";
 import BottomNav from "@/components/layout/BottomNav";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import BlogDetail from "@/components/pages/BlogDetail";
-import { BLOG_POSTS, getPostBySlug, getCategoryLabel } from "@/constants/blogData";
+import { BlogDetailShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 
-// Pre-renders every article at build time. Once posts come from an API this
-// becomes a fetch, and the rest of the page is unchanged.
-export function generateStaticParams() {
-  return BLOG_POSTS.map((post) => ({ slug: post.slug }));
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+// Allow dynamic params since we're fetching from API
+export const dynamicParams = true;
+
+async function fetchBlogById(id) {
+  try {
+    const response = await fetch(`${API_URL}/api/blogs/${id}`, {
+      next: { revalidate: 3600 },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    console.log("Raw API response - content length:", data.data?.content?.length);
+    console.log("Raw API response - content items:", data.data?.content?.map(c => ({ id: c.id, heading: c.heading, hasImage: !!c.image })));
+    return data.data;
+  } catch (error) {
+    console.error("Failed to fetch blog:", error);
+    return null;
+  }
 }
-
-// Every post is known at build time, so anything outside that list is a real
-// 404. Without this, an unknown slug renders the not-found page with a 200
-// status — a soft 404, which search engines index as a valid page. Flip this
-// back to true when posts start coming from an API.
-export const dynamicParams = false;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
-  if (!post) return { title: "Article not found — Sabaa Jewel Arts" };
+  const blog = await fetchBlogById(slug);
+
+  if (!blog) {
+    return { title: "Article not found — Sabaa Jewel Arts" };
+  }
 
   return {
-    title: `${post.title} — Sabaa Jewel Arts`,
-    description: post.excerpt,
+    title: `${blog.title} — Sabaa Jewel Arts`,
+    description: blog.description,
   };
 }
 
 export default async function BlogDetailPage({ params }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const blog = await fetchBlogById(slug);
 
   // An unknown slug is a 404, not an empty article page.
-  if (!post) notFound();
+  if (!blog) notFound();
+
+  console.log("API blog.content length:", blog.content?.length);
+  console.log("API blog.content:", blog.content);
+
+  // Transform API blog data to match BlogDetail component format
+  const post = {
+    id: blog.id,
+    slug: blog.id.toString(),
+    title: blog.title,
+    excerpt: blog.description,
+    cover: blog.main_image,
+    date: blog.published_date,
+    author: "Sabaa Team",
+    category: "festival_guides",
+    content: blog.content.map((section) => ({
+      heading: section.heading,
+      text: section.text,
+      image: section.image,
+    })),
+  };
+
+  console.log("Transformed post.content length:", post.content?.length);
+  console.log("Transformed post.content:", post.content);
 
   return (
     <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
       <SiteHeader />
 
-      <Breadcrumb
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Blogs", href: "/blogs" },
-          { label: getCategoryLabel(post.category), href: `/blogs#${post.category}` },
-          { label: post.title },
-        ]}
-      />
+      <Suspense fallback={<BlogDetailShimmer />}>
+        <Breadcrumb
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Blogs", href: "/blogs" },
+            { label: post.title },
+          ]}
+        />
 
-      <BlogDetail post={post} />
+        <BlogDetail post={post} />
+      </Suspense>
 
       <Footer />
       <BottomNav />

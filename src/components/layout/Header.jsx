@@ -7,11 +7,16 @@ import { selectWishlistCount } from "@/store/slices/wishlistSlice";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { IoMdLogIn } from "react-icons/io";
+import { BiUserCircle } from "react-icons/bi";
+import { BiSolidUserCircle } from "react-icons/bi";
+
 import AuthModal from "@/components/common/AuthModal";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
 
 const MAROON = "#7B1E2B";
+const GOLD = "#C9A227";
 
 function Icon({ path, className = "h-6 w-6" }) {
   return (
@@ -66,7 +71,11 @@ const ICONS = {
 // "since 1984", so nothing is drawn in HTML — that would duplicate the lockup.
 function Logo() {
   return (
-    <Link href="/" className="flex shrink-0 items-center" aria-label="Sabaa Jewel Arts — home">
+    <Link
+      href="/"
+      className="flex shrink-0 items-center"
+      aria-label="Sabaa Jewel Arts — home"
+    >
       <Image
         src={sabaaLogo}
         alt="Sabaa Jewel Arts"
@@ -99,7 +108,6 @@ export default function Header() {
   }, []);
 
   const isLoggedIn = !!token && !!customer;
-  const userInitial = customer?.name?.charAt(0).toUpperCase() || "U";
 
   return (
     <header className="w-full bg-white">
@@ -116,7 +124,15 @@ export default function Header() {
           className="shrink-0 p-1 lg:hidden"
           style={{ color: MAROON }}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="h-6 w-6" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            className="h-6 w-6"
+            aria-hidden="true"
+          >
             <path d="M4 7h16M4 12h16M4 17h16" />
           </svg>
         </button>
@@ -136,10 +152,18 @@ export default function Header() {
               className="min-w-0 flex-1 bg-transparent text-[13px] text-neutral-700 outline-none placeholder:text-neutral-400 sm:text-sm"
             />
             <span className="flex shrink-0 items-center gap-2.5 text-neutral-400 sm:gap-3">
-              <button type="button" aria-label="Search by image" className="hover:text-neutral-600">
+              <button
+                type="button"
+                aria-label="Search by image"
+                className="hover:text-neutral-600"
+              >
                 <Icon path={ICONS.camera} className="h-[18px] w-[18px]" />
               </button>
-              <button type="button" aria-label="Search by voice" className="hover:text-neutral-600">
+              <button
+                type="button"
+                aria-label="Search by voice"
+                className="hover:text-neutral-600"
+              >
                 <Icon path={ICONS.mic} className="h-[18px] w-[18px]" />
               </button>
             </span>
@@ -147,7 +171,10 @@ export default function Header() {
         </div>
 
         {/* Actions */}
-        <nav className="ml-auto flex shrink-0 items-center gap-3.5 sm:gap-5 md:ml-0" style={{ color: MAROON }}>
+        <nav
+          className="ml-auto flex shrink-0 items-center gap-3.5 sm:gap-5 md:ml-0"
+          style={{ color: MAROON }}
+        >
           {actions.map((a) =>
             // Account is a real destination now, so it is a link with a visible
             // "Login" label — icon and word are one target, not two.
@@ -162,16 +189,25 @@ export default function Header() {
                   type="button"
                   onClick={() => router.push("/account")}
                   aria-label={`Account for ${customer.name}`}
-                  className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex font-[family-name:var(--font-category)]"
+                  className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex font-[family-name:var(--font-category)] cursor-pointer"
                 >
-                  <div
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-white font-medium text-sm"
-                    style={{ backgroundColor: MAROON }}
+                  <BiSolidUserCircle
+                    className="h-[22px] w-[22px] sm:h-6 sm:w-6 flex-shrink-0"
+                    style={{ color: MAROON }}
                     title={customer.name}
+                  />
+                  <span
+                    className="text-[14px] font-medium truncate max-w-[80px]"
+                    style={{ color: GOLD }}
                   >
-                    {userInitial}
-                  </div>
-                  <span className="text-[14px] font-medium">{customer.name}</span>
+                    {customer.name?.length > 5
+                      ? `${customer.name.substring(0, 5)}...`
+                      : customer.name}
+                  </span>
+                  <IoMdLogIn
+                    className="h-[22px] w-[22px] sm:h-6 sm:w-6 flex-shrink-0"
+                    style={{ color: GOLD }}
+                  />
                 </button>
               ) : (
                 // Opens the dialog rather than navigating — the visitor keeps the
@@ -182,9 +218,13 @@ export default function Header() {
                   onClick={() => setAuthOpen(true)}
                   aria-label="Login to your account"
                   aria-haspopup="dialog"
-                  className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex cursor-pointer"
+                  className="hidden items-center gap-1.5 transition-opacity hover:opacity-70 lg:flex cursor-pointer font-[family-name:var(--font-category)]"
+                  style={{ color: MAROON }}
                 >
-                  <Icon path={a.icon} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
+                  <Icon
+                    path={a.icon}
+                    className="h-[22px] w-[22px] sm:h-6 sm:w-6"
+                  />
                   <span className="text-[14px] font-medium">Login</span>
                 </button>
               )
@@ -193,12 +233,22 @@ export default function Header() {
                 key={a.key}
                 type="button"
                 aria-label={a.label}
+                onClick={() => {
+                  if (isLoggedIn) {
+                    router.push("/account?tab=wishlist");
+                  } else {
+                    setAuthOpen(true);
+                  }
+                }}
                 // Wishlist is the only action kept on phones. Account lives in
                 // the bottom bar below lg, so showing it here too would duplicate it.
-                className="block transition-opacity hover:opacity-70"
+                className="block transition-opacity hover:opacity-70 cursor-pointer"
               >
                 <span className="relative block">
-                  <Icon path={a.icon} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
+                  <Icon
+                    path={a.icon}
+                    className="h-[22px] w-[22px] sm:h-6 sm:w-6"
+                  />
                   {a.key === "heart" && wishlistCount > 0 ? (
                     <span
                       className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-white"
@@ -213,8 +263,15 @@ export default function Header() {
           )}
           {/* Visible at every width. It is also in the bottom bar on phones,
               but a cart in the header is the convention shoppers reach for. */}
-          <button type="button" aria-label="Cart" className="relative transition-opacity hover:opacity-70">
-            <Icon path={ICONS.cart} className="h-[22px] w-[22px] sm:h-6 sm:w-6" />
+          <button
+            type="button"
+            aria-label="Cart"
+            className="relative transition-opacity hover:opacity-70 cursor-pointer"
+          >
+            <Icon
+              path={ICONS.cart}
+              className="h-[22px] w-[22px] sm:h-6 sm:w-6"
+            />
             <span
               className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-white"
               style={{ backgroundColor: MAROON }}

@@ -85,6 +85,7 @@ export default function SignUp({
   const [values, setValues] = useState(EMPTY);
   const [touched, setTouched] = useState({});
   const [agreed, setAgreed] = useState(false);
+  const [serverError, setServerError] = useState("");
   // "form" → "otp" → "done"
   const [step, setStep] = useState("form");
 

@@ -12,6 +12,18 @@ const lanAddresses = Object.values(os.networkInterfaces())
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: [...new Set(lanAddresses)],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "img.youtube.com",
+      },
+      {
+        protocol: "http",
+        hostname: "192.168.29.163",
+      },
+    ],
+  },
 };
 
 export default nextConfig;
