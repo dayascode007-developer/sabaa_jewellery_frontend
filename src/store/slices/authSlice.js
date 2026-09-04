@@ -140,24 +140,21 @@ export const initializeAuth = createAsyncThunk(
     try {
       const token = getStoredToken();
       if (!token) {
-        return null; // No stored token
+        return null;
       }
 
-      // Validate token by fetching user profile
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/customer/profile`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/customer/profile`;
+
+      const response = await fetch(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
-        // Token invalid or expired
         saveToken(null);
-        throw new Error("Token validation failed");
+        throw new Error(`Token validation failed - status ${response.status}`);
       }
 
       const data = await response.json();
@@ -265,6 +262,9 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.customer = action.payload.customer;
         state.otpSent = false;
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("customerId");
+        }
         saveToken(action.payload.token);
       })
       .addCase(verifyOtp.rejected, (state, action) => {
@@ -315,6 +315,9 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.customer = action.payload.customer;
         state.otpSent = false;
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("customerId");
+        }
         saveToken(action.payload.token);
       })
       .addCase(verifyLoginOtp.rejected, (state, action) => {
@@ -360,6 +363,9 @@ const authSlice = createSlice({
         state.loading = false;
         state.token = action.payload.token;
         state.customer = action.payload.customer;
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("customerId");
+        }
         saveToken(action.payload.token);
       })
       .addCase(googleVerifyOtp.rejected, (state, action) => {

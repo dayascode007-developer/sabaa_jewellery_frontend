@@ -5,21 +5,16 @@ import { useEffect } from "react";
 const MAROON = "#430121";
 
 export default function SuccessModal({ isOpen, message, onClose, autoClose = 3000 }) {
-  console.log("🟢 SuccessModal render - isOpen:", isOpen, "message:", message, "autoClose:", autoClose);
-
   useEffect(() => {
     if (isOpen && autoClose) {
-      console.log("✅ SuccessModal - Setting auto-close timer for", autoClose, "ms");
       const timer = setTimeout(onClose, autoClose);
       return () => clearTimeout(timer);
     }
   }, [isOpen, autoClose, onClose]);
 
   if (!isOpen) {
-    console.log("🟢 SuccessModal - Not showing because isOpen is false");
     return null;
   }
-  console.log("🟢 SuccessModal - RENDERING");
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

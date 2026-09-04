@@ -44,13 +44,15 @@ export default function AccountDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Fetch complete customer profile if token exists but full data is missing
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  // Fetch complete customer profile once on mount
   useEffect(() => {
-    if (token && customer && !customer.title) {
-      // Customer data is incomplete (only has basic info from login), fetch full profile
+    if (token && !hasInitialized) {
+      setHasInitialized(true);
       dispatch(initializeAuth());
     }
-  }, [token, customer, dispatch]);
+  }, [token, hasInitialized, dispatch]);
 
   // Read tab from query parameter (e.g., ?tab=wishlist)
   useEffect(() => {
