@@ -39,7 +39,9 @@ function Placeholder({ label }) {
 
 // How much the magnifier enlarges, and how much of the frame it covers.
 const ZOOM = 2.4;
-const LENS_RATIO = 0.45;
+// 0.45 covered nearly half the frame and read as a panel sitting on the photo
+// rather than as a glass held over it.
+const LENS_RATIO = 0.3;
 
 function Gallery({ product }) {
   const [active, setActive] = useState(0);
