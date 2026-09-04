@@ -2,6 +2,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import cartReducer from "./slices/cartSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import authReducer from "./slices/authSlice";
+import unboxingReducer from "./slices/unboxingSlice";
+import blogsReducer from "./slices/blogsSlice";
 
 // A new store is created per request so server-rendered pages never share state
 // between users. Register additional slice reducers here as you add them.
@@ -11,5 +13,7 @@ export const makeStore = () =>
       auth: authReducer,
       cart: cartReducer,
       wishlist: wishlistReducer,
+      unboxing: unboxingReducer,
+      blogs: blogsReducer,
     },
   });

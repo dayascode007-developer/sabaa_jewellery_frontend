@@ -1,15 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FaRegHeart } from "react-icons/fa6";
 import { PiNotepad, PiShoppingCartLight } from "react-icons/pi";
 import { AiOutlineLogout } from "react-icons/ai";
-import { logout } from "@/store/slices/authSlice";
+import { MdArrowBack } from "react-icons/md";
+import { logout, initializeAuth } from "@/store/slices/authSlice";
 import PersonalInformation from "./PersonalInformation";
+import Wishlist from "./Wishlist";
+import OrderHistory from "./OrderHistory";
+import TrackOrder from "./TrackOrder";
 import LogoutConfirmModal from "./LogoutConfirmModal";
+import Footer from "@/components/layout/Footer";
 
 const MAROON = "#430121";
 
@@ -23,14 +28,37 @@ const tabItems = [
 ];
 
 // Logout is separate - not a tab
-const logoutItem = { id: "logout", label: "Logout", icon: AiOutlineLogout, isLogout: true };
+const logoutItem = {
+  id: "logout",
+  label: "Logout",
+  icon: AiOutlineLogout,
+  isLogout: true,
+};
 
 export default function AccountDashboard() {
   const [activeSection, setActiveSection] = useState("personal");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const { customer, token } = useSelector((state) => state.auth);
+  const [trackedOrder, setTrackedOrder] = useState(null);
+  const { token, customer } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Fetch complete customer profile if token exists but full data is missing
+  useEffect(() => {
+    if (token && customer && !customer.title) {
+      // Customer data is incomplete (only has basic info from login), fetch full profile
+      dispatch(initializeAuth());
+    }
+  }, [token, customer, dispatch]);
+
+  // Read tab from query parameter (e.g., ?tab=wishlist)
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && ["personal", "wishlist", "orders"].includes(tab)) {
+      setActiveSection(tab);
+    }
+  }, [searchParams]);
 
   const handleConfirmLogout = () => {
     setShowLogoutModal(false);
@@ -71,7 +99,9 @@ export default function AccountDashboard() {
       {/* Main Content - same container as header */}
       <div className={CONTAINER_CLASS}>
         <div className="py-6 md:py-8 pb-24 lg:pb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">My Account</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">
+            My Account
+          </h1>
 
           {/* Mobile: Horizontal Tab Navigation */}
           <div className="lg:hidden mb-6 overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 border-0">
@@ -79,7 +109,10 @@ export default function AccountDashboard() {
               {tabItems.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveSection(tab.id)}
+                  onClick={() => {
+                    setActiveSection(tab.id);
+                    router.push(`/account?tab=${tab.id}`);
+                  }}
                   className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium transition-all rounded-full cursor-pointer ${
                     activeSection === tab.id
                       ? "text-white"
@@ -108,9 +141,15 @@ export default function AccountDashboard() {
                 <nav className="py-2">
                   <ul>
                     {tabItems.map((tab) => (
-                      <li key={tab.id} className="border-b border-gray-100 last:border-b-0">
+                      <li
+                        key={tab.id}
+                        className="border-b border-gray-100 last:border-b-0"
+                      >
                         <button
-                          onClick={() => setActiveSection(tab.id)}
+                          onClick={() => {
+                            setActiveSection(tab.id);
+                            router.push(`/account?tab=${tab.id}`);
+                          }}
                           className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-all ${
                             activeSection === tab.id
                               ? "text-white font-medium"
@@ -146,9 +185,7 @@ export default function AccountDashboard() {
 
             {/* Main Content Area */}
             <main className="flex-1 min-w-0">
-              {activeSection === "personal" && (
-                <PersonalInformation customer={customer} />
-              )}
+              {activeSection === "personal" && <PersonalInformation />}
 
               {activeSection === "gold" && (
                 <div className="bg-white border border-gray-200 rounded p-8">
@@ -175,19 +212,23 @@ export default function AccountDashboard() {
                 </div>
               )}
 
-              {activeSection === "wishlist" && (
-                <div className="bg-white border border-gray-200 rounded p-8">
-                  <h2 className="text-2xl font-bold mb-6">Wishlist</h2>
-                  <p className="text-gray-600">Coming soon...</p>
-                </div>
-              )}
+              {activeSection === "wishlist" && <Wishlist />}
 
-              {activeSection === "orders" && (
-                <div className="bg-white border border-gray-200 rounded p-8">
-                  <h2 className="text-2xl font-bold mb-6">Order History</h2>
-                  <p className="text-gray-600">Coming soon...</p>
+              {activeSection === "orders" && trackedOrder ? (
+                <div>
+                  <button
+                    onClick={() => setTrackedOrder(null)}
+                    className="mb-4 px-4 py-2 text-sm font-medium rounded transition-opacity hover:opacity-70 cursor-pointer flex items-center gap-2"
+                    style={{ color: MAROON, borderColor: MAROON, border: "2px solid" }}
+                  >
+                    <MdArrowBack className="text-base" />
+                    Back to Orders
+                  </button>
+                  <TrackOrder />
                 </div>
-              )}
+              ) : activeSection === "orders" ? (
+                <OrderHistory onTrackOrder={(order) => setTrackedOrder(order)} />
+              ) : null}
             </main>
           </div>
         </div>
@@ -198,6 +239,8 @@ export default function AccountDashboard() {
         onConfirm={handleConfirmLogout}
         onCancel={() => setShowLogoutModal(false)}
       />
+
+      <Footer />
     </div>
   );
 }

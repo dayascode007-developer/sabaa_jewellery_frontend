@@ -7,8 +7,12 @@ import { useRouter } from "next/navigation";
 import { NAV_ITEMS } from "@/constants/homeData";
 import { logout } from "@/store/slices/authSlice";
 import { AiOutlineLogout } from "react-icons/ai";
+import { BiSolidUserCircle } from "react-icons/bi";
+import { IoMdLogIn } from "react-icons/io";
+import LogoutConfirmModal from "@/components/account/LogoutConfirmModal";
 
 const MAROON = "#7B1E2B";
+const GOLD = "#C9A227";
 
 function Chevron({ open }) {
   return (
@@ -29,6 +33,7 @@ function Chevron({ open }) {
 
 export default function MobileDrawer({ open, onClose }) {
   const [expandedId, setExpandedId] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { customer, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -44,7 +49,12 @@ export default function MobileDrawer({ open, onClose }) {
 
   const isLoggedIn = mounted && !!token && !!customer;
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutModal(false);
     dispatch(logout(token));
     onClose();
     router.push("/");
@@ -86,17 +96,42 @@ export default function MobileDrawer({ open, onClose }) {
         }`}
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
-          <span
-            className="font-[family-name:var(--font-display)] text-xl"
-            style={{ color: MAROON }}
-          >
-            Sabaa
-          </span>
+          {/* Show SABAA if not logged in, Avatar icon + Name + Login icon if logged in */}
+          {isLoggedIn && customer ? (
+            <button
+              type="button"
+              onClick={() => router.push("/account")}
+              className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-70 transition-opacity"
+            >
+              <BiSolidUserCircle
+                className="h-[22px] w-[22px] flex-shrink-0"
+                style={{ color: MAROON }}
+                title={customer.name || "User"}
+              />
+              <span className="font-[family-name:var(--font-category)] text-sm font-medium truncate max-w-[80px]" style={{ color: GOLD }}>
+                {customer.name?.length > 5
+                  ? `${customer.name.substring(0, 5)}...`
+                  : customer.name}
+              </span>
+              <IoMdLogIn
+                className="h-[22px] w-[22px] flex-shrink-0"
+                style={{ color: GOLD }}
+              />
+            </button>
+          ) : (
+            <span
+              className="font-[family-name:var(--font-display)] text-xl"
+              style={{ color: MAROON }}
+            >
+              Sabaa
+            </span>
+          )}
+
           <button
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="p-1 text-neutral-500 transition-colors hover:text-neutral-800"
+            className="p-1 text-neutral-500 transition-colors hover:text-neutral-800 flex-shrink-0"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
@@ -171,7 +206,7 @@ export default function MobileDrawer({ open, onClose }) {
           <div className="border-t border-neutral-200 p-4">
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={handleLogoutClick}
               className="flex w-full items-center justify-start gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors rounded font-[family-name:var(--font-category)] text-[14px] font-medium"
             >
               <AiOutlineLogout className="h-5 w-5" />
@@ -180,6 +215,13 @@ export default function MobileDrawer({ open, onClose }) {
           </div>
         )}
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onConfirm={handleConfirmLogout}
+        onCancel={() => setShowLogoutModal(false)}
+      />
     </>
   );
 }
