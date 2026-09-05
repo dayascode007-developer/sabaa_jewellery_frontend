@@ -253,11 +253,12 @@ const ITEM_H = 44; // px per row
 const VISIBLE = 5; // rows on screen: two above, the selected one, two below
 const PAD = ITEM_H * Math.floor(VISIBLE / 2); // lets the first and last rows reach the centre
 
-function SymbolWheel({ value, onChange }) {
+function SymbolWheel({ value, onChange, symbols = [] }) {
   const listRef = useRef(null);
+  const allSymbols = symbols.length > 0 ? symbols : SYMBOLS;
   const index = Math.max(
     0,
-    SYMBOLS.findIndex((s) => s.id === value)
+    allSymbols.findIndex((s) => s.id === value)
   );
 
   // Line the chosen row up with the highlight on first paint only. Re-running
@@ -274,10 +275,10 @@ function SymbolWheel({ value, onChange }) {
     const el = listRef.current;
     if (!el) return;
     const i = Math.min(
-      SYMBOLS.length - 1,
+      allSymbols.length - 1,
       Math.max(0, Math.round(el.scrollTop / ITEM_H))
     );
-    if (SYMBOLS[i].id !== value) onChange(SYMBOLS[i].id);
+    if (allSymbols[i].id !== value) onChange(allSymbols[i].id);
   };
 
   const scrollTo = (i) => {
@@ -288,11 +289,11 @@ function SymbolWheel({ value, onChange }) {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       const next = Math.min(
-        SYMBOLS.length - 1,
+        allSymbols.length - 1,
         Math.max(0, index + (e.key === "ArrowDown" ? 1 : -1))
       );
       scrollTo(next);
-      onChange(SYMBOLS[next].id);
+      onChange(allSymbols[next].id);
     }
   };
 
@@ -315,7 +316,7 @@ function SymbolWheel({ value, onChange }) {
         tabIndex={0}
         role="listbox"
         aria-label="Symbol"
-        aria-activedescendant={`symbol-opt-${SYMBOLS[index].id}`}
+        aria-activedescendant={`symbol-opt-${allSymbols[index]?.id || ''}`}
         // relative z-10 matters: the mask below makes this element a stacking
         // context, so the rows inside it can no longer out-rank the selection
         // bar on their own — the bar was painting over the chosen row and
@@ -336,7 +337,7 @@ function SymbolWheel({ value, onChange }) {
             "linear-gradient(to bottom, transparent, #000 26%, #000 74%, transparent)",
         }}
       >
-        {SYMBOLS.map((s, i) => {
+        {allSymbols.map((s, i) => {
           const active = i === index;
           const distance = Math.abs(i - index);
           return (
@@ -620,15 +621,10 @@ export default function ProductDetail({ product }) {
                 value={fontId}
                 onChange={(e) => setFontId(e.target.value)}
                 className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[15px] text-neutral-800 outline-none focus:border-neutral-500"
-                style={{
-                  fontFamily: `var(${
-                    FONT_STYLES.find((f) => f.id === fontId)?.cssVar ?? "--font-heading"
-                  })`,
-                }}
               >
-                {FONT_STYLES.map((f) => (
-                  <option key={f.id} value={f.id} style={{ fontFamily: `var(${f.cssVar})` }}>
-                    {f.label}
+                {product.fonts?.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
                   </option>
                 ))}
               </select>
@@ -640,7 +636,7 @@ export default function ProductDetail({ product }) {
               </p>
               {/* Scroll wheel rather than a dropdown — spin it up or down and
                   whichever row lands in the bar is the choice. */}
-              <SymbolWheel value={symbolId} onChange={setSymbolId} />
+              <SymbolWheel value={symbolId} onChange={setSymbolId} symbols={product.symbols} />
             </div>
 
             {/* Which side of the name the symbol sits on. Hidden while no
@@ -651,23 +647,20 @@ export default function ProductDetail({ product }) {
                   Symbol Direction
                 </legend>
                 <div className="mt-1.5 flex items-center gap-5">
-                  {[
-                    { value: "left", label: "Left side" },
-                    { value: "right", label: "Right side" },
-                  ].map((opt) => (
+                  {product.symbol_direction?.map((dir) => (
                     <label
-                      key={opt.value}
+                      key={dir.id}
                       className="flex items-center gap-2 text-[13px] text-neutral-700"
                     >
                       <input
                         type="radio"
                         name="symbol-side"
-                        value={opt.value}
-                        checked={symbolSide === opt.value}
+                        value={dir.name}
+                        checked={symbolSide === dir.name}
                         onChange={(e) => setSymbolSide(e.target.value)}
                         className="h-3.5 w-3.5 accent-[#7B1E2B]"
                       />
-                      {opt.label}
+                      {dir.name === "left" ? "Left side" : dir.name === "right" ? "Right side" : dir.name === "center" ? "Center" : dir.name}
                     </label>
                   ))}
                 </div>

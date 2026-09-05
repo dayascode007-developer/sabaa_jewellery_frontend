@@ -172,17 +172,15 @@ export default function ProductPage() {
 
   // Generate correct category href: "all-{main}" for main category, "{sub}" for subcategory
   const categoryHref = (() => {
-    if (product.categoryId === product.subcategoryId) {
-      // Main category
-      return `/category/all-${product.categoryName
-        .toLowerCase()
-        .replace(/\s+/g, "-")}`;
-    } else {
-      // Subcategory
-      return `/category/${product.subcategoryName
-        .toLowerCase()
-        .replace(/\s+/g, "-")}`;
+    if (!product.categoryName) return "/";
+
+    // If we have subcategoryName and it's different from categoryName, use subcategory
+    if (product.subcategoryName && product.subcategoryName !== product.categoryName) {
+      return `/category/${product.subcategoryName.toLowerCase().replace(/\s+/g, "-")}`;
     }
+
+    // Default to main category
+    return `/category/all-${product.categoryName.toLowerCase().replace(/\s+/g, "-")}`;
   })();
 
   return (
