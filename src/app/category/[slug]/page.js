@@ -9,8 +9,23 @@ import ProductCard from "@/components/products/ProductCard";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { getCategoryLabel } from "@/constants/productData";
 import { fetchCategories, selectRawCategories } from "@/store/slices/categoriesSlice";
-import { fetchProductsByMainAndSubCategory, selectProductsByCategory, selectProductsLoading } from "@/store/slices/productsSlice";
+import {
+  fetchProductsByMainAndSubCategory,
+  selectProductsByCategory,
+  selectProductsLoading,
+  fetchAllProducts,
+  selectAllProducts,
+  selectAllProductsTotal,
+  selectAllProductsLoading,
+} from "@/store/slices/productsSlice";
 import { ProductCardShimmer } from "@/components/shimmer-loader/Shimmer-loader";
+
+const MAROON = "#7B1E2B";
+
+// "All Jewellery" is not one of the API's categories — it is the whole shop, so
+// it comes from the flat /api/products list rather than from a category id.
+const ALL_SLUG = "all-jewellery";
+const PAGE_SIZE = 20;
 
 // Dynamically build slug-to-ID mapping from API categories
 const buildCategoryMap = (categories) => {
@@ -35,6 +50,12 @@ export default function CategoryPage({ params: paramsPromise }) {
   const [showShimmer, setShowShimmer] = useState(false);
   const dispatch = useDispatch();
   const rawCategories = useSelector(selectRawCategories);
+
+  const isAll = slug === ALL_SLUG;
+  const allProducts = useSelector(selectAllProducts);
+  const allTotal = useSelector(selectAllProductsTotal);
+  const allLoading = useSelector(selectAllProductsLoading);
+
   const products = useSelector((state) => {
     if (!slug || !rawCategories?.length) return [];
     const categoryMap = buildCategoryMap(rawCategories);
@@ -42,7 +63,8 @@ export default function CategoryPage({ params: paramsPromise }) {
     if (!categoryInfo || !state?.products) return [];
     return selectProductsByCategory(state, categoryInfo.mainId, categoryInfo.subId) || [];
   });
-  const loading = useSelector((state) => selectProductsLoading(state)) || false;
+  const categoryLoading = useSelector((state) => selectProductsLoading(state)) || false;
+  const loading = isAll ? allLoading : categoryLoading;
 
   // Only show shimmer if loading takes more than 500ms (debounced)
   useEffect(() => {
@@ -67,9 +89,19 @@ export default function CategoryPage({ params: paramsPromise }) {
     });
   }, [paramsPromise]);
 
+  // All Jewellery does not wait for /api/categories — it has no category id to
+  // look up, so its first page can be requested as soon as the slug is known.
+  useEffect(() => {
+    if (slug !== ALL_SLUG) return;
+    dispatch(fetchAllProducts({ limit: PAGE_SIZE, offset: 0 }));
+  }, [slug, dispatch]);
+
+  const loadMore = () =>
+    dispatch(fetchAllProducts({ limit: PAGE_SIZE, offset: allProducts.length }));
+
   // Fetch products when slug changes
   useEffect(() => {
-    if (!slug || !rawCategories?.length) return;
+    if (!slug || slug === ALL_SLUG || !rawCategories?.length) return;
     const categoryMap = buildCategoryMap(rawCategories);
     const categoryInfo = categoryMap[slug];
     if (!categoryInfo) return;
@@ -82,6 +114,7 @@ export default function CategoryPage({ params: paramsPromise }) {
 
   // Get category name from API categories or fallback to label
   const categoryLabel = (() => {
+    if (isAll) return "All Jewellery";
     if (!slug || !rawCategories?.length) return getCategoryLabel(slug);
     const categoryMap = buildCategoryMap(rawCategories);
     const categoryInfo = categoryMap[slug];
@@ -97,7 +130,15 @@ export default function CategoryPage({ params: paramsPromise }) {
   })();
 
   // Only show API products, no static fallback
-  const displayProducts = products;
+  const displayProducts = isAll ? allProducts : products;
+  // The count in the heading is the whole catalogue, not just the pages loaded
+  // so far — "(5 results)" while 20 are on screen would be wrong.
+  const resultCount = isAll ? allTotal || allProducts.length : products.length;
+  const hasMore = isAll && allProducts.length < allTotal;
+
+  // A "Load More" page keeps the grid on screen while it fetches, so the full
+  // shimmer would wipe out what the visitor is already reading.
+  const isFirstLoad = (loading || showShimmer) && displayProducts.length === 0;
 
   return (
     <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
@@ -109,20 +150,38 @@ export default function CategoryPage({ params: paramsPromise }) {
           <h1 className="font-[family-name:var(--font-heading)] text-[26px] leading-tight text-neutral-900 sm:text-[32px] lg:text-[40px]">
             {categoryLabel}{" "}
             <span className="text-[15px] font-normal text-neutral-500 sm:text-[17px]">
-              ({displayProducts.length} results)
+              ({resultCount} results)
             </span>
           </h1>
 
-          {showShimmer || loading ? (
+          {isFirstLoad ? (
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               <ProductCardShimmer count={8} />
             </div>
           ) : displayProducts.length > 0 ? (
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {displayProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {displayProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              {hasMore ? (
+                <div className="mt-8 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={loadMore}
+                    disabled={loading}
+                    className="rounded-full px-7 py-3 text-[14px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{ backgroundColor: MAROON }}
+                  >
+                    {loading
+                      ? "Loading…"
+                      : `Load More (${allTotal - allProducts.length} more)`}
+                  </button>
+                </div>
+              ) : null}
+            </>
           ) : (
             <div className="mt-12 flex flex-col items-center justify-center py-12 text-center">
               <svg

@@ -1,63 +1,78 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { fetchProductsByCategory } from "@/store/api/categoriesApi";
+import { fetchAllProductsApi } from "@/store/api/productsApi";
+
+/**
+ * One API product -> the shape ProductCard and ProductDetail expect.
+ *
+ * Shared by both thunks below. It used to live inline inside the by-category
+ * thunk; with a second source of products the two mappings would have drifted,
+ * and a card would then behave differently depending on which page you arrived
+ * from.
+ *
+ * The `category` wrapper is optional — the flat /api/products list has no
+ * wrapping category object, so the product's own fields are used instead.
+ */
+export const mapApiProduct = (product, category = null) => ({
+  id: product.id,
+  title: product.title,
+  description: product.description,
+  category:
+    (category?.category_name || product.category_name || "")
+      .toLowerCase()
+      .replace(/\s+/g, "-") || "",
+  category_id: product.category_id,
+  subcategories: product.subcategories || [],
+
+  // Prices arrive as strings ("1500.00").
+  price: parseFloat(product.sale_price) || 0,
+  mrp: parseFloat(product.regular_price) || 0,
+
+  // Image
+  image: product.main_image || null,
+  gallery: [
+    product.main_image,
+    ...(product.sub_images?.map((img) => img.image_url) || []),
+  ].filter(Boolean),
+
+  // Code/SKU
+  code: product.sku || "",
+
+  // Additional fields
+  sizes: product.ring_sizes?.map((rs) => rs.size.toString()) || [],
+  hasRingSize: (product.ring_sizes?.length || 0) > 0,
+  maxQty: product.limit_purchases ? 10 : 99,
+  rating: 4,
+  bestseller: true,
+  sections: [],
+
+  // Engraving/customization data
+  fonts: product.fonts || [],
+  colors: product.colors || [],
+  symbols: product.symbols || [],
+  symbol_direction: product.symbol_direction || [],
+
+  // Product details sections
+  product_details: product.product_details || [],
+  cleaning_polishing: product.cleaning_polishing || [],
+  usage_color_guarantee: product.usage_color_guarantee || [],
+  return_exchange_policy: product.return_exchange_policy || [],
+  address_contact: product.address_contact || [],
+
+  // Category/subcategory info
+  categoryId: category?.category_id ?? product.category_id,
+  categoryName: category?.category_name ?? product.category_name ?? "",
+  subcategoryId: category?.id ?? product.subcategories?.[0]?.id,
+  subcategoryName: category?.name ?? product.subcategories?.[0]?.name ?? "",
+});
 
 export const fetchProductsByMainAndSubCategory = createAsyncThunk(
   "products/fetchByCategory",
   async ({ mainCategoryId, subCategoryId }, { rejectWithValue }) => {
     try {
       const data = await fetchProductsByCategory(mainCategoryId, subCategoryId);
-      // Transform API format to match ProductCard interface
       const products = data.flatMap((category) =>
-        (category.products || []).map((product) => ({
-          id: product.id,
-          title: product.title,
-          description: product.description,
-          category:
-            category.category_name?.toLowerCase().replace(/\s+/g, "-") || "",
-          category_id: product.category_id,
-          subcategories: product.subcategories || [],
-
-          // Price: convert string to number
-          price: parseFloat(product.sale_price) || 0,
-          mrp: parseFloat(product.regular_price) || 0,
-
-          // Image
-          image: product.main_image || null,
-          gallery: [
-            product.main_image,
-            ...(product.sub_images?.map((img) => img.image_url) || []),
-          ].filter(Boolean),
-
-          // Code/SKU
-          code: product.sku || "",
-
-          // Additional fields
-          sizes: product.ring_sizes?.map((rs) => rs.size.toString()) || [],
-          hasRingSize: (product.ring_sizes?.length || 0) > 0,
-          maxQty: product.limit_purchases ? 10 : 99,
-          rating: 4,
-          bestseller: true,
-          sections: [],
-
-          // Engraving/customization data
-          fonts: product.fonts || [],
-          colors: product.colors || [],
-          symbols: product.symbols || [],
-          symbol_direction: product.symbol_direction || [],
-
-          // Product details sections
-          product_details: product.product_details || [],
-          cleaning_polishing: product.cleaning_polishing || [],
-          usage_color_guarantee: product.usage_color_guarantee || [],
-          return_exchange_policy: product.return_exchange_policy || [],
-          address_contact: product.address_contact || [],
-
-          // Category/subcategory info
-          categoryId: category.category_id,
-          categoryName: category.category_name,
-          subcategoryId: category.id,
-          subcategoryName: category.name,
-        }))
+        (category.products || []).map((product) => mapApiProduct(product, category))
       );
       return { mainCategoryId, subCategoryId, products };
     } catch (error) {
@@ -66,8 +81,27 @@ export const fetchProductsByMainAndSubCategory = createAsyncThunk(
   }
 );
 
+/**
+ * The whole catalogue, for the "All Jewellery" page. Paginated: an offset above
+ * zero appends to what is already loaded rather than replacing it, so "Load
+ * More" grows the grid instead of swapping it.
+ */
+export const fetchAllProducts = createAsyncThunk(
+  "products/fetchAll",
+  async ({ limit = 20, offset = 0 } = {}, { rejectWithValue }) => {
+    try {
+      const { products, total } = await fetchAllProductsApi({ limit, offset });
+      return { products: products.map((p) => mapApiProduct(p)), total, offset };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   byCategory: {}, // keyed by "mainId-subId"
+  // The flat catalogue behind /category/all-jewellery.
+  all: { items: [], total: 0, loading: false, error: null },
   loading: false,
   error: null,
 };
@@ -89,6 +123,31 @@ const productsSlice = createSlice({
       .addCase(fetchProductsByMainAndSubCategory.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      .addCase(fetchAllProducts.pending, (state) => {
+        state.all.loading = true;
+        state.all.error = null;
+      })
+      .addCase(fetchAllProducts.fulfilled, (state, action) => {
+        const { products, total, offset } = action.payload;
+        state.all.loading = false;
+        state.all.total = total;
+        // offset 0 is a fresh load; anything else is a further page of the same
+        // list, appended. Ids are de-duplicated so a repeated dispatch — React
+        // Strict Mode runs effects twice in development — cannot print the same
+        // product twice.
+        const merged = offset === 0 ? products : [...state.all.items, ...products];
+        const seen = new Set();
+        state.all.items = merged.filter((p) => {
+          if (seen.has(p.id)) return false;
+          seen.add(p.id);
+          return true;
+        });
+      })
+      .addCase(fetchAllProducts.rejected, (state, action) => {
+        state.all.loading = false;
+        state.all.error = action.payload;
       });
   },
 });
@@ -97,5 +156,10 @@ export const selectProductsByCategory = (state, mainId, subId) =>
   state?.products?.byCategory?.[`${mainId}-${subId}`] || [];
 export const selectProductsLoading = (state) =>
   state?.products?.loading || false;
+
+export const selectAllProducts = (state) => state?.products?.all?.items || [];
+export const selectAllProductsTotal = (state) => state?.products?.all?.total || 0;
+export const selectAllProductsLoading = (state) =>
+  state?.products?.all?.loading || false;
 
 export default productsSlice.reducer;
