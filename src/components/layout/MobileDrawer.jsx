@@ -6,6 +6,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { NAV_ITEMS } from "@/constants/homeData";
 import { logout } from "@/store/slices/authSlice";
+import { fetchCategories, selectNavItems, selectCategoriesLoading } from "@/store/slices/categoriesSlice";
+import { MobileDrawerShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import { AiOutlineLogout } from "react-icons/ai";
 import { BiSolidUserCircle } from "react-icons/bi";
 import { IoMdLogIn } from "react-icons/io";
@@ -35,8 +37,18 @@ export default function MobileDrawer({ open, onClose }) {
   const [expandedId, setExpandedId] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { customer, token } = useSelector((state) => state.auth);
+  const navItemsFromRedux = useSelector(selectNavItems);
+  const loading = useSelector(selectCategoriesLoading);
   const dispatch = useDispatch();
   const router = useRouter();
+
+  // Fetch categories on mount
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  // Use Redux nav items if available, fallback to static
+  const navItems = navItemsFromRedux.length > 0 ? navItemsFromRedux : NAV_ITEMS;
 
   // Fix hydration mismatch: only render auth UI after hydration.
   // The store starts empty on the server, then AuthInitializer fills it from
@@ -140,8 +152,11 @@ export default function MobileDrawer({ open, onClose }) {
         </div>
 
         <nav className="min-h-0 flex-1 overflow-y-auto py-2">
-          <ul>
-            {NAV_ITEMS.map((item) => {
+          {loading && navItemsFromRedux.length === 0 ? (
+            <MobileDrawerShimmer />
+          ) : (
+            <ul>
+              {navItems.map((item) => {
               const isExpanded = expandedId === item.id;
               // Flatten the mega-menu columns into one list for the drawer.
               const links = item.menu
@@ -198,7 +213,8 @@ export default function MobileDrawer({ open, onClose }) {
                 </li>
               );
             })}
-          </ul>
+            </ul>
+          )}
         </nav>
 
         {/* Logout Section - Only show if logged in */}

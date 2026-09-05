@@ -81,13 +81,21 @@ export default function ProductCard({ product }) {
           relied on to animate. */}
       <div className="relative w-full overflow-hidden bg-neutral-100 pb-[100%] transition-[padding-bottom] duration-300 ease-out group-hover:pb-[calc(100%-44px)] group-focus-within:pb-[calc(100%-44px)]">
         {product.image ? (
-          <Image
-            src={product.image}
-            alt={product.title}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
+          typeof product.image === "string" && product.image.startsWith("http") ? (
+            <img
+              src={product.image}
+              alt={product.title}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <Image
+              src={product.image}
+              alt={product.title}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          )
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#EDE3D3] via-[#E3D5BE] to-[#D8C6A8] p-3 text-center">
             <span className="text-[10px] leading-tight text-[#8A6E45]">{product.title}</span>
@@ -126,13 +134,12 @@ export default function ProductCard({ product }) {
           like a poster; ranged left, the eye runs straight down the column of
           names and prices. */}
       <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4">
-        {/* Category, in its original place above the title. Shown as its proper
-            label rather than the raw slug the card used to print. */}
+        {/* Subcategory name, with category label fallback */}
         <p className="text-[10px] tracking-[0.12em] text-neutral-500 uppercase">
-          {getCategoryLabel(product.category)}
+          {product.subcategories?.[0]?.name || getCategoryLabel(product.category)}
         </p>
 
-        <h3 className="mt-1.5 line-clamp-2 min-h-[2.6em] text-[15px] leading-snug text-neutral-800 transition-colors group-hover:text-[#7B1E2B]">
+        <h3 className="font-[family-name:var(--font-heading)] mt-1.5 line-clamp-2 min-h-[2.6em] text-[15px] leading-snug text-neutral-800 transition-colors group-hover:text-[#7B1E2B]">
           {product.title}
         </h3>
 
@@ -154,14 +161,12 @@ export default function ProductCard({ product }) {
           ) : null}
         </p>
 
-        {/* Opens to exactly the 44px the image gave up. The two transitions are
-            the same length, so the card breathes in one place and out in the
-            other and its height stays put. */}
-        <div className="mt-auto h-0 w-full overflow-hidden transition-[height] duration-300 ease-out group-hover:h-11 group-focus-within:h-11">
+        {/* Mobile: always show button. Desktop: show only on hover. */}
+        <div className="mt-auto h-11 w-full overflow-hidden transition-[height] duration-300 ease-out md:h-0 md:group-hover:h-11 md:group-focus-within:h-11">
           <button
             type="button"
             onClick={onAddToCart}
-            className="relative z-20 mt-1.5 inline-flex h-[38px] w-full items-center justify-center gap-2 rounded text-[12px] font-medium text-white transition-opacity hover:opacity-90"
+            className="relative z-20 mt-1.5 inline-flex h-[38px] w-full items-center justify-center gap-2 rounded font-[family-name:var(--font-category)] text-[12px] font-medium text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: MAROON }}
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">

@@ -1,43 +1,143 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import SiteHeader from "@/components/layout/SiteHeader";
 import Footer from "@/components/layout/Footer";
 import BottomNav from "@/components/layout/BottomNav";
 import ProductCard from "@/components/products/ProductCard";
 import Breadcrumb from "@/components/common/Breadcrumb";
-import { getCategoryLabel, getProductsBySlug } from "@/constants/productData";
+import { getCategoryLabel } from "@/constants/productData";
+import { fetchCategories, selectRawCategories } from "@/store/slices/categoriesSlice";
+import { fetchProductsByMainAndSubCategory, selectProductsByCategory, selectProductsLoading } from "@/store/slices/productsSlice";
+import { ProductCardShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 
-export async function generateMetadata({ params }) {
-  const { slug } = await params;
-  return { title: `${getCategoryLabel(slug)} — Sabaa Jewel Arts` };
-}
+// Dynamically build slug-to-ID mapping from API categories
+const buildCategoryMap = (categories) => {
+  const map = {};
+  categories.forEach((category) => {
+    const slug = category.name.toLowerCase().replace(/\s+/g, "-");
 
-// The shell is rendered here rather than in app/layout.js because the home page
-// still renders its own. Hoisting both into the root layout is the tidier fix
-// once you want it.
-export default async function CategoryPage({ params }) {
-  const { slug } = await params;
-  const label = getCategoryLabel(slug);
-  const products = getProductsBySlug(slug);
+    // Add main category with all subcategories
+    map[`all-${slug}`] = { mainId: category.id, subId: null };
+
+    // Add each subcategory
+    (category.subcategories || []).forEach((sub) => {
+      const subSlug = sub.name.toLowerCase().replace(/\s+/g, "-");
+      map[subSlug] = { mainId: category.id, subId: sub.id };
+    });
+  });
+  return map;
+};
+
+export default function CategoryPage({ params: paramsPromise }) {
+  const [slug, setSlug] = useState("");
+  const [showShimmer, setShowShimmer] = useState(false);
+  const dispatch = useDispatch();
+  const rawCategories = useSelector(selectRawCategories);
+  const products = useSelector((state) => {
+    if (!slug || !rawCategories?.length) return [];
+    const categoryMap = buildCategoryMap(rawCategories);
+    const categoryInfo = categoryMap[slug];
+    if (!categoryInfo || !state?.products) return [];
+    return selectProductsByCategory(state, categoryInfo.mainId, categoryInfo.subId) || [];
+  });
+  const loading = useSelector((state) => selectProductsLoading(state)) || false;
+
+  // Only show shimmer if loading takes more than 500ms (debounced)
+  useEffect(() => {
+    if (!loading) {
+      setShowShimmer(false);
+      return;
+    }
+
+    const timer = setTimeout(() => setShowShimmer(true), 500);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  // Unwrap params (Next.js 15 returns promise)
+  useEffect(() => {
+    Promise.resolve(paramsPromise).then((p) => {
+      if (p?.slug) setSlug(p.slug);
+    });
+  }, [paramsPromise]);
+
+  // Fetch products when slug changes
+  useEffect(() => {
+    if (!slug || !rawCategories?.length) return;
+    const categoryMap = buildCategoryMap(rawCategories);
+    const categoryInfo = categoryMap[slug];
+    if (!categoryInfo) return;
+
+    dispatch(fetchProductsByMainAndSubCategory({
+      mainCategoryId: categoryInfo.mainId,
+      subCategoryId: categoryInfo.subId,
+    }));
+  }, [slug, rawCategories, dispatch]);
+
+  // Get category name from API categories or fallback to label
+  const categoryLabel = (() => {
+    if (!slug || !rawCategories?.length) return getCategoryLabel(slug);
+    const categoryMap = buildCategoryMap(rawCategories);
+    const categoryInfo = categoryMap[slug];
+    if (!categoryInfo) return getCategoryLabel(slug);
+
+    // Find the actual category name from rawCategories
+    const category = rawCategories.find((c) => c.id === categoryInfo.mainId);
+    if (categoryInfo.subId) {
+      const subCategory = category?.subcategories?.find((s) => s.id === categoryInfo.subId);
+      return subCategory?.name || getCategoryLabel(slug);
+    }
+    return category?.name || getCategoryLabel(slug);
+  })();
+
+  // Only show API products, no static fallback
+  const displayProducts = products;
 
   return (
     <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
       <SiteHeader />
-
-      <Breadcrumb items={[{ label: "Home", href: "/" }, { label }]} />
+      <Breadcrumb items={[{ label: "Home", href: "/" }, { label: categoryLabel }]} />
 
       <main className="bg-[#FDF0F2]">
         <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">
           <h1 className="font-[family-name:var(--font-heading)] text-[26px] leading-tight text-neutral-900 sm:text-[32px] lg:text-[40px]">
-            {label}{" "}
+            {categoryLabel}{" "}
             <span className="text-[15px] font-normal text-neutral-500 sm:text-[17px]">
-              ({products.length} results)
+              ({displayProducts.length} results)
             </span>
           </h1>
 
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {showShimmer || loading ? (
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <ProductCardShimmer count={8} />
+            </div>
+          ) : displayProducts.length > 0 ? (
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {displayProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-12 flex flex-col items-center justify-center py-12 text-center">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-16 w-16 text-neutral-300 mb-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path d="M9 12h6m-6 4h6M7 20h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
+              </svg>
+              <h2 className="font-[family-name:var(--font-heading)] text-2xl font-semibold text-neutral-700">Coming Soon</h2>
+              <p className="mt-2 text-neutral-500">This category will be available shortly</p>
+            </div>
+          )}
         </div>
       </main>
 

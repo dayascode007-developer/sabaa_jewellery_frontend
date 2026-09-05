@@ -272,4 +272,359 @@ export function BannerShimmer() {
   );
 }
 
+export function NavbarShimmer() {
+  return (
+    <div className="hidden lg:block relative w-full border-b border-neutral-200 bg-white">
+      <ul className="mx-auto flex max-w-[1400px] items-center gap-5 overflow-x-auto px-4 py-2 sm:gap-8 sm:px-6 lg:justify-center">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <li key={i} className="shrink-0">
+            <div className="flex items-center gap-2">
+              <div
+                className="h-[35px] w-[35px] rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+              <div
+                className="h-5 w-20 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export function ProductCardShimmer({ count = 8 }) {
+  const cards = Array.from({ length: count });
+
+  return (
+    <>
+      {cards.map((_, i) => (
+        <article
+          key={i}
+          className="flex flex-col overflow-hidden rounded-xl border border-neutral-200/80 bg-white"
+        >
+          {/* Image area */}
+          <div
+            className="relative w-full pb-[100%] overflow-hidden bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded-t-xl"
+            style={{
+              backgroundSize: "200% 100%",
+              animation: "shimmer 2s infinite",
+            }}
+          />
+
+          {/* Content area */}
+          <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4 space-y-2">
+            {/* Category label shimmer */}
+            <div
+              className="h-3 w-16 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+
+            {/* Title shimmer (2 lines) */}
+            <div className="space-y-1.5">
+              <div
+                className="h-4 w-full rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+              <div
+                className="h-4 w-3/4 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+            </div>
+
+            {/* Price shimmer */}
+            <div
+              className="h-5 w-24 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 mt-2"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+
+            {/* Button shimmer */}
+            <div
+              className="h-10 w-full rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 mt-auto"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+          </div>
+        </article>
+      ))}
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </>
+  );
+}
+
+export function MobileDrawerShimmer() {
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto py-2">
+      <ul>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <li key={i} className="border-b border-neutral-100">
+            <div className="flex w-full items-center justify-between gap-3 px-4 py-3">
+              <div
+                className="h-4 w-32 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+              <div
+                className="h-4 w-4 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export function ProductDetailShimmer() {
+  return (
+    <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
+      <main className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">
+        {/* Product section */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+          {/* Gallery/Image */}
+          <div className="flex flex-col gap-4">
+            {/* Main image */}
+            <div
+              className="w-full aspect-square rounded-lg bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+
+            {/* Thumbnail gallery */}
+            <div className="flex gap-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-16 h-16 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                  style={{
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 2s infinite",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Product Info */}
+          <div className="flex flex-col gap-6">
+            {/* Product Code */}
+            <div
+              className="h-3 w-24 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+
+            {/* Title */}
+            <div className="space-y-2">
+              <div
+                className="h-8 w-full rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+              <div
+                className="h-8 w-3/4 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+            </div>
+
+            {/* Rating */}
+            <div className="flex gap-1">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-5 w-5 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                  style={{
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 2s infinite",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Price */}
+            <div className="flex gap-3 items-baseline">
+              <div
+                className="h-7 w-24 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+              <div
+                className="h-5 w-20 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+            </div>
+
+            {/* Color selector */}
+            <div className="space-y-2">
+              <div
+                className="h-4 w-16 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+              <div className="flex gap-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-10 w-10 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                    style={{
+                      backgroundSize: "200% 100%",
+                      animation: "shimmer 2s infinite",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Size selector */}
+            <div className="space-y-2">
+              <div
+                className="h-4 w-12 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+              <div className="flex gap-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-10 w-10 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                    style={{
+                      backgroundSize: "200% 100%",
+                      animation: "shimmer 2s infinite",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Quantity */}
+            <div className="space-y-2">
+              <div
+                className="h-4 w-20 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+              <div
+                className="h-10 w-24 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+            </div>
+
+            {/* Add to cart button */}
+            <div
+              className="h-12 w-full rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Description section */}
+        <div className="mt-12 space-y-8">
+          {/* Section title */}
+          <div
+            className="h-6 w-40 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+            style={{
+              backgroundSize: "200% 100%",
+              animation: "shimmer 2s infinite",
+            }}
+          />
+
+          {/* Description text */}
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-4 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 ${
+                  i === 3 ? "w-3/4" : "w-full"
+                }`}
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </main>
+
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export default ShimmerLoader;

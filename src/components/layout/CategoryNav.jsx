@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
 import { NAV_ITEMS } from "@/constants/homeData";
 import { getProductsBySlug } from "@/constants/productData";
+import { fetchCategories, selectNavItems, selectCategoriesLoading } from "@/store/slices/categoriesSlice";
+import { NavbarShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 
 // Each dropdown's "View All" lands on the aggregate page for that parent, and
 // the three thumbnails beside it are the first products from the same set.
@@ -286,8 +289,19 @@ function MegaPanel({ menu, kind, onNavigate }) {
 }
 
 export default function CategoryNav() {
+  const dispatch = useDispatch();
+  const navItemsFromRedux = useSelector(selectNavItems);
+  const loading = useSelector(selectCategoriesLoading);
   const [openId, setOpenId] = useState(null);
   const navRef = useRef(null);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  // Use Redux nav items if available, fallback to static
+  const navItems = navItemsFromRedux.length > 0 ? navItemsFromRedux : NAV_ITEMS;
 
   const close = useCallback(() => setOpenId(null), []);
 
@@ -306,7 +320,7 @@ export default function CategoryNav() {
     };
   }, [openId, close]);
 
-  const openMenu = NAV_ITEMS.find((item) => item.id === openId)?.menu;
+  const openMenu = navItems.find((item) => item.id === openId)?.menu;
 
   // A category page highlights its nav item — including when the page is one of
   // the item's dropdown children, so /category/hindu-rings lights up "Rings".
@@ -318,7 +332,9 @@ export default function CategoryNav() {
     );
   };
 
-  return (
+  return loading && navItemsFromRedux.length === 0 ? (
+    <NavbarShimmer />
+  ) : (
     <nav
       ref={navRef}
       // Hidden below lg — on phones and tablets these links live in the
@@ -327,7 +343,7 @@ export default function CategoryNav() {
       onMouseLeave={close}
     >
       <ul className="mx-auto flex max-w-[1400px] items-center gap-5 overflow-x-auto px-4 py-2 sm:gap-8 sm:px-6 lg:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const isOpen = openId === item.id;
           const current = isCurrent(item);
           return (

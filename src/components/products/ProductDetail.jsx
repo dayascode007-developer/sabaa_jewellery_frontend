@@ -56,7 +56,7 @@ function Gallery({ product }) {
   const current = shots[active];
   // The magnifier reads the original file, not the resized <Image> output —
   // zooming a downscaled copy would only show bigger blur.
-  const fullSrc = current?.src ?? null;
+  const fullSrc = typeof current === "string" ? current : current?.src ?? null;
 
   // Pixel maths, not percentages — the background offset inside the lens has
   // to be expressed against the scaled image's real size.
@@ -113,7 +113,15 @@ function Gallery({ product }) {
           onMouseLeave={() => setLens(null)}
         >
           {current ? (
-            <Image src={current} alt={product.title} fill sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover" priority />
+            typeof current === "string" && current.startsWith("http") ? (
+              <img
+                src={current}
+                alt={product.title}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <Image src={current} alt={product.title} fill sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover" priority />
+            )
           ) : (
             <Placeholder label={product.title} />
           )}
@@ -131,25 +139,33 @@ function Gallery({ product }) {
         </div>
       </div>
 
-      <div className="mt-3 flex gap-2">
-        {shots.map((shot, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setActive(i)}
-            aria-label={`View image ${i + 1}`}
-            aria-current={i === active}
-            className={`relative h-16 w-16 shrink-0 overflow-hidden rounded border transition-colors ${
-              i === active ? "border-[#7B1E2B]" : "border-neutral-200 hover:border-neutral-400"
-            }`}
-          >
-            {shot ? (
-              <Image src={shot} alt="" fill sizes="64px" className="object-cover" />
-            ) : (
-              <span className="block h-full w-full bg-gradient-to-br from-[#EDE3D3] to-[#D8C6A8]" />
-            )}
-          </button>
-        ))}
+      {/* Thumbnail gallery with scroll indicator */}
+      <div className="mt-3 relative">
+        <div className="flex gap-2 overflow-x-auto scroll-smooth pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {shots.map((shot, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setActive(i)}
+              aria-label={`View image ${i + 1}`}
+              aria-current={i === active}
+              className={`relative h-16 w-16 shrink-0 overflow-hidden rounded border transition-colors ${
+                i === active ? "border-[#7B1E2B]" : "border-neutral-200 hover:border-neutral-400"
+              }`}
+            >
+              {shot ? (
+                typeof shot === "string" && shot.startsWith("http") ? (
+                  <img src={shot} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                ) : (
+                  <Image src={shot} alt="" fill sizes="64px" className="object-cover" />
+                )
+              ) : (
+                <span className="block h-full w-full bg-gradient-to-br from-[#EDE3D3] to-[#D8C6A8]" />
+              )}
+            </button>
+          ))}
+        </div>
+
       </div>
 
       {/* Trust badges under the gallery */}
@@ -462,8 +478,8 @@ export default function ProductDetail({ product }) {
 
   return (
     <>
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-      <div>
+    <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-12">
+      <div className="sm:sticky sm:top-4 sm:h-fit lg:sticky lg:top-4 lg:h-fit">
         <Gallery product={product} />
 
         {/* Preview of the engraving — only where there is engraving to preview. */}
@@ -499,7 +515,7 @@ export default function ProductDetail({ product }) {
         </div>
 
         <p className="mt-3 text-[11px] text-neutral-500">
-          Product Code : <span className="text-neutral-700">#{product.productCode}</span>
+          Product Code : <span className="text-neutral-700">{product.code}</span>
         </p>
 
         <h1 className="mt-1 font-[family-name:var(--font-heading)] text-[26px] leading-snug text-neutral-900 sm:text-[32px] lg:text-[40px]">
@@ -559,12 +575,6 @@ export default function ProductDetail({ product }) {
               </option>
             ))}
           </select>
-          <button type="button" className="mt-1.5 inline-flex items-center gap-1 text-[12px] text-neutral-600 hover:text-neutral-900">
-            Size Chart
-            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
         </div>
         ) : null}
 
