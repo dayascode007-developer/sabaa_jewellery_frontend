@@ -9,7 +9,7 @@ import BottomNav from "@/components/layout/BottomNav";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ProductDetail from "@/components/products/ProductDetail";
 import { ProductDetailShimmer } from "@/components/shimmer-loader/Shimmer-loader";
-import { fetchProductById } from "@/api/categoriesApi";
+import { fetchProductById } from "@/store/api/categoriesApi";
 
 // Derive isCustomisable from subcategories (ID 14 = Name Engrave Ring)
 const deriveIsCustomisable = (product) => {
@@ -33,14 +33,16 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
   image: apiProduct.main_image || null,
   gallery: [
     apiProduct.main_image,
-    ...(apiProduct.sub_images?.map(img => img.image_url) || [])
+    ...(apiProduct.sub_images?.map((img) => img.image_url) || []),
   ].filter(Boolean),
 
   // Code/SKU
   code: apiProduct.sku || "",
 
   // Additional fields
-  sizes: apiProduct.ring_sizes?.map(rs => rs.size?.toString() || rs.toString()) || [],
+  sizes:
+    apiProduct.ring_sizes?.map((rs) => rs.size?.toString() || rs.toString()) ||
+    [],
   hasRingSize: (apiProduct.ring_sizes?.length || 0) > 0,
   maxQty: apiProduct.limit_purchases ? 10 : 99,
   rating: 4,
@@ -96,7 +98,9 @@ export default function ProductPage() {
       try {
         // Search for product across all stored category combinations
         const numId = parseInt(productId);
-        const allStoredProducts = Object.values(productsState.byCategory || {}).flat();
+        const allStoredProducts = Object.values(
+          productsState.byCategory || {}
+        ).flat();
         const foundProduct = allStoredProducts.find((p) => p.id === numId);
 
         if (foundProduct) {
@@ -112,7 +116,10 @@ export default function ProductPage() {
 
         // If not found in Redux, fetch from API
         const apiProduct = await fetchProductById(numId);
-        const transformed = transformApiProduct(apiProduct, apiProduct.category_name || "");
+        const transformed = transformApiProduct(
+          apiProduct,
+          apiProduct.category_name || ""
+        );
 
         setProduct({
           ...transformed,
@@ -149,8 +156,12 @@ export default function ProductPage() {
         <SiteHeader />
         <main>
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 text-center">
-            <h1 className="text-2xl font-semibold text-neutral-700">Product not found</h1>
-            <p className="mt-2 text-neutral-500">The product you're looking for doesn't exist.</p>
+            <h1 className="text-2xl font-semibold text-neutral-700">
+              Product not found
+            </h1>
+            <p className="mt-2 text-neutral-500">
+              The product you're looking for doesn't exist.
+            </p>
           </div>
         </main>
         <Footer />
@@ -163,10 +174,14 @@ export default function ProductPage() {
   const categoryHref = (() => {
     if (product.categoryId === product.subcategoryId) {
       // Main category
-      return `/category/all-${product.categoryName.toLowerCase().replace(/\s+/g, "-")}`;
+      return `/category/all-${product.categoryName
+        .toLowerCase()
+        .replace(/\s+/g, "-")}`;
     } else {
       // Subcategory
-      return `/category/${product.subcategoryName.toLowerCase().replace(/\s+/g, "-")}`;
+      return `/category/${product.subcategoryName
+        .toLowerCase()
+        .replace(/\s+/g, "-")}`;
     }
   })();
 

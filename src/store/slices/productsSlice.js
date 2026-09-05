@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { fetchProductsByCategory } from "@/api/categoriesApi";
+import { fetchProductsByCategory } from "@/store/api/categoriesApi";
 
 export const fetchProductsByMainAndSubCategory = createAsyncThunk(
   "products/fetchByCategory",
@@ -12,7 +12,8 @@ export const fetchProductsByMainAndSubCategory = createAsyncThunk(
           id: product.id,
           title: product.title,
           description: product.description,
-          category: category.category_name?.toLowerCase().replace(/\s+/g, "-") || "",
+          category:
+            category.category_name?.toLowerCase().replace(/\s+/g, "-") || "",
           category_id: product.category_id,
           subcategories: product.subcategories || [],
 
@@ -24,14 +25,14 @@ export const fetchProductsByMainAndSubCategory = createAsyncThunk(
           image: product.main_image || null,
           gallery: [
             product.main_image,
-            ...(product.sub_images?.map(img => img.image_url) || [])
+            ...(product.sub_images?.map((img) => img.image_url) || []),
           ].filter(Boolean),
 
           // Code/SKU
           code: product.sku || "",
 
           // Additional fields
-          sizes: product.ring_sizes?.map(rs => rs.size.toString()) || [],
+          sizes: product.ring_sizes?.map((rs) => rs.size.toString()) || [],
           hasRingSize: (product.ring_sizes?.length || 0) > 0,
           maxQty: product.limit_purchases ? 10 : 99,
           rating: 4,
@@ -94,6 +95,7 @@ const productsSlice = createSlice({
 
 export const selectProductsByCategory = (state, mainId, subId) =>
   state?.products?.byCategory?.[`${mainId}-${subId}`] || [];
-export const selectProductsLoading = (state) => state?.products?.loading || false;
+export const selectProductsLoading = (state) =>
+  state?.products?.loading || false;
 
 export default productsSlice.reducer;

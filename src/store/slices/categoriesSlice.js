@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { fetchCategoriesFromAPI, fetchProductsByCategory, mergeWithNavItems } from "@/api/categoriesApi";
+import {
+  fetchCategoriesFromAPI,
+  fetchProductsByCategory,
+  mergeWithNavItems,
+} from "@/store/api/categoriesApi";
 import { NAV_ITEMS } from "@/constants/homeData";
 
 export const fetchCategories = createAsyncThunk(
