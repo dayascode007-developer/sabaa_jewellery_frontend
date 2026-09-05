@@ -35,7 +35,13 @@ function VideoCard({ video, onOpen }) {
       type="button"
       onClick={() => onOpen(video)}
       aria-label={`Play: ${video.title}`}
-      className="group relative block aspect-square w-full overflow-hidden rounded-lg bg-neutral-900 text-left"
+      // 16:9 on phones, where the card is the full width of the screen and a
+      // square one ran most of a screen tall. It is also the thumbnail's own
+      // ratio, so nothing is cropped off the sides. The square returns from sm
+      // up, where two or four cards share the row and are small anyway.
+      // Pulled in slightly and centred on phones so the card is not edge to
+      // edge; full width again from sm up, where the grid already sets it.
+      className="group relative mx-auto block aspect-video w-[88%] overflow-hidden rounded-lg bg-neutral-900 text-left sm:mx-0 sm:aspect-square sm:w-full"
     >
       {video.thumbnail ? (
         <Image

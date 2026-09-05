@@ -33,6 +33,12 @@ export default function Home() {
         <div className="pt-6" />
 
         <ShopByCategories />
+
+        {/* The category row ended flush against the banner, so the two read as
+            one block. Kept as a spacer here rather than as padding on either
+            component, since both are used on their own elsewhere. */}
+        <div className="pt-6 sm:pt-8" />
+
         <HeroBanner />
         <Collections />
         <Card3DSlider />

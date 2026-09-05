@@ -46,7 +46,7 @@ function CategoryCard({ category }) {
     >
       {/* One rounded card holding image and label, rather than a bare image
           with the caption floating underneath. */}
-      <div className="overflow-hidden rounded-xl bg-white ring-1 ring-neutral-200">
+      <div className="overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-neutral-200 transition-shadow duration-300 group-hover:shadow-[0_6px_18px_rgba(0,0,0,0.13)]">
         <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
           <Image
             src={category.image}
