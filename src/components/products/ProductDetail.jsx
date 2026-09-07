@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { MdFavoriteBorder, MdFavorite, MdRemoveRedEye } from "react-icons/md";
 import { addItem } from "@/store/slices/cartSlice";
+import { addToWishlist, removeFromWishlist } from "@/store/slices/wishlistSlice";
 import Image from "next/image";
 import RingSizeGuide from "@/components/products/RingSizeGuide";
 import CareGuide from "@/components/products/CareGuide";
 import FontDropdown from "@/components/products/FontDropdown";
+import ShareMenu from "@/components/products/ShareMenu";
 import SuccessModal from "@/components/common/SuccessModal";
 import { FONT_STYLES, SYMBOLS, NAME_MAX_LENGTH } from "@/constants/productData";
 import qualityBadge from "@/assets/batch/Sabaa Quality Batch.png";
@@ -501,9 +505,29 @@ export default function ProductDetail({ product }) {
 
   // The button gave no sign it had worked — the same gap the product cards had.
   const [added, setAdded] = useState(false);
+  const [wishlistSuccess, setWishlistSuccess] = useState(false);
   // Portalled to <body>, which does not exist during the server render.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  const token = useSelector((state) => state.auth.token);
+  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const router = useRouter();
+  const isAddingToWishlist = useRef(false);
+
+  const wishlisted = useMemo(() => {
+    return (wishlistItems || []).some(
+      (item) => item?.product_id === product.id || item?.id === product.id
+    );
+  }, [wishlistItems, product.id]);
+
+  // Show modal when item is added to wishlist
+  useEffect(() => {
+    if (isAddingToWishlist.current && wishlisted) {
+      setWishlistSuccess(true);
+      isAddingToWishlist.current = false;
+    }
+  }, [wishlisted, product.id]);
 
   // Everything the workshop needs to make this exact piece travels with the
   // line, not just the product id — otherwise the engraving is lost at checkout.
@@ -560,11 +584,46 @@ export default function ProductDetail({ product }) {
           ) : null}
 
           <div className="flex items-center gap-4 text-[12px] text-neutral-600">
-            {["Share", "Wishlist", "View Similar"].map((a) => (
-              <button key={a} type="button" className="transition-colors hover:text-neutral-900">
-                {a}
-              </button>
-            ))}
+            <style>{`
+              [aria-label="Share this product"] {
+                background: none !important;
+                box-shadow: none !important;
+                border: none !important;
+              }
+            `}</style>
+            <ShareMenu title={product.title} path={`/product/${product.id}`} />
+
+            <button
+              type="button"
+              onClick={() => {
+                if (!token) {
+                  router.push("/login");
+                  return;
+                }
+                if (wishlisted) {
+                  dispatch(removeFromWishlist(product.id));
+                } else {
+                  isAddingToWishlist.current = true;
+                  dispatch(addToWishlist(product.id));
+                }
+              }}
+              className="transition-colors hover:text-neutral-900"
+              title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              {wishlisted ? (
+                <MdFavorite size={16} style={{ color: MAROON }} />
+              ) : (
+                <MdFavoriteBorder size={16} />
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="transition-colors hover:text-neutral-900"
+              title="View Similar"
+            >
+              <MdRemoveRedEye size={16} />
+            </button>
           </div>
         </div>
 
@@ -849,6 +908,18 @@ export default function ProductDetail({ product }) {
                 : `${product.title} has been added to your cart.`
             }
             onClose={() => setAdded(false)}
+          />,
+          document.body
+        )
+      : null}
+
+    {/* Wishlist success modal */}
+    {mounted && wishlistSuccess
+      ? createPortal(
+          <SuccessModal
+            isOpen
+            message={`${product.title} has been added to your wishlist.`}
+            onClose={() => setWishlistSuccess(false)}
           />,
           document.body
         )
