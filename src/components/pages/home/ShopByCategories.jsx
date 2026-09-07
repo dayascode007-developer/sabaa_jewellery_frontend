@@ -57,7 +57,11 @@ function CategoryCard({ category }) {
           />
         </div>
         <p
-          className="px-2.5 py-2 font-[family-name:var(--font-category)] text-[12px] leading-tight sm:text-[13px]"
+          // Normal weight with a little letter-spacing rather than font-medium:
+          // Antic Didone has only a 400 cut, so a medium is faked by the
+          // browser and thickens the fine serifs unevenly. Spacing gives the
+          // label the same presence without smudging it.
+          className="px-2.5 py-2 text-center font-[family-name:var(--font-category)] text-[13px] leading-tight tracking-[0.02em] sm:text-[14px]"
           style={{ color: MAROON }}
         >
           {category.label}

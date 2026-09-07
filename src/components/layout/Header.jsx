@@ -43,6 +43,15 @@ const ICONS = {
       <circle cx="12" cy="13" r="3.2" />
     </>
   ),
+  // Camera with a plus, as in the reference — the body is pulled in on the
+  // right so the plus sits beside it rather than on top of it.
+  cameraPlus: (
+    <>
+      <path d="M2.5 9A1.5 1.5 0 0 1 4 7.5h1.9l1-1.8h6.2l1 1.8H16A1.5 1.5 0 0 1 17.5 9v7A1.5 1.5 0 0 1 16 17.5H4A1.5 1.5 0 0 1 2.5 16V9Z" />
+      <circle cx="10" cy="12" r="2.9" />
+      <path d="M19.4 5v4.2M17.3 7.1h4.2" />
+    </>
+  ),
   mic: (
     <>
       <rect x="9.5" y="3" width="5" height="10" rx="2.5" />
@@ -146,8 +155,10 @@ export default function Header() {
 
         {/* Search — full width on its own row until md, then inline */}
         <div className="order-last w-full min-w-0 md:order-none md:mx-auto md:max-w-2xl">
-          <div className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-2 shadow-[0_1px_6px_rgba(0,0,0,0.06)] focus-within:border-neutral-300 sm:px-4">
-            <span className="shrink-0 text-neutral-400">
+          {/* Flat hairline pill, no drop shadow — in the reference the bar sits
+              on the page rather than floating above it. */}
+          <div className="flex items-center gap-2.5 rounded-full border border-neutral-200 bg-white px-4 py-2 focus-within:border-[#7B1E2B]/40">
+            <span className="shrink-0" style={{ color: MAROON }}>
               <Icon path={ICONS.search} className="h-[18px] w-[18px]" />
             </span>
             <input
@@ -156,18 +167,23 @@ export default function Header() {
               aria-label="Search"
               className="min-w-0 flex-1 bg-transparent text-[13px] text-neutral-700 outline-none placeholder:text-neutral-400 sm:text-sm"
             />
-            <span className="flex shrink-0 items-center gap-2.5 text-neutral-400 sm:gap-3">
+            {/* Maroon rather than grey — in the reference these read as the
+                shop's own controls, not as disabled placeholders. */}
+            <span
+              className="flex shrink-0 items-center gap-3 sm:gap-3.5"
+              style={{ color: MAROON }}
+            >
               <button
                 type="button"
                 aria-label="Search by image"
-                className="hover:text-neutral-600"
+                className="transition-opacity hover:opacity-70"
               >
-                <Icon path={ICONS.camera} className="h-[18px] w-[18px]" />
+                <Icon path={ICONS.cameraPlus} className="h-[19px] w-[19px]" />
               </button>
               <button
                 type="button"
                 aria-label="Search by voice"
-                className="hover:text-neutral-600"
+                className="transition-opacity hover:opacity-70"
               >
                 <Icon path={ICONS.mic} className="h-[18px] w-[18px]" />
               </button>

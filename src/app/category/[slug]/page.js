@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SiteHeader from "@/components/layout/SiteHeader";
 import Footer from "@/components/layout/Footer";
@@ -25,7 +25,8 @@ const MAROON = "#7B1E2B";
 // "All Jewellery" is not one of the API's categories — it is the whole shop, so
 // it comes from the flat /api/products list rather than from a category id.
 const ALL_SLUG = "all-jewellery";
-const PAGE_SIZE = 20;
+// Ten on first paint, then ten more each time the visitor reaches the bottom.
+const PAGE_SIZE = 10;
 
 // Dynamically build slug-to-ID mapping from API categories
 const buildCategoryMap = (categories) => {
@@ -48,6 +49,9 @@ const buildCategoryMap = (categories) => {
 export default function CategoryPage({ params: paramsPromise }) {
   const [slug, setSlug] = useState("");
   const [showShimmer, setShowShimmer] = useState(false);
+  // Test switch — forces the shimmer on screen so it can be checked without
+  // having to throttle the network. Remove the button when you are done with it.
+  const [testShimmer, setTestShimmer] = useState(false);
   const dispatch = useDispatch();
   const rawCategories = useSelector(selectRawCategories);
 
@@ -96,8 +100,9 @@ export default function CategoryPage({ params: paramsPromise }) {
     dispatch(fetchAllProducts({ limit: PAGE_SIZE, offset: 0 }));
   }, [slug, dispatch]);
 
-  const loadMore = () =>
+  const loadMore = useCallback(() => {
     dispatch(fetchAllProducts({ limit: PAGE_SIZE, offset: allProducts.length }));
+  }, [dispatch, allProducts.length]);
 
   // Fetch products when slug changes
   useEffect(() => {
@@ -136,9 +141,30 @@ export default function CategoryPage({ params: paramsPromise }) {
   const resultCount = isAll ? allTotal || allProducts.length : products.length;
   const hasMore = isAll && allProducts.length < allTotal;
 
-  // A "Load More" page keeps the grid on screen while it fetches, so the full
-  // shimmer would wipe out what the visitor is already reading.
-  const isFirstLoad = (loading || showShimmer) && displayProducts.length === 0;
+  // A later page keeps the grid on screen while it fetches, so the full-page
+  // shimmer would wipe out what the visitor is already reading. Only the first
+  // load replaces the grid; later pages append shimmer cards to the end of it.
+  const isFirstLoad =
+    testShimmer || ((loading || showShimmer) && displayProducts.length === 0);
+  const isLoadingMore = (loading || testShimmer) && displayProducts.length > 0;
+
+  // Infinite scroll. A sentinel sits below the last row; when it scrolls into
+  // view the next page is requested. rootMargin starts the fetch 300px early so
+  // the cards are usually there by the time the visitor reaches them.
+  const sentinelRef = useRef(null);
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !isAll || !hasMore || loading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { rootMargin: "300px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isAll, hasMore, loading, loadMore]);
 
   return (
     <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
@@ -154,9 +180,22 @@ export default function CategoryPage({ params: paramsPromise }) {
             </span>
           </h1>
 
+          {/* Test switch for the shimmer. Delete this block when you no longer
+              need to look at the loading state on demand. */}
+          {isAll ? (
+            <button
+              type="button"
+              onClick={() => setTestShimmer((v) => !v)}
+              className="mt-3 rounded-full border px-4 py-1.5 text-[12px] transition-colors hover:bg-white"
+              style={{ borderColor: MAROON, color: MAROON }}
+            >
+              {testShimmer ? "Stop shimmer test" : "Test shimmer"}
+            </button>
+          ) : null}
+
           {isFirstLoad ? (
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              <ProductCardShimmer count={8} />
+              <ProductCardShimmer count={PAGE_SIZE} />
             </div>
           ) : displayProducts.length > 0 ? (
             <>
@@ -164,22 +203,19 @@ export default function CategoryPage({ params: paramsPromise }) {
                 {displayProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
+
+                {/* The next page's cards, shimmering in place at the end of the
+                    same grid so the row keeps its shape while they load. */}
+                {isLoadingMore ? <ProductCardShimmer count={4} /> : null}
               </div>
 
-              {hasMore ? (
-                <div className="mt-8 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={loadMore}
-                    disabled={loading}
-                    className="rounded-full px-7 py-3 text-[14px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{ backgroundColor: MAROON }}
-                  >
-                    {loading
-                      ? "Loading…"
-                      : `Load More (${allTotal - allProducts.length} more)`}
-                  </button>
-                </div>
+              {/* Scrolling this into view fetches the next ten. */}
+              {hasMore ? <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" /> : null}
+
+              {!hasMore && isAll && allProducts.length > PAGE_SIZE ? (
+                <p className="mt-8 text-center text-[13px] text-neutral-500">
+                  You have seen all {allTotal} pieces.
+                </p>
               ) : null}
             </>
           ) : (

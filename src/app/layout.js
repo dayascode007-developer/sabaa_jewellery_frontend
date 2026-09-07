@@ -3,8 +3,10 @@ import {
   Geist_Mono,
   Cinzel,
   Pinyon_Script,
-  Fraunces,
-  IBM_Plex_Sans,
+  // Fraunces,      // previous heading face — kept for an easy switch back
+  // IBM_Plex_Sans, // previous tab-menu face — kept for an easy switch back
+  ZCOOL_XiaoWei,
+  Antic_Didone,
 } from "next/font/google";
 import Providers from "@/store/Providers";
 import "./globals.css";
@@ -43,17 +45,37 @@ const pinyonScript = Pinyon_Script({
   preload: false,
 });
 
-// Section headings and their taglines.
-const fraunces = Fraunces({
+// --- PREVIOUS FONTS — commented out, not deleted -------------------------
+// Restore by uncommenting these two (and their imports above), then removing
+// the two declarations below and swapping the names back in the <html> class.
+//
+// // Section headings and their taglines.
+// const fraunces = Fraunces({
+//   variable: "--font-heading",
+//   subsets: ["latin"],
+// });
+//
+// // Category labels and navigation.
+// const ibmPlexSans = IBM_Plex_Sans({
+//   variable: "--font-category",
+//   subsets: ["latin"],
+//   weight: ["400", "500", "600"],
+// });
+// -------------------------------------------------------------------------
+
+// Headings, buttons and body copy. One weight only (400) — the family has no
+// bold, so `font-bold`/`font-semibold` render as the browser's synthetic bold.
+const zcoolXiaoWei = ZCOOL_XiaoWei({
   variable: "--font-heading",
   subsets: ["latin"],
+  weight: "400",
 });
 
-// Category labels and navigation.
-const ibmPlexSans = IBM_Plex_Sans({
+// Tab menu / category labels. Also a single 400 weight.
+const anticDidone = Antic_Didone({
   variable: "--font-category",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: "400",
 });
 
 export const metadata = {
@@ -72,7 +94,8 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} ${pinyonScript.variable} ${fraunces.variable} ${ibmPlexSans.variable} h-full antialiased`}
+      // was: ${fraunces.variable} ${ibmPlexSans.variable}
+      className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} ${pinyonScript.variable} ${zcoolXiaoWei.variable} ${anticDidone.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {/* Loaders live per section, in each folder's loading.js — nothing here. */}
