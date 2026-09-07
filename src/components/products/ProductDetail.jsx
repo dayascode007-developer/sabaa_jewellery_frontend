@@ -7,9 +7,11 @@ import { addItem } from "@/store/slices/cartSlice";
 import Image from "next/image";
 import RingSizeGuide from "@/components/products/RingSizeGuide";
 import CareGuide from "@/components/products/CareGuide";
+import FontDropdown from "@/components/products/FontDropdown";
 import SuccessModal from "@/components/common/SuccessModal";
 import { FONT_STYLES, SYMBOLS, NAME_MAX_LENGTH } from "@/constants/productData";
 import qualityBadge from "@/assets/batch/Sabaa Quality Batch.png";
+
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
@@ -211,6 +213,46 @@ function Gallery({ product }) {
   );
 }
 
+// Get icon SVG for each section
+const getSectionIcon = (sectionId) => {
+  const icons = {
+    "product-details": (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M9 12h6m-6 4h6M7 20h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
+      </svg>
+    ),
+    "cleaning-polishing": (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M12 2v6m0 0a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 9v5m3-12l-2.12 2.12M9 7.12L6.88 9m6 6l-2.12 2.12M9 19.12l-2.12 2.12" />
+      </svg>
+    ),
+    "usage-color-guarantee": (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M12 3 3.73 6.236v4.764C3.73 16.092 12 21 12 21s8.27-4.908 8.27-10C20.27 11 12 3 12 3Z" />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+    ),
+    "return-exchange-policy": (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M1 4v6h6M23 20v-6h-6" />
+        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+      </svg>
+    ),
+    "address-contact": (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5z" />
+      </svg>
+    ),
+    "description": (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+        <polyline points="13 2 13 9 20 9" />
+      </svg>
+    ),
+  };
+  return icons[sectionId] || icons["description"];
+};
+
 function Accordion({ sections, description }) {
   // Description starts open, matching the reference.
   const [openId, setOpenId] = useState("description");
@@ -228,15 +270,20 @@ function Accordion({ sections, description }) {
               aria-expanded={isOpen}
               className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
             >
-              <span className="text-[13px] font-medium" style={{ color: MAROON }}>
-                {row.title}
+              <span className="flex items-center gap-2">
+                <span style={{ color: MAROON }}>
+                  {getSectionIcon(row.id)}
+                </span>
+                <span className="font-[family-name:var(--font-heading)] text-[13px] font-medium text-neutral-900">
+                  {row.title}
+                </span>
               </span>
               <svg viewBox="0 0 24 24" className={`h-4 w-4 shrink-0 text-neutral-500 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="m6 9 6 6 6-6" />
               </svg>
             </button>
             {isOpen ? (
-              <p className="px-4 pb-4 text-[12px] leading-relaxed text-neutral-600">{row.body}</p>
+              <p className="font-[family-name:var(--font-heading)] px-4 pb-4 text-[12px] leading-relaxed text-neutral-600 whitespace-pre-wrap">{row.body}</p>
             ) : null}
           </div>
         );
@@ -360,14 +407,20 @@ function SymbolWheel({ value, onChange, symbols = [] }) {
                 transition: "opacity 150ms, transform 150ms",
               }}
             >
-              {s.glyph ? (
+              {s.url ? (
+                <img
+                  src={s.url}
+                  alt={s.name}
+                  className="h-10 w-10 object-contain"
+                />
+              ) : s.glyph ? (
                 <span className="text-[20px] leading-none text-neutral-700">{s.glyph}</span>
               ) : null}
               <span
                 className={`text-[15px] leading-none ${active ? "font-semibold" : ""}`}
                 style={{ color: active ? MAROON : "#6B6B6B" }}
               >
-                {s.label}
+                {s.label || s.name}
               </span>
             </div>
           );
@@ -614,20 +667,11 @@ export default function ProductDetail({ product }) {
               >
                 Font Style
               </label>
-              {/* The select shows the chosen face, so the control previews
-                  itself before you look at the panel below the photo. */}
-              <select
-                id="font-style"
+              <FontDropdown
                 value={fontId}
-                onChange={(e) => setFontId(e.target.value)}
-                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[15px] text-neutral-800 outline-none focus:border-neutral-500"
-              >
-                {product.fonts?.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setFontId}
+                options={product.fonts || []}
+              />
             </div>
 
             <div className="mt-3">

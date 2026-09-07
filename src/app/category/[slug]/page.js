@@ -21,23 +21,16 @@ import {
 import { ProductCardShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 
 const MAROON = "#7B1E2B";
-
-// "All Jewellery" is not one of the API's categories — it is the whole shop, so
-// it comes from the flat /api/products list rather than from a category id.
 const ALL_SLUG = "all-jewellery";
 // Ten on first paint, then ten more each time the visitor reaches the bottom.
+// (Was 12 on the incoming branch — 10 is what the infinite scroll was asked for.)
 const PAGE_SIZE = 10;
 
-// Dynamically build slug-to-ID mapping from API categories
 const buildCategoryMap = (categories) => {
   const map = {};
   categories.forEach((category) => {
     const slug = category.name.toLowerCase().replace(/\s+/g, "-");
-
-    // Add main category with all subcategories
     map[`all-${slug}`] = { mainId: category.id, subId: null };
-
-    // Add each subcategory
     (category.subcategories || []).forEach((sub) => {
       const subSlug = sub.name.toLowerCase().replace(/\s+/g, "-");
       map[subSlug] = { mainId: category.id, subId: sub.id };
@@ -219,18 +212,8 @@ export default function CategoryPage({ params: paramsPromise }) {
               ) : null}
             </>
           ) : (
-            <div className="mt-12 flex flex-col items-center justify-center py-12 text-center">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-16 w-16 text-neutral-300 mb-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M9 12h6m-6 4h6M7 20h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
-              </svg>
-              <h2 className="font-[family-name:var(--font-heading)] text-2xl font-semibold text-neutral-700">Coming Soon</h2>
-              <p className="mt-2 text-neutral-500">This category will be available shortly</p>
+            <div className="mt-6 text-center py-12 text-gray-500">
+              No products found in this category.
             </div>
           )}
         </div>

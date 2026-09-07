@@ -44,7 +44,6 @@ export const mapApiProduct = (product, category = null) => ({
   maxQty: product.limit_purchases ? 10 : 99,
   rating: 4,
   bestseller: true,
-  sections: [],
 
   // Engraving/customization data
   fonts: product.fonts || [],
@@ -58,6 +57,35 @@ export const mapApiProduct = (product, category = null) => ({
   usage_color_guarantee: product.usage_color_guarantee || [],
   return_exchange_policy: product.return_exchange_policy || [],
   address_contact: product.address_contact || [],
+
+  // Build sections array for Accordion component
+  sections: [
+    {
+      id: "product-details",
+      title: "Product Details",
+      body: product.product_details?.map((pd) => pd.content).join("\n") || "",
+    },
+    {
+      id: "cleaning-polishing",
+      title: "Cleaning & Polishing",
+      body: product.cleaning_polishing?.map((cp) => cp.content).join("\n") || "",
+    },
+    {
+      id: "usage-color-guarantee",
+      title: "Usage & Color Gaurantee",
+      body: product.usage_color_guarantee?.map((ucg) => ucg.content).join("\n") || "",
+    },
+    {
+      id: "return-exchange-policy",
+      title: "Return & Exchange Policy",
+      body: product.return_exchange_policy?.map((rep) => rep.content).join("\n") || "",
+    },
+    {
+      id: "address-contact",
+      title: "Our Address & Contact",
+      body: product.address_contact?.map((ac) => ac.content).join("\n") || "",
+    },
+  ].filter((section) => section.body.trim() !== ""),
 
   // Category/subcategory info
   categoryId: category?.category_id ?? product.category_id,
