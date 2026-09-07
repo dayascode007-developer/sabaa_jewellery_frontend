@@ -627,4 +627,91 @@ export function ProductDetailShimmer() {
   );
 }
 
+export function WishlistCardShimmer({ count = 6 }) {
+  const cards = Array.from({ length: count });
+
+  return (
+    <>
+      {cards.map((_, i) => (
+        <div
+          key={i}
+          className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300"
+        >
+          {/* Image Container - Responsive aspect ratio */}
+          <div
+            className="relative bg-gray-100 pb-[100%] sm:pb-[80%] md:pb-[75%] overflow-hidden bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+            style={{
+              backgroundSize: "200% 100%",
+              animation: "shimmer 2s infinite",
+            }}
+          />
+
+          {/* Content Area */}
+          <div className="p-1.5 md:p-4 space-y-2 md:space-y-3">
+            {/* Category Label */}
+            <div
+              className="h-2 md:h-3 w-1/3 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+
+            {/* Title (2 lines) */}
+            <div className="space-y-1.5">
+              <div
+                className="h-3 md:h-4 w-full rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+              <div
+                className="h-3 md:h-4 w-5/6 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                style={{
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2s infinite",
+                }}
+              />
+            </div>
+
+            {/* Price */}
+            <div
+              className="h-4 md:h-5 w-2/5 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 mt-2 md:mt-3"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+
+            {/* Discount Badge */}
+            <div
+              className="h-3 md:h-4 w-1/4 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 mt-1 md:mt-2"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+
+            {/* Button */}
+            <div
+              className="h-8 md:h-10 w-full rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 mt-2 md:mt-4"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+          </div>
+        </div>
+      ))}
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </>
+  );
+}
+
 export default ShimmerLoader;

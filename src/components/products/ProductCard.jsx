@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
-import { toggleItem, selectIsWishlisted } from "@/store/slices/wishlistSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "@/store/slices/wishlistSlice";
 import ShareMenu from "@/components/products/ShareMenu";
 import SuccessModal from "@/components/common/SuccessModal";
 import { getCategoryLabel } from "@/constants/productData";
@@ -18,15 +22,34 @@ const rupees = (n) =>
 
 export default function ProductCard({ product }) {
   const dispatch = useDispatch();
-  const wishlisted = useSelector(selectIsWishlisted(product.id));
+  const router = useRouter();
+  const token = useSelector((state) => state.auth.token);
+  const wishlistItems = useSelector((state) => state.wishlist.items);
+
+  const wishlisted = useMemo(() => {
+    return (wishlistItems || []).some(
+      (item) => item?.product_id === product.id || item?.id === product.id
+    );
+  }, [wishlistItems, product.id]);
 
   // Without this the click looked like it had done nothing — the item went in
   // silently and only the header badge changed.
   const [added, setAdded] = useState(false);
+  const [wishlistSuccess, setWishlistSuccess] = useState(false);
   // The dialog is portalled to <body>, which does not exist during the server
   // render, so it can only be mounted once we are on the client.
   const [mounted, setMounted] = useState(false);
+  const isAddingToWishlist = useRef(false);
+
   useEffect(() => setMounted(true), []);
+
+  // Show modal when item is added to wishlist
+  useEffect(() => {
+    if (isAddingToWishlist.current && wishlisted) {
+      setWishlistSuccess(true);
+      isAddingToWishlist.current = false;
+    }
+  }, [wishlisted, product.id]);
 
   // Derived rather than stored, so the badge can never contradict the prices.
   const discount =
@@ -43,7 +66,17 @@ export default function ProductCard({ product }) {
 
   const onWishlist = (e) => {
     stop(e);
-    dispatch(toggleItem({ id: product.id, title: product.title, price: product.price }));
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    if (wishlisted) {
+      dispatch(removeFromWishlist(product.id));
+    } else {
+      isAddingToWishlist.current = true;
+      dispatch(addToWishlist(product.id));
+    }
   };
 
   const onAddToCart = (e) => {
@@ -202,6 +235,18 @@ export default function ProductCard({ product }) {
               isOpen
               message={`${product.title} has been added to your cart.`}
               onClose={() => setAdded(false)}
+            />,
+            document.body
+          )
+        : null}
+
+      {/* Wishlist success modal */}
+      {mounted && wishlistSuccess
+        ? createPortal(
+            <SuccessModal
+              isOpen
+              message={`${product.title} has been added to your wishlist.`}
+              onClose={() => setWishlistSuccess(false)}
             />,
             document.body
           )
