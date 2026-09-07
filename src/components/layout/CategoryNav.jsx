@@ -15,9 +15,11 @@ import { NavbarShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 const VIEW_ALL_SLUG = {
   rings: "all-rings",
   impon: "all-impon-chain",
-  pendant: "all-pendants",
+  // Singular, matching the API's own category names ("Pendant", "Bracelet") —
+  // the plurals here resolved to nothing and View All opened an empty page.
+  pendant: "all-pendant",
   earrings: "all-earrings",
-  bracelet: "all-bracelets",
+  bracelet: "all-bracelet",
 };
 
 const MAROON = "#7B1E2B";

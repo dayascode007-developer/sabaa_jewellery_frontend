@@ -220,13 +220,18 @@ export const NAV_ITEMS = [
 // label lives in CATEGORY_LABELS in productData.js — add one there whenever a
 // tile is added here, or the page falls back to the heading "Products".
 export const CATEGORIES = [
-  { id: "engraving-rings", label: "Engraving Rings", image: engrave, href: "/category/engraving-rings" },
-  { id: "face-photo-rings", label: "Face & Photo Rings", image: faceAndPhotoRing, href: "/category/face-photo-rings" },
-  { id: "symbol-rings", label: "Symbol Rings", image: symbolsRing, href: "/category/symbol-rings" },
+  // hrefs must match the slugs the category page derives from the API's own
+  // subcategory names (name lowercased, spaces collapsed to hyphens) — the same
+  // slugs the nav dropdown already uses. The tiles carried hand-written names
+  // instead, so they opened a page with no cards on it.
+  { id: "engraving-rings", label: "Engraving Rings", image: engrave, href: "/category/name-engrave-ring" },
+  { id: "face-photo-rings", label: "Face & Photo Rings", image: faceAndPhotoRing, href: "/category/face-photo-ring" },
+  { id: "symbol-rings", label: "Symbol Rings", image: symbolsRing, href: "/category/astrology-raasi-rings" },
   { id: "mens-chain", label: "Mens Chain", image: mensChain, href: "/category/mens-chain" },
-  { id: "womens-chain", label: "Womens Chain", image: womensChain, href: "/category/womens-chain" },
-  { id: "kids-chain", label: "Kids Chain", image: kids, href: "/category/kids-chain" },
-  { id: "earrings", label: "Earrings", image: earings, href: "/category/earrings" },
+  { id: "womens-chain", label: "Womens Chain", image: womensChain, href: "/category/female-chain" },
+  { id: "kids-chain", label: "Kids Chain", image: kids, href: "/category/kidz-chain" },
+  // The whole Earrings category — Stud and Jimikki both — rather than one of them.
+  { id: "earrings", label: "Earrings", image: earings, href: "/category/all-earrings" },
 ];
 
 // The banner artwork already contains the wordmark, headline, feature badges
@@ -456,9 +461,13 @@ export const NEW_ARRIVALS_BANNER = {
 // cropped off the bottom-left corner.
 export const NEW_ARRIVALS = [
   { id: "panchaloga-rings", alt: "Panchaloga Rings", image: panchalogaRings, ratio: "1416/595", href: "/category/all-rings" },
-  { id: "divine-rings", alt: "Divine Rings Collection", image: divineRings, ratio: "1415/592", href: "/category/symbol-rings" },
+  // "symbol-rings" matched nothing — the API has no grouping for god rings,
+  // only Hindu, Christian and Muslim separately, and Hindu is the only one
+  // carrying stock.
+  { id: "divine-rings", alt: "Divine Rings Collection", image: divineRings, ratio: "1415/592", href: "/category/hindu-rings" },
   { id: "god-engraved", alt: "God Engraved Rings", image: godEngravedRings, ratio: "1411/595", href: "/category/hindu-rings" },
-  { id: "temple-pendants", alt: "Divine Temple Pendants", image: templePendants, ratio: "1407/597", href: "/category/all-pendants" },
+  // The API category is "Pendant", singular — "all-pendants" resolved to nothing.
+  { id: "temple-pendants", alt: "Divine Temple Pendants", image: templePendants, ratio: "1407/597", href: "/category/all-pendant" },
 ];
 
 export const ASSURANCE_ITEMS = [
