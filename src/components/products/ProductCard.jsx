@@ -73,13 +73,13 @@ export default function ProductCard({ product }) {
         aria-label={product.title}
       />
 
-      {/* Square normally. On hover it gives up exactly the 44px the button row
+      {/* Rectangular (80% height) on mobile, square on larger screens. On hover it gives up exactly the 44px the button row
           takes, so the card's total height never changes and the grid cannot
           shove its neighbours around.
           Sized with padding-bottom rather than aspect-square because a
           percentage padding can be transitioned; an aspect ratio cannot be
           relied on to animate. */}
-      <div className="relative w-full overflow-hidden bg-neutral-100 pb-[100%] transition-[padding-bottom] duration-300 ease-out group-hover:pb-[calc(100%-44px)] group-focus-within:pb-[calc(100%-44px)]">
+      <div className="relative w-full overflow-hidden bg-neutral-100 pb-[80%] transition-[padding-bottom] duration-300 ease-out sm:pb-[100%] group-hover:pb-[calc(80%-30px)] sm:group-hover:pb-[calc(100%-44px)] group-focus-within:pb-[calc(80%-30px)] sm:group-focus-within:pb-[calc(100%-44px)]">
         {product.image ? (
           typeof product.image === "string" && product.image.startsWith("http") ? (
             <img
@@ -102,20 +102,23 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
-        {/* Share + wishlist, stacked top-right — unchanged. */}
-        <div className="absolute top-2 right-2 z-30 flex flex-col gap-2">
-          <ShareMenu title={product.title} path={`/product/${product.id}`} />
+        {/* Share + wishlist, stacked top-right — share hidden on mobile */}
+        <div className="absolute top-1.5 right-1.5 z-30 flex flex-col gap-1.5 sm:top-2 sm:right-2 sm:gap-2">
+          {/* Share menu - hidden on mobile, visible on desktop */}
+          <div className="hidden sm:block">
+            <ShareMenu title={product.title} path={`/product/${product.id}`} />
+          </div>
 
           <button
             type="button"
             onClick={onWishlist}
             aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
             aria-pressed={wishlisted}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-sm ring-1 ring-neutral-200 transition-transform hover:scale-105"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/95 shadow-sm ring-1 ring-neutral-200 transition-transform hover:scale-105 sm:h-8 sm:w-8"
           >
             <svg
               viewBox="0 0 24 24"
-              className="h-4 w-4"
+              className="h-3.5 w-3.5 sm:h-4 sm:w-4"
               // Filled once wishlisted, so the card shows its own state.
               fill={wishlisted ? MAROON : "none"}
               stroke={wishlisted ? MAROON : "#6B6B6B"}
@@ -133,17 +136,17 @@ export default function ProductCard({ product }) {
       {/* Left-aligned, like the reference. Centred text made every card look
           like a poster; ranged left, the eye runs straight down the column of
           names and prices. */}
-      <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4">
+      <div className="flex flex-1 flex-col px-2 py-1.5 sm:px-4 sm:pt-3.5 sm:pb-4">
         {/* Subcategory name, with category label fallback */}
-        <p className="text-[10px] tracking-[0.12em] text-neutral-500 uppercase">
+        <p className="text-[8px] tracking-[0.08em] text-neutral-500 uppercase leading-tight sm:text-[10px] sm:tracking-[0.12em]">
           {product.subcategories?.[0]?.name || getCategoryLabel(product.category)}
         </p>
 
-        <h3 className="font-[family-name:var(--font-heading)] mt-1.5 line-clamp-2 min-h-[2.6em] text-[15px] leading-snug text-neutral-800 transition-colors group-hover:text-[#7B1E2B]">
+        <h3 className="font-[family-name:var(--font-heading)] mt-0.5 line-clamp-2 min-h-[1.6em] text-[12px] leading-tight text-neutral-800 transition-colors group-hover:text-[#7B1E2B] sm:mt-1.5 sm:min-h-[2.6em] sm:text-[15px] sm:leading-snug">
           {product.title}
         </h3>
 
-        <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <p className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0 sm:mt-2 sm:gap-x-2 sm:gap-y-0.5">
           <span className="text-[17px] font-semibold text-neutral-900">
             {rupees(product.price)}
           </span>
@@ -152,21 +155,31 @@ export default function ProductCard({ product }) {
               <span className="text-[13px] text-neutral-400 line-through">
                 {rupees(product.mrp)}
               </span>
-              {/* The saving, said in words rather than shouted from a green
-                  flag over the photograph. */}
-              <span className="text-[12px] font-medium" style={{ color: "#2E7D32" }}>
-                {discount}% off
+              {/* Premium discount text with animation */}
+              <span
+                className="text-[10px] sm:text-[12px] font-bold inline-flex items-center gap-0.5"
+                style={{
+                  backgroundImage: "linear-gradient(90deg, #DD9836, #FFB347, #DD9836)",
+                  backgroundSize: "200% 100%",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  animation: "shimmer 3s ease-in-out infinite"
+                }}
+              >
+                <span style={{ fontSize: "1em", lineHeight: "1", background: "none", WebkitTextFillColor: "#DD9836" }}>%</span>
+                {discount} off
               </span>
             </>
           ) : null}
         </p>
 
         {/* Mobile: always show button. Desktop: show only on hover. */}
-        <div className="mt-auto h-11 w-full overflow-hidden transition-[height] duration-300 ease-out md:h-0 md:group-hover:h-11 md:group-focus-within:h-11">
+        <div className="mt-auto h-8 w-full overflow-hidden transition-[height] duration-300 ease-out sm:h-11 md:h-0 md:group-hover:h-11 md:group-focus-within:h-11">
           <button
             type="button"
             onClick={onAddToCart}
-            className="relative z-20 mt-1.5 inline-flex h-[38px] w-full items-center justify-center gap-2 rounded font-[family-name:var(--font-category)] text-[12px] font-medium text-white transition-opacity hover:opacity-90"
+            className="relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded font-[family-name:var(--font-category)] text-[10px] font-medium text-white transition-opacity hover:opacity-90 sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px]"
             style={{ backgroundColor: MAROON }}
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">

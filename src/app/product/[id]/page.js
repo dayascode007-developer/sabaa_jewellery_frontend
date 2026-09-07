@@ -55,12 +55,41 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
   symbols: apiProduct.symbols || [],
   symbol_direction: apiProduct.symbol_direction || [],
 
-  // Product details sections
+  // Product details sections for accordion
   product_details: apiProduct.product_details || [],
   cleaning_polishing: apiProduct.cleaning_polishing || [],
   usage_color_guarantee: apiProduct.usage_color_guarantee || [],
   return_exchange_policy: apiProduct.return_exchange_policy || [],
   address_contact: apiProduct.address_contact || [],
+
+  // Build sections array for Accordion component
+  sections: [
+    {
+      id: "product-details",
+      title: "Product Details",
+      body: apiProduct.product_details?.map((pd) => pd.content).join("\n") || "",
+    },
+    {
+      id: "cleaning-polishing",
+      title: "Cleaning & Polishing",
+      body: apiProduct.cleaning_polishing?.map((cp) => cp.content).join("\n") || "",
+    },
+    {
+      id: "usage-color-guarantee",
+      title: "Usage & Color Gaurantee",
+      body: apiProduct.usage_color_guarantee?.map((ucg) => ucg.content).join("\n") || "",
+    },
+    {
+      id: "return-exchange-policy",
+      title: "Return & Exchange Policy",
+      body: apiProduct.return_exchange_policy?.map((rep) => rep.content).join("\n") || "",
+    },
+    {
+      id: "address-contact",
+      title: "Our Address & Contact",
+      body: apiProduct.address_contact?.map((ac) => ac.content).join("\n") || "",
+    },
+  ].filter((section) => section.body.trim() !== ""),
 
   // Category/subcategory info (will be set from API data)
   categoryId: null,
