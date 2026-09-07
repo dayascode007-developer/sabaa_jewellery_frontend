@@ -351,20 +351,28 @@ export default function Cart() {
               </span>
             </div>
 
-            {/* Muted with nothing ticked — there is no order to place, and the
-                button itself says so rather than failing on click. */}
-            <button
-              type="button"
-              disabled={selectedItems.length === 0}
-              className="mt-4 w-full rounded-md py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:hover:opacity-100"
-              style={{
-                backgroundColor: selectedItems.length ? MAROON : "#CFA9B0",
-              }}
-            >
-              {selectedItems.length
-                ? `Place Order (${selectedItems.length})`
-                : "Select items to order"}
-            </button>
+            {/* Muted with nothing ticked — there is nothing to check out, and
+                the button itself says so rather than failing on click.
+                A Link when it is usable, a disabled button when it is not:
+                an <a> cannot be disabled. */}
+            {selectedItems.length ? (
+              <Link
+                href="/checkout"
+                className="mt-4 block w-full rounded-md py-3 text-center text-[15px] font-medium text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: MAROON }}
+              >
+                Proceed to Payment ({selectedItems.length})
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="mt-4 w-full cursor-not-allowed rounded-md py-3 text-[15px] font-medium text-white"
+                style={{ backgroundColor: "#CFA9B0" }}
+              >
+                Select items to order
+              </button>
+            )}
 
             <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[12px] text-neutral-500">
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
