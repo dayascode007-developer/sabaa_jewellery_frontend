@@ -8,7 +8,8 @@ import { BannerShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import { HERO_SLIDES } from "@/constants/homeData";
 
 const MAROON = "#7B1E2B";
-const AUTOPLAY_MS = 5000;
+// One slide every four seconds.
+const AUTOPLAY_MS = 4000;
 
 // Slide width and the centring offset differ by breakpoint, so they are CSS
 // variables rather than JS constants: phones run the banner full-bleed
@@ -179,8 +180,10 @@ export default function HeroBanner() {
   return (
     <section
       className="relative w-full overflow-hidden pb-0"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      // The banner used to pause whenever the cursor was anywhere over it. It
+      // is full-width and tall, so on a desktop the pointer sits on it most of
+      // the time and the slides simply stopped — which is why it looked as
+      // though nothing moved until a dot was clicked.
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       aria-roledescription="carousel"

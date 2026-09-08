@@ -6,7 +6,7 @@ import {
   // Fraunces,      // previous heading face — kept for an easy switch back
   // IBM_Plex_Sans, // previous tab-menu face — kept for an easy switch back
   ZCOOL_XiaoWei,
-  Antic_Didone,
+  // Antic_Didone,  // previous menu-bar face — kept for an easy switch back
 } from "next/font/google";
 import Providers from "@/store/Providers";
 import "./globals.css";
@@ -71,12 +71,18 @@ const zcoolXiaoWei = ZCOOL_XiaoWei({
   weight: "400",
 });
 
-// Tab menu / category labels. Also a single 400 weight.
-const anticDidone = Antic_Didone({
-  variable: "--font-category",
-  subsets: ["latin"],
-  weight: "400",
-});
+// --- MENU BAR FONT — now Ariane Coachella ----------------------------------
+// Self-hosted from public/fonts, so it is declared in globals.css (@font-face
+// plus --font-category on :root) rather than here — next/font/google only
+// serves Google's own library.
+//
+// // Tab menu / category labels. Also a single 400 weight.
+// const anticDidone = Antic_Didone({
+//   variable: "--font-category",
+//   subsets: ["latin"],
+//   weight: "400",
+// });
+// ---------------------------------------------------------------------------
 
 export const metadata = {
   title: "Sabaa Jewel Arts — Customized Panchaloga Jewellery",
@@ -94,8 +100,9 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      // was: ${fraunces.variable} ${ibmPlexSans.variable}
-      className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} ${pinyonScript.variable} ${zcoolXiaoWei.variable} ${anticDidone.variable} h-full antialiased`}
+      // was: ${fraunces.variable} ${ibmPlexSans.variable} ${anticDidone.variable}
+      // --font-category now comes from globals.css, not from next/font.
+      className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} ${pinyonScript.variable} ${zcoolXiaoWei.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {/* Loaders live per section, in each folder's loading.js — nothing here. */}

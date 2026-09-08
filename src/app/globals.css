@@ -52,9 +52,27 @@
 @font-face { font-family: "Mukta"; src: url('/fonts/mukta-regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
 @font-face { font-family: "Hind"; src: url('/fonts/hind-regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
 
+/* Menu-bar face. Not a Google font, so it is self-hosted here rather than
+   loaded through next/font. No size-adjust needed: its cap-height is 0.708em
+   against Antic Didone's 0.700em, so it renders at the same size on the same
+   font-size values — unlike Mislian, which was half the size and needed
+   correcting. font-display:swap so the nav shows in the fallback immediately
+   rather than sitting blank while the file downloads. */
+@font-face {
+  font-family: "Ariane Coachella";
+  src: url('/fonts/ArianeCoachella-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* The menu bar only. next/font used to supply this variable on <html>; with
+     Antic Didone commented out in layout.js it is defined here instead. */
+  --font-category: "Ariane Coachella", Georgia, serif;
 }
 
 @theme inline {

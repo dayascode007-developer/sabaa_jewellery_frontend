@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSelector } from "react-redux";
@@ -19,6 +19,11 @@ const DELIVERY = 200;
 const FREE_DELIVERY_ABOVE = 999;
 
 const STEPS = ["Address", "Payment", "Confirm order"];
+
+// Saved addresses are kept in the browser while this is still the static UI, so
+// they survive a reload. When the address API exists, delete this and read the
+// list from the server — the shape is the same.
+const ADDRESS_STORE = "sabaa.checkout.addresses";
 
 /* ------------------------------------------------------------------ stepper */
 
@@ -130,14 +135,7 @@ const EMPTY_ADDRESS = {
 /* ------------------------------------------------------------ payment icons */
 
 const PAY_ICON = {
-  razorpay: (
-    <>
-      <rect x="2.5" y="5.5" width="19" height="13" rx="2" />
-      <path d="M2.5 9.5h19" />
-      <path d="M6 14.5h4" />
-    </>
-  ),
-  upi: (
+  online: (
     <>
       <path d="M12 3 5 12l7 9 7-9-7-9Z" />
       <path d="M12 8.5 8.5 12l3.5 3.5L15.5 12 12 8.5Z" />
@@ -152,24 +150,22 @@ const PAY_ICON = {
   ),
 };
 
+// Two ways to pay, each with its own action button — no radio buttons, so one
+// tap chooses the method and moves on rather than needing a second click.
 const PAYMENT_METHODS = [
   {
-    id: "razorpay",
-    label: "Card / Net Banking",
-    note: "Visa, Mastercard, RuPay and all major banks — secured by Razorpay",
-    icon: "razorpay",
-  },
-  {
-    id: "upi",
-    label: "UPI",
-    note: "Google Pay, PhonePe, Paytm or any UPI app",
-    icon: "upi",
+    id: "online",
+    label: "Online payment",
+    note: "UPI, Google Pay, PhonePe, Paytm, card or net banking",
+    icon: "online",
+    action: "Pay now",
   },
   {
     id: "cod",
     label: "Cash on Delivery",
     note: "Pay the courier when the piece reaches you",
     icon: "cod",
+    action: "Place your order",
   },
 ];
 
@@ -190,8 +186,38 @@ export default function Checkout() {
 
   const [address, setAddress] = useState(EMPTY_ADDRESS);
   const [addressType, setAddressType] = useState("home");
-  const [method, setMethod] = useState("razorpay");
+  const [method, setMethod] = useState("online");
   const [placed, setPlaced] = useState(false);
+
+  // Read after mount, never during render: the server has no localStorage, and
+  // seeding state from it directly would make the first client paint disagree
+  // with the server's HTML.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(ADDRESS_STORE) ?? "null");
+      if (Array.isArray(saved?.addresses)) setAddresses(saved.addresses);
+      if (saved?.selectedAddressId) setSelectedAddressId(saved.selectedAddressId);
+    } catch {
+      // Private mode, cleared storage, or a value from an older shape — start
+      // empty rather than breaking the page.
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    // Guarded: without this the empty initial state would overwrite the saved
+    // list on the very first render, before the read above has run.
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(
+        ADDRESS_STORE,
+        JSON.stringify({ addresses, selectedAddressId })
+      );
+    } catch {
+      // Storage full or blocked — the addresses simply do not persist.
+    }
+  }, [hydrated, addresses, selectedAddressId]);
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null;
 
@@ -484,27 +510,14 @@ export default function Checkout() {
           {/* ---------------------------------------------------- 2. payment */}
           {step === 1 ? (
             <Card title="Payment Method">
-              <div className="space-y-2.5">
-                {PAYMENT_METHODS.map((m) => {
-                  const selected = method === m.id;
-                  return (
-                    <label
-                      key={m.id}
-                      className="flex cursor-pointer items-start gap-3 rounded-lg border p-3.5 transition-colors"
-                      style={
-                        selected
-                          ? { borderColor: MAROON, backgroundColor: "#FDF0F2" }
-                          : { borderColor: "#E5DDD5" }
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="payment"
-                        value={m.id}
-                        checked={selected}
-                        onChange={() => setMethod(m.id)}
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-[#7B1E2B]"
-                      />
+              <div className="space-y-3">
+                {PAYMENT_METHODS.map((m) => (
+                  <div
+                    key={m.id}
+                    className="rounded-lg border p-3.5 transition-colors sm:flex sm:items-center sm:gap-4"
+                    style={{ borderColor: "#E5DDD5" }}
+                  >
+                    <div className="flex min-w-0 flex-1 items-start gap-3">
                       <svg
                         viewBox="0 0 24 24"
                         className="mt-0.5 h-5 w-5 shrink-0"
@@ -518,17 +531,29 @@ export default function Checkout() {
                       >
                         {PAY_ICON[m.icon]}
                       </svg>
-                      <span className="min-w-0">
-                        <span className="block text-[14px] font-medium text-neutral-800">
-                          {m.label}
-                        </span>
-                        <span className="mt-0.5 block text-[12px] leading-snug text-neutral-500">
+                      <div className="min-w-0">
+                        <p className="text-[14px] font-medium text-neutral-800">{m.label}</p>
+                        <p className="mt-0.5 text-[12px] leading-snug text-neutral-500">
                           {m.note}
-                        </span>
-                      </span>
-                    </label>
-                  );
-                })}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* The button is the choice — picking a method and
+                        continuing are one action, not two. */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMethod(m.id);
+                        setStep(2);
+                      }}
+                      className="mt-3 w-full shrink-0 rounded-md px-6 py-2.5 text-[14px] font-medium text-white transition-opacity hover:opacity-90 sm:mt-0 sm:w-auto"
+                      style={{ backgroundColor: MAROON }}
+                    >
+                      {m.action}
+                    </button>
+                  </div>
+                ))}
               </div>
 
               <p className="mt-4 flex items-start gap-2 rounded-md bg-[#FDF8F3] p-3 text-[12px] leading-relaxed text-neutral-600">
@@ -667,19 +692,19 @@ export default function Checkout() {
               >
                 Save address
               </button>
-            ) : step < 2 ? (
+            ) : step === 0 ? (
               <button
                 type="button"
-                disabled={step === 0 && !selectedAddress}
-                onClick={() => setStep((s) => s + 1)}
+                disabled={!selectedAddress}
+                onClick={() => setStep(1)}
                 className="rounded-md px-7 py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed"
-                style={{
-                  backgroundColor: step === 0 && !selectedAddress ? "#CFA9B0" : MAROON,
-                }}
+                style={{ backgroundColor: selectedAddress ? MAROON : "#CFA9B0" }}
               >
-                {step === 0 ? "Deliver to this address" : "Use this payment method"}
+                Deliver to this address
               </button>
             ) : null}
+            {/* No button on the payment step — each method card carries its own
+                action, so a second one here would be a duplicate. */}
           </div>
         </div>
 

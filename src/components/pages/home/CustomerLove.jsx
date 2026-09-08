@@ -75,21 +75,22 @@ function TestimonialCard({ testimonial }) {
       </div>
 
       <figcaption className="px-3 pt-2.5 pb-3">
-        <svg viewBox="0 0 24 24" className="h-3 w-3" fill={MAROON} aria-hidden="true">
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill={MAROON} aria-hidden="true">
           <path d="M9.5 6C6.5 7.4 5 9.7 5 12.9V18h5.4v-5.3H7.9c0-1.9.8-3.2 2.6-4L9.5 6Zm8.6 0c-3 1.4-4.5 3.7-4.5 6.9V18H19v-5.3h-2.5c0-1.9.8-3.2 2.6-4L18.1 6Z" />
         </svg>
         {/* Clamped to three lines and given the matching minimum, so every card
-            in the row is the same height whatever the quote's length. */}
-        <p className="mt-1 line-clamp-3 min-h-[42px] text-[11px] leading-snug text-neutral-700">
+            in the row is the same height whatever the quote's length. The
+            minimum tracks the type size — three lines of 13px at leading-snug. */}
+        <p className="mt-1.5 line-clamp-3 min-h-[54px] text-[13px] leading-snug text-neutral-700">
           {testimonial.quote}
         </p>
-        <div className="mt-1.5">
+        <div className="mt-2">
           <Stars rating={testimonial.rating} />
         </div>
-        <p className="mt-1.5 text-[11px] font-medium text-neutral-800">
+        <p className="mt-2 text-[13px] font-medium text-neutral-800">
           &ndash; {testimonial.name}
         </p>
-        <p className="text-[10px] text-neutral-500">{testimonial.city}</p>
+        <p className="text-[12px] text-neutral-500">{testimonial.city}</p>
       </figcaption>
     </figure>
   );
