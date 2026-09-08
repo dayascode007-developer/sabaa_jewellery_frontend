@@ -111,12 +111,21 @@ export default function Header() {
   const wishlistCount = useSelector(selectWishlistCount);
   const { customer, token } = useSelector((state) => state.auth);
 
+  const isLoggedIn = !!token && !!customer && customer.id !== "temp";
+
   // Fix hydration mismatch: only render auth UI after hydration
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const isLoggedIn = !!token && !!customer;
+  // Monitor auth state for display
+  useEffect(() => {
+    console.log("👤 Header Display:", {
+      isLoggedIn,
+      token: !!token,
+      customer: customer?.name || "N/A",
+    });
+  }, [isLoggedIn, token, customer]);
 
   return (
     <header className="w-full bg-white">

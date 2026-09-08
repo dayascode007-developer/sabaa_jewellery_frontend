@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { addItem } from "@/store/slices/cartSlice";
+import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import {
   addToWishlist,
   removeFromWishlist,
@@ -25,12 +25,19 @@ export default function ProductCard({ product }) {
   const router = useRouter();
   const token = useSelector((state) => state.auth.token);
   const wishlistItems = useSelector((state) => state.wishlist.items);
+  const cartItems = useSelector(selectCartItems);
 
   const wishlisted = useMemo(() => {
     return (wishlistItems || []).some(
       (item) => item?.product_id === product.id || item?.id === product.id
     );
   }, [wishlistItems, product.id]);
+
+  const inCart = useMemo(() => {
+    return (cartItems || []).some(
+      (item) => item?.product_id === product.id || item?.id === product.id
+    );
+  }, [cartItems, product.id]);
 
   // Without this the click looked like it had done nothing — the item went in
   // silently and only the header badge changed.
@@ -79,20 +86,33 @@ export default function ProductCard({ product }) {
     }
   };
 
-  const onAddToCart = (e) => {
+  const onAddToCart = async (e) => {
     stop(e);
-    dispatch(
-      addItem({
-        id: product.id,
-        title: product.title,
-        price: product.price,
-        // The cart line shows a thumbnail and an SKU, so they travel with it.
-        image: product.image,
-        code: product.code,
-        quantity: 1,
-      })
-    );
-    setAdded(true);
+
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    const cartItem = {
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      image: product.image,
+      ...(product.code ? { sku: product.code } : {}),
+      quantity: 1,
+    };
+
+    try {
+      await dispatch(addToCart(cartItem)).unwrap();
+
+      // Remove from wishlist after successful add to cart
+      dispatch(removeFromWishlist(product.id));
+
+      setAdded(true);
+    } catch (error) {
+      alert(`Failed to add to cart: ${error}`);
+    }
   };
 
   return (
@@ -212,15 +232,29 @@ export default function ProductCard({ product }) {
           <button
             type="button"
             onClick={onAddToCart}
-            className="relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded font-[family-name:var(--font-category)] text-[10px] font-medium text-white transition-opacity hover:opacity-90 sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px]"
-            style={{ backgroundColor: MAROON }}
+            disabled={inCart}
+            className={`relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded font-[family-name:var(--font-category)] text-[10px] font-medium text-white transition-opacity sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px] ${
+              inCart ? "cursor-default opacity-75" : "hover:opacity-90 cursor-pointer"
+            }`}
+            style={{ backgroundColor: inCart ? "#999" : MAROON }}
           >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
-              <path d="M3 4h2.2l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.3a1.6 1.6 0 0 0 1.6-1.3L21 7.5H6" />
-              <circle cx="9.5" cy="20" r="1.4" />
-              <circle cx="17.5" cy="20" r="1.4" />
-            </svg>
-            Add To Cart
+            {inCart ? (
+              <>
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                  <path d="M20 6L9 17l-5-5" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Added
+              </>
+            ) : (
+              <>
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                  <path d="M3 4h2.2l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.3a1.6 1.6 0 0 0 1.6-1.3L21 7.5H6" />
+                  <circle cx="9.5" cy="20" r="1.4" />
+                  <circle cx="17.5" cy="20" r="1.4" />
+                </svg>
+                Add To Cart
+              </>
+            )}
           </button>
         </div>
       </div>

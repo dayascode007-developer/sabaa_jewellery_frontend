@@ -44,6 +44,7 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
     apiProduct.ring_sizes?.map((rs) => rs.size?.toString() || rs.toString()) ||
     [],
   hasRingSize: (apiProduct.ring_sizes?.length || 0) > 0,
+  limit_purchases: apiProduct.limit_purchases || false,
   maxQty: apiProduct.limit_purchases ? 10 : 99,
   rating: 4,
   bestseller: true,
@@ -132,7 +133,8 @@ export default function ProductPage() {
         ).flat();
         const foundProduct = allStoredProducts.find((p) => p.id === numId);
 
-        if (foundProduct) {
+        // Use cached product only if it has required fields
+        if (foundProduct && foundProduct.limit_purchases !== undefined) {
           // Add isCustomisable derived from subcategories
           setProduct({
             ...foundProduct,

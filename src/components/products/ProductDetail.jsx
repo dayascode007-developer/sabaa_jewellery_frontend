@@ -5,8 +5,11 @@ import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { MdFavoriteBorder, MdFavorite, MdRemoveRedEye } from "react-icons/md";
-import { addItem } from "@/store/slices/cartSlice";
-import { addToWishlist, removeFromWishlist } from "@/store/slices/wishlistSlice";
+import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "@/store/slices/wishlistSlice";
 import Image from "next/image";
 import RingSizeGuide from "@/components/products/RingSizeGuide";
 import CareGuide from "@/components/products/CareGuide";
@@ -16,18 +19,27 @@ import SuccessModal from "@/components/common/SuccessModal";
 import { FONT_STYLES, SYMBOLS, NAME_MAX_LENGTH } from "@/constants/productData";
 import qualityBadge from "@/assets/batch/Sabaa Quality Batch.png";
 
-
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
 
 const rupees = (n) =>
-  "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  "₹" +
+  n.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 function Stars({ rating }) {
   return (
     <div className="flex gap-0.5" aria-label={`${rating} out of 5 stars`}>
       {Array.from({ length: 5 }, (_, i) => (
-        <svg key={i} viewBox="0 0 24 24" className="h-4 w-4" fill={i < rating ? "#E8A33D" : "#DDD"} aria-hidden="true">
+        <svg
+          key={i}
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill={i < rating ? "#E8A33D" : "#DDD"}
+          aria-hidden="true"
+        >
           <path d="m12 2 2.9 6.3 6.8.8-5 4.7 1.3 6.8L12 17.4 5.9 20.6 7.3 13.8l-5-4.7 6.8-.8L12 2Z" />
         </svg>
       ))}
@@ -100,7 +112,10 @@ function Gallery({ product }) {
       // that arrived already encoded would come out double-encoded.
       backgroundImage: `url("${fullSrc}")`,
       backgroundSize: `${lens.w * ZOOM}px ${lens.h * ZOOM}px`,
-      backgroundPosition: `${-(cx * ZOOM - lw / 2)}px ${-(cy * ZOOM - lh / 2)}px`,
+      backgroundPosition: `${-(cx * ZOOM - lw / 2)}px ${-(
+        cy * ZOOM -
+        lh / 2
+      )}px`,
       backgroundRepeat: "no-repeat",
     };
   }
@@ -126,7 +141,14 @@ function Gallery({ product }) {
                 className="absolute inset-0 h-full w-full object-cover"
               />
             ) : (
-              <Image src={current} alt={product.title} fill sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover" priority />
+              <Image
+                src={current}
+                alt={product.title}
+                fill
+                sizes="(max-width: 1024px) 100vw, 45vw"
+                className="object-cover"
+                priority
+              />
             )
           ) : (
             <Placeholder label={product.title} />
@@ -156,14 +178,26 @@ function Gallery({ product }) {
               aria-label={`View image ${i + 1}`}
               aria-current={i === active}
               className={`relative h-16 w-16 shrink-0 overflow-hidden rounded border transition-colors ${
-                i === active ? "border-[#7B1E2B]" : "border-neutral-200 hover:border-neutral-400"
+                i === active
+                  ? "border-[#7B1E2B]"
+                  : "border-neutral-200 hover:border-neutral-400"
               }`}
             >
               {shot ? (
                 typeof shot === "string" && shot.startsWith("http") ? (
-                  <img src={shot} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                  <img
+                    src={shot}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
                 ) : (
-                  <Image src={shot} alt="" fill sizes="64px" className="object-cover" />
+                  <Image
+                    src={shot}
+                    alt=""
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
                 )
               ) : (
                 <span className="block h-full w-full bg-gradient-to-br from-[#EDE3D3] to-[#D8C6A8]" />
@@ -171,7 +205,6 @@ function Gallery({ product }) {
             </button>
           ))}
         </div>
-
       </div>
 
       {/* Trust badges under the gallery */}
@@ -205,8 +238,21 @@ function Gallery({ product }) {
             ),
           },
         ].map((b) => (
-          <div key={b.id} className="flex flex-col items-center gap-1.5 text-center">
-            <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ color: MAROON }} aria-hidden="true">
+          <div
+            key={b.id}
+            className="flex flex-col items-center gap-1.5 text-center"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-7 w-7"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ color: MAROON }}
+              aria-hidden="true"
+            >
               {b.icon}
             </svg>
             <span className="text-[12px] text-neutral-700">{b.label}</span>
@@ -221,34 +267,70 @@ function Gallery({ product }) {
 const getSectionIcon = (sectionId) => {
   const icons = {
     "product-details": (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
         <path d="M9 12h6m-6 4h6M7 20h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
       </svg>
     ),
     "cleaning-polishing": (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
         <path d="M12 2v6m0 0a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 9v5m3-12l-2.12 2.12M9 7.12L6.88 9m6 6l-2.12 2.12M9 19.12l-2.12 2.12" />
       </svg>
     ),
     "usage-color-guarantee": (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
         <path d="M12 3 3.73 6.236v4.764C3.73 16.092 12 21 12 21s8.27-4.908 8.27-10C20.27 11 12 3 12 3Z" />
         <path d="m9 12 2 2 4-4" />
       </svg>
     ),
     "return-exchange-policy": (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
         <path d="M1 4v6h6M23 20v-6h-6" />
         <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
       </svg>
     ),
     "address-contact": (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5z" />
       </svg>
     ),
-    "description": (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+    description: (
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
         <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
         <polyline points="13 2 13 9 20 9" />
       </svg>
@@ -260,7 +342,10 @@ const getSectionIcon = (sectionId) => {
 function Accordion({ sections, description }) {
   // Description starts open, matching the reference.
   const [openId, setOpenId] = useState("description");
-  const rows = [...sections, { id: "description", title: "Description", body: description }];
+  const rows = [
+    ...sections,
+    { id: "description", title: "Description", body: description },
+  ];
 
   return (
     <div className="mt-6 divide-y divide-neutral-200 rounded-lg border border-neutral-200">
@@ -275,19 +360,30 @@ function Accordion({ sections, description }) {
               className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
             >
               <span className="flex items-center gap-2">
-                <span style={{ color: MAROON }}>
-                  {getSectionIcon(row.id)}
-                </span>
+                <span style={{ color: MAROON }}>{getSectionIcon(row.id)}</span>
                 <span className="font-[family-name:var(--font-heading)] text-[13px] font-medium text-neutral-900">
                   {row.title}
                 </span>
               </span>
-              <svg viewBox="0 0 24 24" className={`h-4 w-4 shrink-0 text-neutral-500 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                className={`h-4 w-4 shrink-0 text-neutral-500 transition-transform ${
+                  isOpen ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="m6 9 6 6 6-6" />
               </svg>
             </button>
             {isOpen ? (
-              <p className="font-[family-name:var(--font-heading)] px-4 pb-4 text-[12px] leading-relaxed text-neutral-600 whitespace-pre-wrap">{row.body}</p>
+              <p className="font-[family-name:var(--font-heading)] px-4 pb-4 text-[12px] leading-relaxed text-neutral-600 whitespace-pre-wrap">
+                {row.body}
+              </p>
             ) : null}
           </div>
         );
@@ -367,7 +463,7 @@ function SymbolWheel({ value, onChange, symbols = [] }) {
         tabIndex={0}
         role="listbox"
         aria-label="Symbol"
-        aria-activedescendant={`symbol-opt-${allSymbols[index]?.id || ''}`}
+        aria-activedescendant={`symbol-opt-${allSymbols[index]?.id || ""}`}
         // relative z-10 matters: the mask below makes this element a stacking
         // context, so the rows inside it can no longer out-rank the selection
         // bar on their own — the bar was painting over the chosen row and
@@ -418,10 +514,14 @@ function SymbolWheel({ value, onChange, symbols = [] }) {
                   className="h-10 w-10 object-contain"
                 />
               ) : s.glyph ? (
-                <span className="text-[20px] leading-none text-neutral-700">{s.glyph}</span>
+                <span className="text-[20px] leading-none text-neutral-700">
+                  {s.glyph}
+                </span>
               ) : null}
               <span
-                className={`text-[15px] leading-none ${active ? "font-semibold" : ""}`}
+                className={`text-[15px] leading-none ${
+                  active ? "font-semibold" : ""
+                }`}
                 style={{ color: active ? MAROON : "#6B6B6B" }}
               >
                 {s.label || s.name}
@@ -446,7 +546,10 @@ function StylePreview({ name, fontId, symbolId, side }) {
 
   return (
     <div className="mt-5">
-      <p className="text-center text-[13px] font-medium" style={{ color: MAROON }}>
+      <p
+        className="text-center text-[13px] font-medium"
+        style={{ color: MAROON }}
+      >
         Style Preview
       </p>
 
@@ -462,7 +565,9 @@ function StylePreview({ name, fontId, symbolId, side }) {
         {text ? (
           <p className="flex items-baseline gap-2 text-center break-all">
             {symbol.glyph && side === "left" ? (
-              <span className="text-[22px] text-neutral-700">{symbol.glyph}</span>
+              <span className="text-[22px] text-neutral-700">
+                {symbol.glyph}
+              </span>
             ) : null}
 
             <span
@@ -473,7 +578,9 @@ function StylePreview({ name, fontId, symbolId, side }) {
             </span>
 
             {symbol.glyph && side === "right" ? (
-              <span className="text-[22px] text-neutral-700">{symbol.glyph}</span>
+              <span className="text-[22px] text-neutral-700">
+                {symbol.glyph}
+              </span>
             ) : null}
           </p>
         ) : (
@@ -512,6 +619,13 @@ export default function ProductDetail({ product }) {
 
   const token = useSelector((state) => state.auth.token);
   const wishlistItems = useSelector((state) => state.wishlist.items);
+  const cartItems = useSelector(selectCartItems);
+
+  const inCart = useMemo(() => {
+    return (cartItems || []).some(
+      (item) => item?.product_id === product.id || item?.id === product.id
+    );
+  }, [cartItems, product.id]);
   const router = useRouter();
   const isAddingToWishlist = useRef(false);
 
@@ -531,22 +645,43 @@ export default function ProductDetail({ product }) {
 
   // Everything the workshop needs to make this exact piece travels with the
   // line, not just the product id — otherwise the engraving is lost at checkout.
-  const onAddToCart = () => {
-    dispatch(
-      addItem({
+  const onAddToCart = async () => {
+    // Check if user is logged in
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      // Get symbol label/name instead of numeric ID
+      const symbol = product.isCustomisable
+        ? SYMBOLS.find((s) => s.id === symbolId)
+        : null;
+      const symbolLabel = symbol?.name || symbolId;
+
+      const cartItem = {
         id: product.id,
         title: product.title,
         price: product.price,
         image: product.image,
-        code: product.productCode,
+        ...(product.code ? { sku: product.code } : {}),
         quantity: qty,
         ...(product.hasRingSize ? { size } : {}),
         ...(product.isCustomisable
-          ? { ringName, fontId, symbolId, symbolSide }
+          ? { ringName, fontId, symbolId: symbolLabel, symbolSide }
           : {}),
-      })
-    );
-    setAdded(true);
+      };
+
+      // Call backend API via Redux thunk
+      await dispatch(addToCart(cartItem)).unwrap();
+
+      // Remove from wishlist after successful add to cart
+      dispatch(removeFromWishlist(product.id));
+
+      setAdded(true);
+    } catch (error) {
+      alert("Failed to add to cart: " + error.message);
+    }
   };
 
   const discount =
@@ -556,374 +691,504 @@ export default function ProductDetail({ product }) {
 
   return (
     <>
-    <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-12">
-      <div className="sm:sticky sm:top-4 sm:h-fit lg:sticky lg:top-4 lg:h-fit">
-        <Gallery product={product} />
+      <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-12">
+        <div className="sm:sticky sm:top-4 sm:h-fit lg:sticky lg:top-4 lg:h-fit">
+          <Gallery product={product} />
 
-        {/* Preview of the engraving — only where there is engraving to preview. */}
-        {product.isCustomisable ? (
-          <StylePreview
-            name={ringName}
-            fontId={fontId}
-            symbolId={symbolId}
-            side={symbolSide}
-          />
-        ) : null}
-      </div>
-
-      <div>
-        {/* Top row — bestseller flag and quick actions */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {product.bestseller ? (
-            <span className="inline-flex items-center gap-1.5 rounded bg-[#FDF0F2] px-2.5 py-1 text-[11px] font-medium" style={{ color: MAROON }}>
-              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor" aria-hidden="true">
-                <path d="m12 2 2.9 6.3 6.8.8-5 4.7 1.3 6.8L12 17.4 5.9 20.6 7.3 13.8l-5-4.7 6.8-.8L12 2Z" />
-              </svg>
-              BESTSELLER
-            </span>
+          {/* Preview of the engraving — only where there is engraving to preview. */}
+          {product.isCustomisable ? (
+            <StylePreview
+              name={ringName}
+              fontId={fontId}
+              symbolId={symbolId}
+              side={symbolSide}
+            />
           ) : null}
+        </div>
 
-          <div className="flex items-center gap-4 text-[12px] text-neutral-600">
-            <style>{`
+        <div>
+          {/* Top row — bestseller flag and quick actions */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {product.bestseller ? (
+              <span
+                className="inline-flex items-center gap-1.5 rounded bg-[#FDF0F2] px-2.5 py-1 text-[11px] font-medium"
+                style={{ color: MAROON }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-3 w-3"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="m12 2 2.9 6.3 6.8.8-5 4.7 1.3 6.8L12 17.4 5.9 20.6 7.3 13.8l-5-4.7 6.8-.8L12 2Z" />
+                </svg>
+                BESTSELLER
+              </span>
+            ) : null}
+
+            <div className="flex items-center gap-4 text-[12px] text-neutral-600">
+              <style>{`
               [aria-label="Share this product"] {
                 background: none !important;
                 box-shadow: none !important;
                 border: none !important;
               }
             `}</style>
-            <ShareMenu title={product.title} path={`/product/${product.id}`} />
+              <ShareMenu
+                title={product.title}
+                path={`/product/${product.id}`}
+              />
 
-            <button
-              type="button"
-              onClick={() => {
-                if (!token) {
-                  router.push("/login");
-                  return;
-                }
-                if (wishlisted) {
-                  dispatch(removeFromWishlist(product.id));
-                } else {
-                  isAddingToWishlist.current = true;
-                  dispatch(addToWishlist(product.id));
-                }
-              }}
-              className="transition-colors hover:text-neutral-900"
-              title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-            >
-              {wishlisted ? (
-                <MdFavorite size={16} style={{ color: MAROON }} />
-              ) : (
-                <MdFavoriteBorder size={16} />
-              )}
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!token) {
+                    router.push("/login");
+                    return;
+                  }
+                  if (wishlisted) {
+                    dispatch(removeFromWishlist(product.id));
+                  } else {
+                    isAddingToWishlist.current = true;
+                    dispatch(addToWishlist(product.id));
+                  }
+                }}
+                className="transition-colors hover:text-neutral-900"
+                title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                {wishlisted ? (
+                  <MdFavorite size={16} style={{ color: MAROON }} />
+                ) : (
+                  <MdFavoriteBorder size={16} />
+                )}
+              </button>
 
-            <button
-              type="button"
-              className="transition-colors hover:text-neutral-900"
-              title="View Similar"
-            >
-              <MdRemoveRedEye size={16} />
-            </button>
+              <button
+                type="button"
+                className="transition-colors hover:text-neutral-900"
+                title="View Similar"
+              >
+                <MdRemoveRedEye size={16} />
+              </button>
+            </div>
           </div>
-        </div>
 
-        <p className="mt-3 text-[11px] text-neutral-500">
-          Product Code : <span className="text-neutral-700">{product.code}</span>
-        </p>
+          <p className="mt-3 text-[11px] text-neutral-500">
+            Product Code :{" "}
+            <span className="text-neutral-700">{product.code}</span>
+          </p>
 
-        <h1 className="mt-1 font-[family-name:var(--font-heading)] text-[26px] leading-snug text-neutral-900 sm:text-[32px] lg:text-[40px]">
-          {product.title}
-        </h1>
+          <h1 className="mt-1 font-[family-name:var(--font-heading)] text-[26px] leading-snug text-neutral-900 sm:text-[32px] lg:text-[40px]">
+            {product.title}
+          </h1>
 
-        <div className="mt-2">
-          <Stars rating={product.rating} />
-        </div>
+          <div className="mt-2">
+            <Stars rating={product.rating} />
+          </div>
 
-        <div className="mt-3 flex flex-wrap items-baseline gap-2">
-          <span className="text-[22px] font-semibold" style={{ color: MAROON }}>
-            {rupees(product.price)}
-          </span>
-          {product.mrp > product.price ? (
-            <>
-              <span className="text-[14px] text-neutral-400 line-through">{rupees(product.mrp)}</span>
-              <span className="text-[13px] text-neutral-600">({discount}% OFF)</span>
-            </>
-          ) : null}
-        </div>
-        <p className="mt-0.5 text-[11px] text-neutral-500">MRP inclusive of all taxes</p>
+          <div className="mt-3 flex flex-wrap items-baseline gap-2">
+            <span
+              className="text-[22px] font-semibold"
+              style={{ color: MAROON }}
+            >
+              {rupees(product.price)}
+            </span>
+            {product.mrp > product.price ? (
+              <>
+                <span className="text-[14px] text-neutral-400 line-through">
+                  {rupees(product.mrp)}
+                </span>
+                <span className="text-[13px] text-neutral-600">
+                  ({discount}% OFF)
+                </span>
+              </>
+            ) : null}
+          </div>
+          <p className="mt-0.5 text-[11px] text-neutral-500">
+            MRP inclusive of all taxes
+          </p>
 
-        {/* Quality seal, on its own line under the tax note.
+          {/* Quality seal, on its own line under the tax note.
             width/height matter here: the source is 1024px square, and without
             them Next serves a variant sized for the full intrinsic width
             rather than the small size this actually renders at. */}
-        <Image
-          src={qualityBadge}
-          alt="Premium product — excellent quality"
-          width={54}
-          height={54}
-          sizes="54px"
-          className="mt-2 h-[54px] w-[54px]"
-        />
+          <Image
+            src={qualityBadge}
+            alt="Premium product — excellent quality"
+            width={54}
+            height={54}
+            sizes="54px"
+            className="mt-2 h-[54px] w-[54px]"
+          />
 
-        {/* Ring size — rings only. A chain, pendant or pair of earrings has no
+          {/* Ring size — rings only. A chain, pendant or pair of earrings has no
             finger size, so the whole block is left out rather than shown with
             values that mean nothing for the piece. */}
-        {product.hasRingSize ? (
-        <div className="mt-5">
-          <div className="flex items-center justify-between gap-3">
-            <label htmlFor="ring-size" className="text-[13px] font-medium" style={{ color: MAROON }}>
-              Ring Size
-            </label>
-            <RingSizeGuide />
-          </div>
-          <select
-            id="ring-size"
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
-            className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
-          >
-            {product.sizes?.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-        ) : null}
+          {product.hasRingSize ? (
+            <div className="mt-5">
+              <div className="flex items-center justify-between gap-3">
+                <label
+                  htmlFor="ring-size"
+                  className="text-[13px] font-medium"
+                  style={{ color: MAROON }}
+                >
+                  Ring Size
+                </label>
+                <RingSizeGuide />
+              </div>
+              <select
+                id="ring-size"
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
+              >
+                {product.sizes?.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
 
-        {/* Engraving — Name Engrave Rings only. The other ring categories are
+          {/* Engraving — Name Engrave Rings only. The other ring categories are
             finished designs, so they get the size selector above but nothing
             here: there is nothing to cut into them. */}
-        {product.isCustomisable ? (
-          <>
-            <div className="mt-4">
-              <label
-                htmlFor="ring-name"
-                className="block text-[13px] font-medium"
-                style={{ color: MAROON }}
-              >
-                Ring Name
-              </label>
-              <input
-                id="ring-name"
-                type="text"
-                value={ringName}
-                maxLength={NAME_MAX_LENGTH}
-                onChange={(e) => setRingName(e.target.value)}
-                placeholder="Name to engrave"
-                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
-              />
-              <p className="mt-1 text-right text-[10px] text-neutral-500">
-                {ringName.length}/{NAME_MAX_LENGTH}
-              </p>
-            </div>
+          {product.isCustomisable ? (
+            <>
+              <div className="mt-4">
+                <label
+                  htmlFor="ring-name"
+                  className="block text-[13px] font-medium"
+                  style={{ color: MAROON }}
+                >
+                  Ring Name
+                </label>
+                <input
+                  id="ring-name"
+                  type="text"
+                  value={ringName}
+                  maxLength={NAME_MAX_LENGTH}
+                  onChange={(e) => setRingName(e.target.value)}
+                  placeholder="Name to engrave"
+                  className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
+                />
+                <p className="mt-1 text-right text-[10px] text-neutral-500">
+                  {ringName.length}/{NAME_MAX_LENGTH}
+                </p>
+              </div>
 
-            <div className="mt-3">
-              <label
-                htmlFor="font-style"
-                className="block text-[13px] font-medium"
-                style={{ color: MAROON }}
-              >
-                Font Style
-              </label>
-              <FontDropdown
-                value={fontId}
-                onChange={setFontId}
-                options={product.fonts || []}
-              />
-            </div>
+              <div className="mt-3">
+                <label
+                  htmlFor="font-style"
+                  className="block text-[13px] font-medium"
+                  style={{ color: MAROON }}
+                >
+                  Font Style
+                </label>
+                <FontDropdown
+                  value={fontId}
+                  onChange={setFontId}
+                  options={product.fonts || []}
+                />
+              </div>
 
-            <div className="mt-3">
-              <p className="block text-[13px] font-medium" style={{ color: MAROON }}>
-                Symbol Selections
-              </p>
-              {/* Scroll wheel rather than a dropdown — spin it up or down and
+              <div className="mt-3">
+                <p
+                  className="block text-[13px] font-medium"
+                  style={{ color: MAROON }}
+                >
+                  Symbol Selections
+                </p>
+                {/* Scroll wheel rather than a dropdown — spin it up or down and
                   whichever row lands in the bar is the choice. */}
-              <SymbolWheel value={symbolId} onChange={setSymbolId} symbols={product.symbols} />
+                <SymbolWheel
+                  value={symbolId}
+                  onChange={setSymbolId}
+                  symbols={product.symbols}
+                />
+              </div>
+
+              {/* Which side of the name the symbol sits on. Hidden while no
+                symbol is chosen — there is nothing to place. */}
+              {symbolId !== "none" ? (
+                <fieldset className="mt-3">
+                  <legend
+                    className="text-[13px] font-medium"
+                    style={{ color: MAROON }}
+                  >
+                    Symbol Direction
+                  </legend>
+                  <div className="mt-1.5 flex items-center gap-5">
+                    {product.symbol_direction?.map((dir) => (
+                      <label
+                        key={dir.id}
+                        className="flex items-center gap-2 text-[13px] text-neutral-700"
+                      >
+                        <input
+                          type="radio"
+                          name="symbol-side"
+                          value={dir.name}
+                          checked={symbolSide === dir.name}
+                          onChange={(e) => setSymbolSide(e.target.value)}
+                          className="h-3.5 w-3.5 accent-[#7B1E2B]"
+                        />
+                        {dir.name === "left"
+                          ? "Left side"
+                          : dir.name === "right"
+                          ? "Right side"
+                          : dir.name === "center"
+                          ? "Center"
+                          : dir.name}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ) : null}
+            </>
+          ) : null}
+
+          {/* WhatsApp assist + Add to cart */}
+          <div className="mt-5 flex flex-wrap items-start gap-4">
+            <div className="rounded border border-[#BFE9CC] bg-[#EAF9EF] p-3">
+              <p
+                className="flex items-center gap-1.5 text-[12px] font-medium"
+                style={{ color: "#128C4A" }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-3.5 w-3.5"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2.8a9.1 9.1 0 0 0-7.8 13.8L2.9 21.3l4.9-1.3A9.1 9.1 0 1 0 12 2.8Z" />
+                </svg>
+                Whatsapp
+              </p>
+              <p className="mt-1 text-[11px] leading-tight text-neutral-600">
+                Get Whatsapp Assistance -<br />
+                Chat with us
+              </p>
+              <button
+                type="button"
+                className="mt-2 rounded px-3 py-1.5 text-[11px] font-medium text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: WHATSAPP }}
+              >
+                Chat with Us
+              </button>
             </div>
 
-            {/* Which side of the name the symbol sits on. Hidden while no
-                symbol is chosen — there is nothing to place. */}
-            {symbolId !== "none" ? (
-              <fieldset className="mt-3">
-                <legend className="text-[13px] font-medium" style={{ color: MAROON }}>
-                  Symbol Direction
-                </legend>
-                <div className="mt-1.5 flex items-center gap-5">
-                  {product.symbol_direction?.map((dir) => (
-                    <label
-                      key={dir.id}
-                      className="flex items-center gap-2 text-[13px] text-neutral-700"
+            <div>
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={inCart}
+                className={`rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity inline-flex items-center gap-2 ${
+                  inCart
+                    ? "cursor-default opacity-75"
+                    : "hover:opacity-90 cursor-pointer"
+                }`}
+                style={{ backgroundColor: inCart ? "#999" : MAROON }}
+              >
+                {inCart ? (
+                  <>
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-4 w-4"
+                      fill="currentColor"
+                      aria-hidden="true"
                     >
-                      <input
-                        type="radio"
-                        name="symbol-side"
-                        value={dir.name}
-                        checked={symbolSide === dir.name}
-                        onChange={(e) => setSymbolSide(e.target.value)}
-                        className="h-3.5 w-3.5 accent-[#7B1E2B]"
+                      <path
+                        d="M20 6L9 17l-5-5"
+                        strokeWidth="2"
+                        stroke="currentColor"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
-                      {dir.name === "left" ? "Left side" : dir.name === "right" ? "Right side" : dir.name === "center" ? "Center" : dir.name}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            ) : null}
-          </>
-        ) : null}
+                    </svg>
+                    Already Added
+                  </>
+                ) : (
+                  "Add to Cart"
+                )}
+              </button>
 
-        {/* WhatsApp assist + Add to cart */}
-        <div className="mt-5 flex flex-wrap items-start gap-4">
-          <div className="rounded border border-[#BFE9CC] bg-[#EAF9EF] p-3">
-            <p className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: "#128C4A" }}>
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
-                <path d="M12 2.8a9.1 9.1 0 0 0-7.8 13.8L2.9 21.3l4.9-1.3A9.1 9.1 0 1 0 12 2.8Z" />
-              </svg>
-              Whatsapp
-            </p>
-            <p className="mt-1 text-[11px] leading-tight text-neutral-600">
-              Get Whatsapp Assistance -<br />
-              Chat with us
-            </p>
-            <button
-              type="button"
-              className="mt-2 rounded px-3 py-1.5 text-[11px] font-medium text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: WHATSAPP }}
-            >
-              Chat with Us
-            </button>
-          </div>
-
-          <div>
-            <button
-              type="button"
-              onClick={onAddToCart}
-              className="rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: MAROON }}
-            >
-              Add to Cart
-            </button>
-
-            <label htmlFor="qty" className="mt-3 block text-[12px] text-neutral-700">
-              Quantity
-            </label>
-            {/* The browser's own spinner only paints on hover in Chrome, and
+              <label
+                htmlFor="qty"
+                className="mt-3 block text-[12px] text-neutral-700"
+              >
+                Quantity
+              </label>
+              {/* The browser's own spinner only paints on hover in Chrome, and
                 behaves differently again in Firefox and Safari, so it is
                 switched off and replaced with arrows of our own that are always
                 on screen. Typing still works. */}
-            <div className="mt-1 flex w-24 items-stretch overflow-hidden rounded border border-neutral-300 bg-white focus-within:border-[#7B1E2B]">
-              <input
-                id="qty"
-                type="number"
-                min={1}
-                max={product.maxQty}
-                value={qty}
-                // Clamped at both ends. The previous version only capped the top,
-                // so a typed "-5" went straight through as -5.
-                onChange={(e) =>
-                  setQty(
-                    Math.min(Math.max(1, Number(e.target.value) || 1), product.maxQty)
-                  )
-                }
-                // The number had no colour of its own, so it inherited the pale
-                // grey from the surrounding text and read as disabled.
-                className="min-w-0 flex-1 bg-transparent py-2 pl-3 text-center text-[15px] font-semibold text-neutral-900 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
+              <div className="mt-1 flex w-24 items-stretch overflow-hidden rounded border border-neutral-300 bg-white focus-within:border-[#7B1E2B]">
+                <input
+                  id="qty"
+                  type="number"
+                  min={1}
+                  max={product.limit_purchases ? 1 : product.maxQty}
+                  value={qty}
+                  onChange={(e) => {
+                    const newValue = Number(e.target.value) || 1;
+                    if (product.limit_purchases) {
+                      setQty(1);
+                    } else {
+                      setQty(Math.min(Math.max(1, newValue), product.maxQty));
+                    }
+                  }}
+                  className="min-w-0 flex-1 bg-transparent py-2 pl-3 text-center text-[15px] font-semibold text-neutral-900 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
 
-              <span className="flex w-6 shrink-0 flex-col border-l border-neutral-200">
-                <button
-                  type="button"
-                  onClick={() => setQty((q) => Math.min(q + 1, product.maxQty))}
-                  disabled={qty >= product.maxQty}
-                  aria-label="Increase quantity"
-                  className="flex flex-1 items-center justify-center transition-colors hover:bg-[#FDF0F2] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-                >
-                  <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke={MAROON} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="m6 15 6-6 6 6" />
-                  </svg>
-                </button>
+                <span className="flex w-6 shrink-0 flex-col border-l border-neutral-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!product.limit_purchases) {
+                        setQty((q) => Math.min(q + 1, product.maxQty));
+                      }
+                    }}
+                    disabled={product.limit_purchases || qty >= product.maxQty}
+                    aria-label="Increase quantity"
+                    className="flex flex-1 items-center justify-center transition-colors hover:bg-[#FDF0F2] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-3 w-3"
+                      fill="none"
+                      stroke={MAROON}
+                      strokeWidth="2.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 15 6-6 6 6" />
+                    </svg>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => setQty((q) => Math.max(q - 1, 1))}
-                  disabled={qty <= 1}
-                  aria-label="Decrease quantity"
-                  className="flex flex-1 items-center justify-center border-t border-neutral-200 transition-colors hover:bg-[#FDF0F2] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-                >
-                  <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke={MAROON} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setQty((q) => Math.max(q - 1, 1))}
+                    disabled={qty <= 1}
+                    aria-label="Decrease quantity"
+                    className="flex flex-1 items-center justify-center border-t border-neutral-200 transition-colors hover:bg-[#FDF0F2] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-3 w-3"
+                      fill="none"
+                      stroke={MAROON}
+                      strokeWidth="2.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                </span>
+              </div>
+
+              {(product?.limit_purchases === true || product?.maxQty === 1) && (
+                <p className="mt-2 text-[12px] text-neutral-600">
+                  * Maximum allowed qty 1
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Assurance row */}
+          <div className="mt-6 flex flex-wrap items-center gap-6">
+            <div className="flex flex-col items-center gap-1 text-center">
+              <span
+                className="font-[family-name:var(--font-heading)] text-[20px]"
+                style={{ color: MAROON }}
+              >
+                100%
+              </span>
+              <span className="text-[12px] text-neutral-700">
+                Genuine Jewellery
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center gap-1 text-center">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ color: MAROON }}
+                aria-hidden="true"
+              >
+                {/* Lid, box, ribbon and a bow of two loops sitting on top — the
+                  previous bow was merged into the lid and read as a blob. */}
+                <rect x="3.6" y="9.9" width="16.8" height="3.3" rx="0.7" />
+                <path d="M5.1 13.2v6a1 1 0 0 0 1 1h11.8a1 1 0 0 0 1-1v-6" />
+                <path d="M12 9.9v10.3" />
+                <path d="M12 9.9C10.7 7.6 9.5 6.7 8.4 7.2c-1 .5-.7 2.4 3.6 2.7Z" />
+                <path d="M12 9.9c1.3-2.3 2.5-3.2 3.6-2.7 1 .5.7 2.4-3.6 2.7Z" />
+              </svg>
+              <span className="text-[12px] text-neutral-700">
+                Precious Gifting
               </span>
             </div>
           </div>
+
+          <label className="mt-4 flex items-center gap-2 text-[12px] text-neutral-700">
+            <input
+              type="checkbox"
+              checked={giftWrap}
+              onChange={(e) => setGiftWrap(e.target.checked)}
+              className="h-3.5 w-3.5"
+            />
+            Gift Packaging (Free)
+          </label>
+
+          <Accordion
+            sections={product.sections}
+            description={product.description}
+          />
         </div>
-
-        {/* Assurance row */}
-        <div className="mt-6 flex flex-wrap items-center gap-6">
-          <div className="flex flex-col items-center gap-1 text-center">
-            <span className="font-[family-name:var(--font-heading)] text-[20px]" style={{ color: MAROON }}>
-              100%
-            </span>
-            <span className="text-[12px] text-neutral-700">Genuine Jewellery</span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 text-center">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ color: MAROON }} aria-hidden="true">
-              {/* Lid, box, ribbon and a bow of two loops sitting on top — the
-                  previous bow was merged into the lid and read as a blob. */}
-              <rect x="3.6" y="9.9" width="16.8" height="3.3" rx="0.7" />
-              <path d="M5.1 13.2v6a1 1 0 0 0 1 1h11.8a1 1 0 0 0 1-1v-6" />
-              <path d="M12 9.9v10.3" />
-              <path d="M12 9.9C10.7 7.6 9.5 6.7 8.4 7.2c-1 .5-.7 2.4 3.6 2.7Z" />
-              <path d="M12 9.9c1.3-2.3 2.5-3.2 3.6-2.7 1 .5.7 2.4-3.6 2.7Z" />
-            </svg>
-            <span className="text-[12px] text-neutral-700">Precious Gifting</span>
-          </div>
-        </div>
-
-        <label className="mt-4 flex items-center gap-2 text-[12px] text-neutral-700">
-          <input type="checkbox" checked={giftWrap} onChange={(e) => setGiftWrap(e.target.checked)} className="h-3.5 w-3.5" />
-          Gift Packaging (Free)
-        </label>
-
-        <Accordion sections={product.sections} description={product.description} />
       </div>
-    </div>
 
-    {/* Full width below the product grid — it needs the room, and it is the
+      {/* Full width below the product grid — it needs the room, and it is the
         same on every product, so it reads as page content rather than as one
         more thing to click through. */}
-    <CareGuide />
+      <CareGuide />
 
-    {/* Portalled to <body> so the overlay is measured against the viewport and
+      {/* Portalled to <body> so the overlay is measured against the viewport and
         not against any transformed ancestor on the page. */}
-    {mounted && added
-      ? createPortal(
-          <SuccessModal
-            isOpen
-            message={
-              qty > 1
-                ? `${qty} × ${product.title} have been added to your cart.`
-                : `${product.title} has been added to your cart.`
-            }
-            onClose={() => setAdded(false)}
-          />,
-          document.body
-        )
-      : null}
+      {mounted && added
+        ? createPortal(
+            <SuccessModal
+              isOpen
+              message={
+                qty > 1
+                  ? `${qty} × ${product.title} have been added to your cart.`
+                  : `${product.title} has been added to your cart.`
+              }
+              onClose={() => setAdded(false)}
+            />,
+            document.body
+          )
+        : null}
 
-    {/* Wishlist success modal */}
-    {mounted && wishlistSuccess
-      ? createPortal(
-          <SuccessModal
-            isOpen
-            message={`${product.title} has been added to your wishlist.`}
-            onClose={() => setWishlistSuccess(false)}
-          />,
-          document.body
-        )
-      : null}
+      {/* Wishlist success modal */}
+      {mounted && wishlistSuccess
+        ? createPortal(
+            <SuccessModal
+              isOpen
+              message={`${product.title} has been added to your wishlist.`}
+              onClose={() => setWishlistSuccess(false)}
+            />,
+            document.body
+          )
+        : null}
     </>
   );
 }

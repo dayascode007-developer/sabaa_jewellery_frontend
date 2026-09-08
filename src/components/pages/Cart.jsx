@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectCartItems,
   selectCartCount,
-  setQuantity,
-  removeItem,
+  fetchCart,
+  updateCartQuantity,
+  removeFromCart,
   clearCart,
 } from "@/store/slices/cartSlice";
 
@@ -19,15 +19,32 @@ const rupees = (n) =>
 
 function Stepper({ item }) {
   const dispatch = useDispatch();
-  const set = (q) => dispatch(setQuantity({ id: item.id, quantity: q }));
+  const [loading, setLoading] = useState(false);
+
+  const updateQty = (newQty) => {
+    const productId = item.product_id || item.id;
+    console.log(`📊 Quantity Update - Product ID: ${productId}, New Quantity: ${newQty}`);
+
+    if (newQty <= 0) {
+      console.log(`🗑️ Removing item ${productId} from cart`);
+      dispatch(removeFromCart(productId));
+    } else {
+      setLoading(true);
+      console.log(`⬆️ Updating quantity for ${productId} to ${newQty}`);
+      dispatch(updateCartQuantity({ productId, quantity: newQty }));
+      setLoading(false);
+      console.log(`✅ Quantity updated successfully`);
+    }
+  };
 
   return (
     <div className="inline-flex items-stretch overflow-hidden rounded border border-neutral-300">
       <button
         type="button"
-        onClick={() => set(item.quantity - 1)}
+        onClick={() => updateQty(item.quantity - 1)}
+        disabled={loading || item.quantity <= 1}
         aria-label="Decrease quantity"
-        className="w-8 text-[16px] leading-none text-neutral-600 transition-colors hover:bg-neutral-50"
+        className="w-8 text-[16px] leading-none text-neutral-600 transition-colors hover:bg-neutral-50 disabled:opacity-50"
       >
         −
       </button>
@@ -36,9 +53,10 @@ function Stepper({ item }) {
       </span>
       <button
         type="button"
-        onClick={() => set(item.quantity + 1)}
+        onClick={() => updateQty(item.quantity + 1)}
+        disabled={loading || item.limit_purchases}
         aria-label="Increase quantity"
-        className="w-8 text-[16px] leading-none text-neutral-600 transition-colors hover:bg-neutral-50"
+        className="w-8 text-[16px] leading-none text-neutral-600 transition-colors hover:bg-neutral-50 disabled:opacity-50"
       >
         +
       </button>
@@ -83,7 +101,11 @@ function CartLine({ item, selected, onToggle }) {
         className="relative h-24 w-24 shrink-0 overflow-hidden rounded bg-neutral-100 sm:h-28 sm:w-28"
       >
         {item.image ? (
-          <Image src={item.image} alt="" fill sizes="112px" className="object-cover" />
+          <img
+            src={item.image}
+            alt={item.title}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <span className="block h-full w-full bg-gradient-to-br from-[#EDE3D3] to-[#D8C6A8]" />
         )}
@@ -100,7 +122,7 @@ function CartLine({ item, selected, onToggle }) {
 
           <button
             type="button"
-            onClick={() => dispatch(removeItem(item.id))}
+            onClick={() => dispatch(removeFromCart(item.product_id || item.id))}
             className="flex shrink-0 items-center gap-1 text-[12px] transition-opacity hover:opacity-70"
             style={{ color: MAROON }}
           >
@@ -126,7 +148,14 @@ function CartLine({ item, selected, onToggle }) {
         ) : null}
 
         <div className="mt-auto flex items-end justify-between gap-3 pt-3">
-          <Stepper item={item} />
+          <div className="flex flex-col">
+            <Stepper item={item} />
+            {item.limit_purchases && (
+              <p className="mt-1 text-[11px] text-neutral-600">
+                * Maximum allowed qty 1
+              </p>
+            )}
+          </div>
           <span className="text-[16px] font-semibold text-neutral-900">
             {rupees(item.price * item.quantity)}
           </span>
@@ -150,9 +179,16 @@ function SummaryRow({ label, value, accent }) {
 export default function Cart() {
   const dispatch = useDispatch();
   const items = useSelector(selectCartItems);
-  // Everything in the cart — the heading counts that, the summary counts only
-  // what is ticked.
+  const cartState = useSelector((state) => state.cart);
   const totalCount = useSelector(selectCartCount);
+  const [clearedCart, setClearedCart] = useState(false);
+
+  useEffect(() => {
+    console.log("🛒 Cart Component Mounted - Fetching cart items from API");
+    dispatch(fetchCart()).then(() => {
+      console.log("✅ Cart items loaded:", items.length);
+    });
+  }, [dispatch]);
 
   // Tracked as the pieces that are NOT ticked, so anything added to the cart
   // afterwards arrives selected without this state having to be kept in sync.
@@ -179,6 +215,19 @@ export default function Cart() {
   // Nothing validates a code yet — the API decides what is valid, so the field
   // collects it and the discount stays at zero until that exists.
   const discount = 0;
+
+  if (cartState.loading) {
+    return (
+      <main className="mx-auto w-full max-w-[1400px] px-4 py-16 text-center sm:px-6">
+        <div className="flex items-center justify-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-neutral-300 animate-pulse" />
+          <div className="h-2 w-2 rounded-full bg-neutral-300 animate-pulse" style={{ animationDelay: "0.1s" }} />
+          <div className="h-2 w-2 rounded-full bg-neutral-300 animate-pulse" style={{ animationDelay: "0.2s" }} />
+        </div>
+        <p className="mt-4 text-neutral-600">Loading your cart...</p>
+      </main>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -239,7 +288,11 @@ export default function Cart() {
 
           <button
             type="button"
-            onClick={() => dispatch(clearCart())}
+            onClick={() => {
+              if (window.confirm("Clear your entire cart?")) {
+                dispatch(clearCart());
+              }
+            }}
             className="flex items-center gap-1 transition-opacity hover:opacity-70"
             style={{ color: MAROON }}
           >

@@ -1,7 +1,7 @@
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MdDeleteOutline, MdFavoriteBorder } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { WishlistCardShimmer } from "@/components/shimmer-loader/Shimmer-loader";
@@ -10,7 +10,7 @@ import {
   removeFromWishlist,
   fetchWishlist,
 } from "@/store/slices/wishlistSlice";
-import { addItem } from "@/store/slices/cartSlice";
+import { addToCart } from "@/store/slices/cartSlice";
 
 const MAROON = "#430121";
 const CONTAINER_CLASS = "mx-auto max-w-[1400px] px-4 sm:px-6";
@@ -25,6 +25,7 @@ export default function Wishlist() {
   const router = useRouter();
   const wishlistItems = useSelector(selectWishlistItems);
   const loading = useSelector((state) => state.wishlist.loading);
+  const [movingToCart, setMovingToCart] = useState(null);
 
   // Fetch full wishlist data on component mount
   useEffect(() => {
@@ -36,19 +37,32 @@ export default function Wishlist() {
     dispatch(removeFromWishlist(productId));
   };
 
-  const handleMoveToCart = (item) => {
+  const handleMoveToCart = async (item) => {
     const productId = item.product_id || item.id;
-    dispatch(
-      addItem({
+
+    setMovingToCart(productId);
+
+    try {
+      const cartItem = {
         id: productId,
         title: item.title,
         price: item.sale_price,
         image: item.main_image,
-        code: item.code,
+        ...(item.code ? { sku: item.code } : {}),
         quantity: 1,
-      })
-    );
-    dispatch(removeFromWishlist(productId));
+      };
+
+      // Call API async thunk
+      await dispatch(addToCart(cartItem)).unwrap();
+
+      // Remove from wishlist after successful add
+      dispatch(removeFromWishlist(productId));
+
+    } catch (error) {
+      alert(`Failed to move to cart: ${error}`);
+    } finally {
+      setMovingToCart(null);
+    }
   };
 
   const getStockStatus = (item) => {
@@ -187,13 +201,18 @@ export default function Wishlist() {
                   {/* Move to Cart Button */}
                   <button
                     onClick={() => handleMoveToCart(item)}
-                    disabled={!stockStatus.inStock}
+                    disabled={!stockStatus.inStock || movingToCart === (item.product_id || item.id)}
                     style={{
                       backgroundColor: stockStatus.inStock ? MAROON : "#ccc",
+                      opacity: movingToCart === (item.product_id || item.id) ? 0.7 : 1,
                     }}
                     className="mt-2 sm:mt-3 w-full py-1 sm:py-2.5 text-[10px] sm:text-[12px] text-white font-semibold rounded transition-all hover:opacity-90 disabled:cursor-not-allowed"
                   >
-                    {stockStatus.inStock ? "Move to Cart" : "Not Available"}
+                    {movingToCart === (item.product_id || item.id)
+                      ? "Adding..."
+                      : stockStatus.inStock
+                      ? "Move to Cart"
+                      : "Not Available"}
                   </button>
                 </div>
               </div>
