@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import { MdFavoriteBorder, MdFavorite, MdRemoveRedEye } from "react-icons/md";
+import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import {
   addToWishlist,
@@ -16,8 +16,13 @@ import CareGuide from "@/components/products/CareGuide";
 import FontDropdown from "@/components/products/FontDropdown";
 import ShareMenu from "@/components/products/ShareMenu";
 import SuccessModal from "@/components/common/SuccessModal";
+import SpecificationSection from "@/components/products/SpecificationSection";
+import SimilarProducts from "@/components/products/SimilarProducts";
 import { FONT_STYLES, SYMBOLS, NAME_MAX_LENGTH } from "@/constants/productData";
 import qualityBadge from "@/assets/batch/Sabaa Quality Batch.png";
+import ReviewsSection from "./ReviewsSection";
+import CustomerLove from "../pages/home/CustomerLove";
+import CustomerUnboxing from "../pages/home/CustomerUnboxing";
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
@@ -348,7 +353,7 @@ function Accordion({ sections, description }) {
   ];
 
   return (
-    <div className="mt-6 divide-y divide-neutral-200 rounded-lg border border-neutral-200">
+    <div className="mt-6 divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
       {rows.map((row) => {
         const isOpen = openId === row.id;
         return (
@@ -360,14 +365,16 @@ function Accordion({ sections, description }) {
               className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
             >
               <span className="flex items-center gap-2">
-                <span style={{ color: MAROON }}>{getSectionIcon(row.id)}</span>
+                <span style={{ color: "#C4A47A" }}>
+                  {getSectionIcon(row.id)}
+                </span>
                 <span className="font-[family-name:var(--font-heading)] text-[13px] font-medium text-neutral-900">
                   {row.title}
                 </span>
               </span>
               <svg
                 viewBox="0 0 24 24"
-                className={`h-4 w-4 shrink-0 text-neutral-500 transition-transform ${
+                className={`h-4 w-4 shrink-0 transition-transform ${
                   isOpen ? "rotate-180" : ""
                 }`}
                 fill="none"
@@ -375,6 +382,7 @@ function Accordion({ sections, description }) {
                 strokeWidth="1.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                style={{ color: "#C4A47A" }}
                 aria-hidden="true"
               >
                 <path d="m6 9 6 6 6-6" />
@@ -607,6 +615,7 @@ export default function ProductDetail({ product }) {
   const [fontId, setFontId] = useState(FONT_STYLES[0].id);
   const [symbolId, setSymbolId] = useState(SYMBOLS[0].id);
   const [symbolSide, setSymbolSide] = useState("left");
+  const [colorId, setColorId] = useState(product.colors?.[0]?.id ?? "");
 
   const dispatch = useDispatch();
 
@@ -667,6 +676,7 @@ export default function ProductDetail({ product }) {
         ...(product.code ? { sku: product.code } : {}),
         quantity: qty,
         ...(product.hasRingSize ? { size } : {}),
+        ...(product.colors && product.colors.length > 0 ? { colorId } : {}),
         ...(product.isCustomisable
           ? { ringName, fontId, symbolId: symbolLabel, symbolSide }
           : {}),
@@ -690,7 +700,7 @@ export default function ProductDetail({ product }) {
       : 0;
 
   return (
-    <>
+    <div className="bg-[#FFF8F0]">
       <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="sm:sticky sm:top-4 sm:h-fit lg:sticky lg:top-4 lg:h-fit">
           <Gallery product={product} />
@@ -762,23 +772,15 @@ export default function ProductDetail({ product }) {
                   <MdFavoriteBorder size={16} />
                 )}
               </button>
-
-              <button
-                type="button"
-                className="transition-colors hover:text-neutral-900"
-                title="View Similar"
-              >
-                <MdRemoveRedEye size={16} />
-              </button>
             </div>
           </div>
 
-          <p className="mt-3 text-[11px] text-neutral-500">
-            Product Code :{" "}
-            <span className="text-neutral-700">{product.code}</span>
+          <p className="mt-3 text-[11px]">
+            <span className="font-bold" style={{ color: MAROON }}>Product Code :</span>{" "}
+            <span className="font-semibold" style={{ color: "#C9A227" }}>{product.code}</span>
           </p>
 
-          <h1 className="mt-1 font-[family-name:var(--font-heading)] text-[26px] leading-snug text-neutral-900 sm:text-[32px] lg:text-[40px]">
+          <h1 className="mt-1 font-[family-name:var(--font-category)] text-[22px] leading-snug font-bold sm:text-[28px] lg:text-[36px]" style={{ color: MAROON }}>
             {product.title}
           </h1>
 
@@ -829,7 +831,7 @@ export default function ProductDetail({ product }) {
               <div className="flex items-center justify-between gap-3">
                 <label
                   htmlFor="ring-size"
-                  className="text-[13px] font-medium"
+                  className="text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
                   Ring Size
@@ -851,6 +853,31 @@ export default function ProductDetail({ product }) {
             </div>
           ) : null}
 
+          {/* Enamel Color selection */}
+          {product.colors && product.colors.length > 0 ? (
+            <div className="mt-4">
+              <label
+                htmlFor="color"
+                className="block text-[14px] font-bold"
+                style={{ color: MAROON }}
+              >
+                Enamel Color
+              </label>
+              <select
+                id="color"
+                value={colorId}
+                onChange={(e) => setColorId(e.target.value)}
+                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
+              >
+                {product.colors.map((color) => (
+                  <option key={color.id} value={color.id}>
+                    {color.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+
           {/* Engraving — Name Engrave Rings only. The other ring categories are
             finished designs, so they get the size selector above but nothing
             here: there is nothing to cut into them. */}
@@ -859,7 +886,7 @@ export default function ProductDetail({ product }) {
               <div className="mt-4">
                 <label
                   htmlFor="ring-name"
-                  className="block text-[13px] font-medium"
+                  className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
                   Ring Name
@@ -881,7 +908,7 @@ export default function ProductDetail({ product }) {
               <div className="mt-3">
                 <label
                   htmlFor="font-style"
-                  className="block text-[13px] font-medium"
+                  className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
                   Font Style
@@ -895,7 +922,7 @@ export default function ProductDetail({ product }) {
 
               <div className="mt-3">
                 <p
-                  className="block text-[13px] font-medium"
+                  className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
                   Symbol Selections
@@ -914,7 +941,7 @@ export default function ProductDetail({ product }) {
               {symbolId !== "none" ? (
                 <fieldset className="mt-3">
                   <legend
-                    className="text-[13px] font-medium"
+                    className="text-[14px] font-bold"
                     style={{ color: MAROON }}
                   >
                     Symbol Direction
@@ -979,41 +1006,6 @@ export default function ProductDetail({ product }) {
             </div>
 
             <div>
-              <button
-                type="button"
-                onClick={onAddToCart}
-                disabled={inCart}
-                className={`rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity inline-flex items-center gap-2 ${
-                  inCart
-                    ? "cursor-default opacity-75"
-                    : "hover:opacity-90 cursor-pointer"
-                }`}
-                style={{ backgroundColor: inCart ? "#999" : MAROON }}
-              >
-                {inCart ? (
-                  <>
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-4 w-4"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M20 6L9 17l-5-5"
-                        strokeWidth="2"
-                        stroke="currentColor"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Already Added
-                  </>
-                ) : (
-                  "Add to Cart"
-                )}
-              </button>
-
               <label
                 htmlFor="qty"
                 className="mt-3 block text-[12px] text-neutral-700"
@@ -1096,27 +1088,62 @@ export default function ProductDetail({ product }) {
                   * Maximum allowed qty 1
                 </p>
               )}
+
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={inCart}
+                className={`mt-6 rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity inline-flex items-center gap-2 ${
+                  inCart
+                    ? "cursor-default opacity-75"
+                    : "hover:opacity-90 cursor-pointer"
+                }`}
+                style={{ backgroundColor: inCart ? "#999" : MAROON }}
+              >
+                {inCart ? (
+                  <>
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-4 w-4"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M20 6L9 17l-5-5"
+                        strokeWidth="2"
+                        stroke="currentColor"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    Already Added
+                  </>
+                ) : (
+                  "Add to Cart"
+                )}
+              </button>
             </div>
           </div>
 
           {/* Assurance row */}
-          <div className="mt-6 flex flex-wrap items-center gap-6">
-            <div className="flex flex-col items-center gap-1 text-center">
+          <div className="mt-6 flex flex-nowrap items-start gap-8 sm:gap-12">
+            <div className="flex flex-col items-center gap-2 text-center">
               <span
-                className="font-[family-name:var(--font-heading)] text-[20px]"
+                className="font-[family-name:var(--font-heading)] text-[21px]"
                 style={{ color: MAROON }}
               >
                 100%
               </span>
-              <span className="text-[12px] text-neutral-700">
+              <span className="text-[12px] font-normal leading-tight text-neutral-700">
                 Genuine Jewellery
               </span>
             </div>
 
-            <div className="flex flex-col items-center gap-1 text-center">
+            <div className="flex flex-col items-center gap-2 text-center">
               <svg
                 viewBox="0 0 24 24"
-                className="h-6 w-6"
+                className="h-8 w-8"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.3"
@@ -1133,7 +1160,7 @@ export default function ProductDetail({ product }) {
                 <path d="M12 9.9C10.7 7.6 9.5 6.7 8.4 7.2c-1 .5-.7 2.4 3.6 2.7Z" />
                 <path d="M12 9.9c1.3-2.3 2.5-3.2 3.6-2.7 1 .5.7 2.4-3.6 2.7Z" />
               </svg>
-              <span className="text-[12px] text-neutral-700">
+              <span className="text-[12px] font-normal leading-tight text-neutral-700">
                 Precious Gifting
               </span>
             </div>
@@ -1153,13 +1180,28 @@ export default function ProductDetail({ product }) {
             sections={product.sections}
             description={product.description}
           />
+
+          <SpecificationSection product={product} />
         </div>
       </div>
+
+      <ReviewsSection />
+
+      {/* Similar Products Section */}
+      <SimilarProducts product={product} />
 
       {/* Full width below the product grid — it needs the room, and it is the
         same on every product, so it reads as page content rather than as one
         more thing to click through. */}
       <CareGuide />
+
+      <div className="mt-12 md:mt-16">
+        <CustomerLove />
+      </div>
+
+      <div className="mt-12 md:mt-16">
+        <CustomerUnboxing />
+      </div>
 
       {/* Portalled to <body> so the overlay is measured against the viewport and
         not against any transformed ancestor on the page. */}
@@ -1189,6 +1231,6 @@ export default function ProductDetail({ product }) {
             document.body
           )
         : null}
-    </>
+    </div>
   );
 }

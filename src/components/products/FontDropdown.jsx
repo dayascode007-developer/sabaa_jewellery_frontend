@@ -37,7 +37,7 @@ export default function FontDropdown({ value, onChange, options = [] }) {
       {/* Dropdown trigger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-left text-[15px] text-neutral-800 outline-none focus:border-neutral-500 flex items-center justify-between"
+        className="w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-left text-[15px] text-black outline-none focus:border-neutral-500 flex items-center justify-between"
         style={{ fontFamily: selectedFont ? getFontCSSFamily(selectedFont.name) : "inherit" }}
       >
         <span>{selectedFont?.name || "Select font"}</span>
@@ -56,7 +56,7 @@ export default function FontDropdown({ value, onChange, options = [] }) {
                 onChange(font.id);
                 setIsOpen(false);
               }}
-              className={`w-full px-3 py-2.5 text-left text-[15px] hover:bg-blue-50 ${
+              className={`w-full px-3 py-2.5 text-left text-[15px] text-black hover:bg-blue-50 ${
                 value === font.id || String(value) === String(font.id) ? "bg-blue-100" : ""
               }`}
               style={{ fontFamily: getFontCSSFamily(font.name) }}

@@ -8,12 +8,16 @@ import Footer from "@/components/layout/Footer";
 import BottomNav from "@/components/layout/BottomNav";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ProductDetail from "@/components/products/ProductDetail";
+
 import { ProductDetailShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import { fetchProductById } from "@/store/api/categoriesApi";
 
-// Derive isCustomisable from subcategories (ID 14 = Name Engrave Ring)
+// Derive isCustomisable from sub_main_category_id or subcategories (ID 14 = Name Engrave Ring)
 const deriveIsCustomisable = (product) => {
-  return product?.subcategories?.some((sub) => sub.id === 14) || false;
+  return (
+    product?.sub_main_category_id === 14 ||
+    product?.subcategories?.some((sub) => sub.id === 14)
+  ) || false;
 };
 
 // Transform API product data to match ProductCard/Detail format
@@ -23,6 +27,7 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
   description: apiProduct.description,
   category: categoryName.toLowerCase().replace(/\s+/g, "-") || "",
   category_id: apiProduct.category_id,
+  sub_main_category_id: apiProduct.sub_main_category_id,
   subcategories: apiProduct.subcategories || [],
 
   // Price: convert to number if string
@@ -68,27 +73,36 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
     {
       id: "product-details",
       title: "Product Details",
-      body: apiProduct.product_details?.map((pd) => pd.content).join("\n") || "",
+      body:
+        apiProduct.product_details?.map((pd) => pd.content).join("\n") || "",
     },
     {
       id: "cleaning-polishing",
       title: "Cleaning & Polishing",
-      body: apiProduct.cleaning_polishing?.map((cp) => cp.content).join("\n") || "",
+      body:
+        apiProduct.cleaning_polishing?.map((cp) => cp.content).join("\n") || "",
     },
     {
       id: "usage-color-guarantee",
       title: "Usage & Color Gaurantee",
-      body: apiProduct.usage_color_guarantee?.map((ucg) => ucg.content).join("\n") || "",
+      body:
+        apiProduct.usage_color_guarantee
+          ?.map((ucg) => ucg.content)
+          .join("\n") || "",
     },
     {
       id: "return-exchange-policy",
       title: "Return & Exchange Policy",
-      body: apiProduct.return_exchange_policy?.map((rep) => rep.content).join("\n") || "",
+      body:
+        apiProduct.return_exchange_policy
+          ?.map((rep) => rep.content)
+          .join("\n") || "",
     },
     {
       id: "address-contact",
       title: "Our Address & Contact",
-      body: apiProduct.address_contact?.map((ac) => ac.content).join("\n") || "",
+      body:
+        apiProduct.address_contact?.map((ac) => ac.content).join("\n") || "",
     },
   ].filter((section) => section.body.trim() !== ""),
 
@@ -172,7 +186,7 @@ export default function ProductPage() {
 
   if (showShimmer || loading) {
     return (
-      <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
+      <div className="min-h-screen w-full bg-[#FFF8F0] pb-16 lg:pb-0">
         <SiteHeader />
         <ProductDetailShimmer />
         <Footer />
@@ -183,7 +197,7 @@ export default function ProductPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
+      <div className="min-h-screen w-full bg-[#FFF8F0] pb-16 lg:pb-0">
         <SiteHeader />
         <main>
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 text-center">
@@ -206,16 +220,23 @@ export default function ProductPage() {
     if (!product.categoryName) return "/";
 
     // If we have subcategoryName and it's different from categoryName, use subcategory
-    if (product.subcategoryName && product.subcategoryName !== product.categoryName) {
-      return `/category/${product.subcategoryName.toLowerCase().replace(/\s+/g, "-")}`;
+    if (
+      product.subcategoryName &&
+      product.subcategoryName !== product.categoryName
+    ) {
+      return `/category/${product.subcategoryName
+        .toLowerCase()
+        .replace(/\s+/g, "-")}`;
     }
 
     // Default to main category
-    return `/category/all-${product.categoryName.toLowerCase().replace(/\s+/g, "-")}`;
+    return `/category/all-${product.categoryName
+      .toLowerCase()
+      .replace(/\s+/g, "-")}`;
   })();
 
   return (
-    <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
+    <div className="min-h-screen w-full bg-[#FFF8F0] pb-16 lg:pb-0">
       <SiteHeader />
 
       <Breadcrumb

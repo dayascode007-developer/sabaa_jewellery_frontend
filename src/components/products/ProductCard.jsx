@@ -11,7 +11,6 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "@/store/slices/wishlistSlice";
-import ShareMenu from "@/components/products/ShareMenu";
 import SuccessModal from "@/components/common/SuccessModal";
 import { getCategoryLabel } from "@/constants/productData";
 
@@ -155,13 +154,8 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
-        {/* Share + wishlist, stacked top-right — share hidden on mobile */}
+        {/* Wishlist button, top-right */}
         <div className="absolute top-1.5 right-1.5 z-30 flex flex-col gap-1.5 sm:top-2 sm:right-2 sm:gap-2">
-          {/* Share menu - hidden on mobile, visible on desktop */}
-          <div className="hidden sm:block">
-            <ShareMenu title={product.title} path={`/product/${product.id}`} />
-          </div>
-
           <button
             type="button"
             onClick={onWishlist}
