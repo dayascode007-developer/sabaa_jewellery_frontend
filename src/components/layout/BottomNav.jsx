@@ -68,6 +68,14 @@ export default function BottomNav() {
   const cartCount = useSelector(selectCartCount);
   const customer = useSelector((state) => state.auth.customer);
 
+  // The cart starts empty on the server and is filled from localStorage once
+  // the client is running, so the badge rendered "0" in the HTML and "1" on
+  // hydration — which is the mismatch React reported. Holding the badge at its
+  // server value until after mount makes both renders agree; it updates on the
+  // next paint. Same guard Header.jsx uses for the logged-in state.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // Sync activeId with current pathname
   useEffect(() => {
     if (pathname === "/" || pathname === "/") {
@@ -144,7 +152,7 @@ export default function BottomNav() {
                         color: isActive ? MAROON : "#FFFFFF",
                       }}
                     >
-                      {item.id === "cart" ? cartCount : item.badge}
+                      {item.id === "cart" ? (mounted ? cartCount : 0) : item.badge}
                     </span>
                   ) : null}
                 </span>

@@ -185,24 +185,140 @@ function MegaPanel({ menu, kind, onNavigate }) {
   const viewAllHref = allSlug ? `/category/${allSlug}` : menu.promo?.href ?? "#";
   const samples = allSlug ? getProductsBySlug(allSlug).slice(0, 3) : [];
 
+  // A column carrying a heading becomes one expandable row at the end of the
+  // left list rather than a second column of its own; hovering that row shows
+  // its links beside it. Rings is the only menu shaped this way today ("God
+  // Symbol Rings"), but nothing below is specific to it.
+  // One ordered list of rows, built by walking the columns in order so the menu
+  // follows the order the admin panel returns. A column with a heading is one
+  // expandable row; a column without is its links, inline.
+  const entries = menu.columns.flatMap((column) =>
+    column.heading
+      ? [{ kind: "group", heading: column.heading, items: column.items }]
+      : column.items.map((link) => ({ kind: "link", ...link }))
+  );
+
+  const [openGroup, setOpenGroup] = useState(null);
+  const group =
+    entries.find((e) => e.kind === "group" && e.heading === openGroup) ?? null;
+
+  // Closing is deferred, and any hover inside the two columns cancels it. The
+  // gap and divider between the lists are dead space: closing the moment the
+  // cursor left the left column meant the children disappeared mid-journey and
+  // could never be reached.
+  const closeTimer = useRef(null);
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimer.current = setTimeout(() => setOpenGroup(null), 180);
+  };
+  // A pending timer must not fire after the panel has gone.
+  useEffect(() => cancelClose, []);
+
   return (
     <div className="absolute inset-x-0 top-full z-40 border-t border-neutral-200 bg-white shadow-[0_14px_28px_rgba(0,0,0,0.10)]">
       <div className="mx-auto grid w-full max-w-[1400px] lg:grid-cols-[1fr_300px]">
         <div className="p-4 sm:p-6">
-          {/* Link columns */}
-          <div className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3 lg:divide-x lg:divide-neutral-200">
-            {menu.columns.map((column, i) => (
-              <div key={column.heading ?? i} className={i > 0 ? "lg:pl-6" : ""}>
-                {column.heading ? (
-                  <p
-                    className="mb-1 px-1 text-[12px] font-semibold tracking-wide uppercase"
-                    style={{ color: MAROON }}
-                  >
-                    {column.heading}
-                  </p>
-                ) : null}
+          {/* Left: the plain links, then one row per group. Right: whichever
+              group is open. */}
+          {/* The handlers sit on the grid, which spans BOTH columns, so moving
+              from a group row across to its children never leaves the watched
+              area and the flyout survives the trip. */}
+          <div
+            className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3 lg:divide-x lg:divide-neutral-200"
+            onMouseEnter={cancelClose}
+            onMouseLeave={scheduleClose}
+          >
+            <div>
+              <ul>
+                {entries.map((entry) => {
+                  if (entry.kind === "link") {
+                    return (
+                      <li key={entry.label}>
+                        <Link
+                          href={entry.href}
+                          onClick={onNavigate}
+                          // Hovering a plain link closes an open flyout — but on
+                          // a timer, so brushing past one on the way to the
+                          // children does not slam it shut.
+                          onMouseEnter={scheduleClose}
+                          className="flex items-center gap-2.5 rounded px-1 py-2 text-[13px] text-neutral-700 transition-colors hover:text-[#7B1E2B]"
+                        >
+                          <ItemMark kind={kind} />
+                          {entry.label}
+                        </Link>
+                      </li>
+                    );
+                  }
+
+                  const g = entry;
+                  const open = openGroup === g.heading;
+                  return (
+                    <li key={g.heading}>
+                      {/* A group, not a destination — it opens the panel beside
+                          it rather than navigating. A button rather than a div
+                          so the keyboard reaches it; hover alone would shut
+                          keyboard users out of these three links entirely. */}
+                      <button
+                        type="button"
+                        onMouseEnter={() => {
+                          cancelClose();
+                          setOpenGroup(g.heading);
+                        }}
+                        onFocus={() => {
+                          cancelClose();
+                          setOpenGroup(g.heading);
+                        }}
+                        onClick={() => setOpenGroup(open ? null : g.heading)}
+                        aria-expanded={open}
+                        className="flex w-full items-center gap-2.5 rounded px-1 py-2 text-left text-[13px] transition-colors hover:text-[#7B1E2B]"
+                        style={{ color: open ? MAROON : "#404040" }}
+                      >
+                        <ItemMark kind={kind} />
+                        {/* No flex-1 on the label: that pushed the chevron out
+                            to the far edge of the column, away from the words
+                            it belongs to. */}
+                        <span className="capitalize">
+                          {g.heading.toLowerCase()}
+                        </span>
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="-ml-1 h-3.5 w-3.5 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m9 5 7 7-7 7" />
+                        </svg>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            {/* The open group's links. Nothing here until a group is hovered,
+                so the menu opens as one clean list. */}
+            {group ? (
+              // Hovering the children holds the panel open; the grid above
+              // handles closing when the cursor finally leaves both columns.
+              <div className="lg:pl-6" onMouseEnter={cancelClose}>
+                <p
+                  className="mb-1 px-1 text-[12px] font-semibold tracking-wide uppercase"
+                  style={{ color: MAROON }}
+                >
+                  {group.heading}
+                </p>
                 <ul>
-                  {column.items.map((link) => (
+                  {group.items.map((link) => (
                     <li key={link.label}>
                       <Link
                         href={link.href}
@@ -216,7 +332,7 @@ function MegaPanel({ menu, kind, onNavigate }) {
                   ))}
                 </ul>
               </div>
-            ))}
+            ) : null}
           </div>
 
           {/* Promo strip */}

@@ -42,7 +42,10 @@ function CategoryCard({ category }) {
       // 40% on phones so a third card peeks in at the edge — that sliver is
       // what tells people the row scrolls. At 46% two cards filled the width
       // and the row looked complete.
-      className="group block w-[40%] shrink-0 snap-start sm:w-[30%] lg:w-[calc((100%-5rem)/6)]"
+      // 30% is the widest that still fits three whole cards with the fourth
+      // showing at the edge. At 32% only two fit and the row stops reading as
+      // scrollable.
+      className="group block w-[30%] shrink-0 snap-start sm:w-[30%] lg:w-[calc((100%-5rem)/6)]"
     >
       {/* One rounded card holding image and label, rather than a bare image
           with the caption floating underneath. */}
@@ -52,8 +55,14 @@ function CategoryCard({ category }) {
             src={category.image}
             alt={category.label}
             fill
+            // Left at 40vw even though the card is now 27% wide: the extra
+            // pixels are what keep the zoom below sharp instead of soft.
             sizes="(max-width: 640px) 40vw, (max-width: 1024px) 30vw, 16vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            // Zoomed 25% on phones. The cards shrank to fit three across, and
+            // at that size the piece was too small to make out; scaling in
+            // crops the empty workbench around it and fills the frame with the
+            // jewellery. Unchanged from sm up, where the card is big enough.
+            className="scale-125 object-cover transition-transform duration-300 sm:scale-100 sm:group-hover:scale-105"
           />
         </div>
         <p
@@ -61,7 +70,13 @@ function CategoryCard({ category }) {
           // Antic Didone has only a 400 cut, so a medium is faked by the
           // browser and thickens the fine serifs unevenly. Spacing gives the
           // label the same presence without smudging it.
-          className="px-2.5 py-2 text-center font-[family-name:var(--font-category)] text-[13px] leading-tight tracking-[0.02em] sm:text-[14px]"
+          // 11px on phones so the longest name — "Face & Photo Rings" — stays
+          // on one line; at 13px it wrapped and pushed "Rings" onto its own
+          // row. The full 14px returns from sm up, where the card is wider.
+          //
+          // The two-line minimum stays as a safety net: below about 360px even
+          // 11px wraps, and it keeps every card the same height when it does.
+          className="flex min-h-[2.75rem] items-center justify-center px-2.5 py-2 text-center font-[family-name:var(--font-category)] text-[11px] leading-tight tracking-[0.02em] sm:min-h-[3.25rem] sm:text-[14px]"
           style={{ color: MAROON }}
         >
           {category.label}
@@ -111,7 +126,10 @@ export default function ShopByCategories() {
         <div
           ref={trackRef}
           onScroll={syncEdges}
-          className="flex min-w-0 flex-1 snap-x snap-mandatory gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          // Tighter gap on phones — at 16px the three narrower cards lost too
+          // much of the row to empty space. The lg width calc assumes 1rem, so
+          // the full gap returns from sm up.
+          className="flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden"
         >
           {CATEGORIES.map((category) => (
             <CategoryCard key={category.id} category={category} />

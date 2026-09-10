@@ -1005,10 +1005,12 @@ export default function ProductDetail({ product }) {
               </button>
             </div>
 
+            {/* Quantity first, then Add to Cart — you choose how many before
+                you add, and the button reads as the end of the block. */}
             <div>
               <label
                 htmlFor="qty"
-                className="mt-3 block text-[12px] text-neutral-700"
+                className="block text-[12px] text-neutral-700"
               >
                 Quantity
               </label>

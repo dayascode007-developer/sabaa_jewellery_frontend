@@ -124,24 +124,35 @@ export default function HeroBanner() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  // Use API banners if available, fallback to static slides
-  const slides =
-    banners && banners.length > 0
-      ? banners.map((banner, idx) => ({
-          id: `banner-${banner.id}`,
-          image: banner.image_url,
-          mobileImage: banner.image_url,
-          alt: `Banner ${idx + 1}`,
-          href: "#",
-        }))
-      : HERO_SLIDES;
+  // Static artwork from src/assets/banner, not the API.
+  //
+  // The API sends one file per banner and it was being used at every width, so
+  // the wide desktop cut ran on phones too and its baked-in headline became
+  // unreadable. HERO_SLIDES pairs each wide image with its own square phone cut
+  // (banner_Mobile*.webp), which is what SlideMedia swaps between at sm.
+  //
+  // TO GO BACK TO THE API: uncomment the block below and the fetch under it.
+  // Both need the admin panel to hold a separate mobile image per banner first,
+  // otherwise the phone view regresses again.
+  //
+  // const slides =
+  //   banners && banners.length > 0
+  //     ? banners.map((banner, idx) => ({
+  //         id: `banner-${banner.id}`,
+  //         image: banner.image_url,
+  //         mobileImage: banner.image_url,
+  //         alt: `Banner ${idx + 1}`,
+  //         href: "#",
+  //       }))
+  //     : HERO_SLIDES;
+  const slides = HERO_SLIDES;
 
   const count = slides.length;
 
   // Fetch banners on mount
-  useEffect(() => {
-    dispatch(fetchBanners());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchBanners());
+  // }, [dispatch]);
 
   const goTo = useCallback(
     (i) => setIndex(((i % count) + count) % count),
@@ -208,7 +219,16 @@ export default function HeroBanner() {
                   goTo(i);
                 }
               }}
-              className="relative block aspect-[4/2] overflow-hidden bg-neutral-900 sm:aspect-[8/3] sm:rounded-lg"
+              // cursor-default because the slides are anchors but every href is
+              // "#" — nothing links anywhere yet, so a pointing hand promised a
+              // click that does nothing. Drop this class once the banners carry
+              // real destinations.
+              // Square below sm, matching the phone artwork (1254x1254). The
+              // frame was 4/2 — a 2:1 letterbox — so object-cover cropped the
+              // top and bottom off the square cut and left a wide centre strip
+              // that looked like the desktop banner. 8/3 from sm up matches the
+              // wide artwork's own 2.67 ratio.
+              className="relative block aspect-square cursor-default overflow-hidden bg-neutral-900 sm:aspect-[8/3] sm:rounded-lg"
               tabIndex={i === index ? 0 : -1}
               aria-hidden={i !== index}
             >
