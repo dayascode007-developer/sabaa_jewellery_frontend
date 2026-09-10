@@ -26,14 +26,54 @@ const ALL_SLUG = "all-jewellery";
 // (Was 12 on the incoming branch — 10 is what the infinite scroll was asked for.)
 const PAGE_SIZE = 10;
 
+// Must match the slugs the nav builds — see toSlug in categoriesApi.js.
+const toSlug = (name) =>
+  name.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "").replace(/--+/g, "-");
+
+/**
+ * Every slug the site can link to, from the three-level API:
+ *
+ *   category            -> all-rings          { mainId }
+ *   sub_main_category   -> photo-ring         { mainId, subId }
+ *   subcategory (3rd)   -> laser-photo-ring   { mainId, subId, thirdId }
+ *
+ * All three are filtered by the API itself — ?main=&submain=&sub= — so the ids
+ * are simply passed through. `label` travels with the entry so the heading does
+ * not have to look the name up again.
+ */
 const buildCategoryMap = (categories) => {
   const map = {};
   categories.forEach((category) => {
-    const slug = category.name.toLowerCase().replace(/\s+/g, "-");
-    map[`all-${slug}`] = { mainId: category.id, subId: null };
+    map[`all-${toSlug(category.name)}`] = {
+      mainId: category.id,
+      subId: null,
+      label: category.name,
+    };
+
+    (category.sub_main_categories || []).forEach((subMain) => {
+      map[toSlug(subMain.name)] = {
+        mainId: category.id,
+        subId: subMain.id,
+        label: subMain.name,
+      };
+
+      (subMain.subcategories || []).forEach((child) => {
+        map[toSlug(child.name)] = {
+          mainId: category.id,
+          subId: subMain.id,
+          thirdId: child.id,
+          label: child.name,
+        };
+      });
+    });
+
+    // Older payloads, where the children hung straight off the category.
     (category.subcategories || []).forEach((sub) => {
-      const subSlug = sub.name.toLowerCase().replace(/\s+/g, "-");
-      map[subSlug] = { mainId: category.id, subId: sub.id };
+      map[toSlug(sub.name)] = {
+        mainId: category.id,
+        subId: sub.id,
+        label: sub.name,
+      };
     });
   });
   return map;
@@ -58,7 +98,17 @@ export default function CategoryPage({ params: paramsPromise }) {
     const categoryMap = buildCategoryMap(rawCategories);
     const categoryInfo = categoryMap[slug];
     if (!categoryInfo || !state?.products) return [];
-    return selectProductsByCategory(state, categoryInfo.mainId, categoryInfo.subId) || [];
+
+    // The API filters all three levels itself — ?main=&submain=&sub= — so
+    // there is nothing to narrow here.
+    return (
+      selectProductsByCategory(
+        state,
+        categoryInfo.mainId,
+        categoryInfo.subId,
+        categoryInfo.thirdId
+      ) || []
+    );
   });
   const categoryLoading = useSelector((state) => selectProductsLoading(state)) || false;
   const loading = isAll ? allLoading : categoryLoading;
@@ -104,27 +154,23 @@ export default function CategoryPage({ params: paramsPromise }) {
     const categoryInfo = categoryMap[slug];
     if (!categoryInfo) return;
 
-    dispatch(fetchProductsByMainAndSubCategory({
-      mainCategoryId: categoryInfo.mainId,
-      subCategoryId: categoryInfo.subId,
-    }));
+    dispatch(
+      fetchProductsByMainAndSubCategory({
+        mainCategoryId: categoryInfo.mainId,
+        subMainCategoryId: categoryInfo.subId,
+        subCategoryId: categoryInfo.thirdId,
+      })
+    );
   }, [slug, rawCategories, dispatch]);
 
-  // Get category name from API categories or fallback to label
+  // The map already carries the right name for whichever level this slug is —
+  // category, sub-main or third — so there is nothing to look up again.
   const categoryLabel = (() => {
     if (isAll) return "All Jewellery";
     if (!slug || !rawCategories?.length) return getCategoryLabel(slug);
-    const categoryMap = buildCategoryMap(rawCategories);
-    const categoryInfo = categoryMap[slug];
-    if (!categoryInfo) return getCategoryLabel(slug);
-
-    // Find the actual category name from rawCategories
-    const category = rawCategories.find((c) => c.id === categoryInfo.mainId);
-    if (categoryInfo.subId) {
-      const subCategory = category?.subcategories?.find((s) => s.id === categoryInfo.subId);
-      return subCategory?.name || getCategoryLabel(slug);
-    }
-    return category?.name || getCategoryLabel(slug);
+    const entry = buildCategoryMap(rawCategories)[slug];
+    if (!entry) return getCategoryLabel(slug);
+    return entry.subId ? entry.label : `All ${entry.label}`;
   })();
 
   // Only show API products, no static fallback

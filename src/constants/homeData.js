@@ -225,7 +225,9 @@ export const CATEGORIES = [
   // slugs the nav dropdown already uses. The tiles carried hand-written names
   // instead, so they opened a page with no cards on it.
   { id: "engraving-rings", label: "Engraving Rings", image: engrave, href: "/category/name-engrave-ring" },
-  { id: "face-photo-rings", label: "Face & Photo Rings", image: faceAndPhotoRing, href: "/category/face-photo-ring" },
+  // "Face &" dropped — the tile now reads simply "Photo Rings". The id and the
+  // href are unchanged, so the link still resolves to the same category.
+  { id: "face-photo-rings", label: "Photo Rings", image: faceAndPhotoRing, href: "/category/face-photo-ring" },
   { id: "symbol-rings", label: "Symbol Rings", image: symbolsRing, href: "/category/astrology-raasi-rings" },
   { id: "mens-chain", label: "Mens Chain", image: mensChain, href: "/category/mens-chain" },
   { id: "womens-chain", label: "Womens Chain", image: womensChain, href: "/category/female-chain" },

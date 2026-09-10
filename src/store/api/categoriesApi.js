@@ -27,29 +27,37 @@ export const mergeWithNavItems = (apiCategories, staticNavItems) => {
       return navItem; // Return unchanged if no API match
     }
 
-    // Update only the menu items/links from API, keep everything else
-    const subcategories = apiCategory.subcategories || [];
+    const toLink = (node) => ({
+      label: node.name,
+      href: `/category/${toSlug(node.name)}`,
+    });
+
+    // Three levels: category -> sub_main_categories -> subcategories.
+    //
+    // A sub-main that has children becomes a group — one row in the menu that
+    // opens its children beside it. A sub-main with none is a plain link.
+    // Emitted in API order, so the admin panel decides the order of the menu.
+    //
+    // This replaces the old guesswork: the previous payload put every child
+    // flat on the category and the menu split them by POSITION — first three
+    // on the left, everything after under a hardcoded "GOD SYMBOL RINGS" — so
+    // anything added later was mis-filed. The grouping is real data now.
+    const subMains = apiCategory.sub_main_categories || [];
+    const legacySubs = apiCategory.subcategories || [];
     const columns = [];
 
-    if (subcategories.length > 0) {
-      // First column: first 3 items
-      columns.push({
-        items: subcategories.slice(0, 3).map((sub) => ({
-          label: sub.name,
-          href: `/category/${toSlug(sub.name)}`,
-        })),
+    if (subMains.length > 0) {
+      subMains.forEach((subMain) => {
+        const children = subMain.subcategories || [];
+        columns.push(
+          children.length > 0
+            ? { heading: subMain.name, items: children.map(toLink) }
+            : { items: [toLink(subMain)] }
+        );
       });
-
-      // Second column: remaining items with heading (if any)
-      if (subcategories.length > 3) {
-        columns.push({
-          heading: navItem.menu.columns[1]?.heading || "GOD SYMBOL RINGS",
-          items: subcategories.slice(3).map((sub) => ({
-            label: sub.name,
-            href: `/category/${toSlug(sub.name)}`,
-          })),
-        });
-      }
+    } else if (legacySubs.length > 0) {
+      // Older payloads, where the children hung straight off the category.
+      columns.push({ items: legacySubs.map(toLink) });
     }
 
     return {
@@ -65,15 +73,28 @@ export const mergeWithNavItems = (apiCategories, staticNavItems) => {
   });
 };
 
+/**
+ * Products for one branch of the three-level tree.
+ *
+ *   main only              every product in the category
+ *   main + submain         one sub-main
+ *   main + submain + sub   one third-level subcategory
+ *
+ * The parameter is `submain`, not `sub` — this used to send the sub-main's id
+ * as `sub`, which is the third level's parameter.
+ */
 export const fetchProductsByCategory = async (
   mainCategoryId,
+  subMainCategoryId,
   subCategoryId
 ) => {
-  const url = subCategoryId
-    ? `${API_URL}/api/products/categories-with-products?main=${mainCategoryId}&sub=${subCategoryId}`
-    : `${API_URL}/api/products/categories-with-products?main=${mainCategoryId}`;
+  const params = new URLSearchParams({ main: mainCategoryId });
+  if (subMainCategoryId) params.set("submain", subMainCategoryId);
+  if (subCategoryId) params.set("sub", subCategoryId);
 
-  const response = await fetch(url);
+  const response = await fetch(
+    `${API_URL}/api/products/categories-with-products?${params}`
+  );
   if (!response.ok) throw new Error("Failed to fetch products");
   const { data } = await response.json();
   return data || [];

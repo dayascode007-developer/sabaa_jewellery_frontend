@@ -978,45 +978,12 @@ export default function ProductDetail({ product }) {
               </button>
             </div>
 
+            {/* Quantity first, then Add to Cart — you choose how many before
+                you add, and the button reads as the end of the block. */}
             <div>
-              <button
-                type="button"
-                onClick={onAddToCart}
-                disabled={inCart}
-                className={`rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity inline-flex items-center gap-2 ${
-                  inCart
-                    ? "cursor-default opacity-75"
-                    : "hover:opacity-90 cursor-pointer"
-                }`}
-                style={{ backgroundColor: inCart ? "#999" : MAROON }}
-              >
-                {inCart ? (
-                  <>
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-4 w-4"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M20 6L9 17l-5-5"
-                        strokeWidth="2"
-                        stroke="currentColor"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Already Added
-                  </>
-                ) : (
-                  "Add to Cart"
-                )}
-              </button>
-
               <label
                 htmlFor="qty"
-                className="mt-3 block text-[12px] text-neutral-700"
+                className="block text-[12px] text-neutral-700"
               >
                 Quantity
               </label>
@@ -1096,6 +1063,41 @@ export default function ProductDetail({ product }) {
                   * Maximum allowed qty 1
                 </p>
               )}
+
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={inCart}
+                className={`mt-3 rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity inline-flex items-center gap-2 ${
+                  inCart
+                    ? "cursor-default opacity-75"
+                    : "hover:opacity-90 cursor-pointer"
+                }`}
+                style={{ backgroundColor: inCart ? "#999" : MAROON }}
+              >
+                {inCart ? (
+                  <>
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-4 w-4"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M20 6L9 17l-5-5"
+                        strokeWidth="2"
+                        stroke="currentColor"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    Already Added
+                  </>
+                ) : (
+                  "Add to Cart"
+                )}
+              </button>
             </div>
           </div>
 

@@ -96,13 +96,20 @@ export const mapApiProduct = (product, category = null) => ({
 
 export const fetchProductsByMainAndSubCategory = createAsyncThunk(
   "products/fetchByCategory",
-  async ({ mainCategoryId, subCategoryId }, { rejectWithValue }) => {
+  async (
+    { mainCategoryId, subMainCategoryId, subCategoryId },
+    { rejectWithValue }
+  ) => {
     try {
-      const data = await fetchProductsByCategory(mainCategoryId, subCategoryId);
+      const data = await fetchProductsByCategory(
+        mainCategoryId,
+        subMainCategoryId,
+        subCategoryId
+      );
       const products = data.flatMap((category) =>
         (category.products || []).map((product) => mapApiProduct(product, category))
       );
-      return { mainCategoryId, subCategoryId, products };
+      return { mainCategoryId, subMainCategoryId, subCategoryId, products };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -145,7 +152,10 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProductsByMainAndSubCategory.fulfilled, (state, action) => {
         state.loading = false;
-        const key = `${action.payload.mainCategoryId}-${action.payload.subCategoryId}`;
+        // Keyed by all three levels — a sub-main and one of its children are
+        // different result sets and must not share a cache slot.
+        const { mainCategoryId, subMainCategoryId, subCategoryId } = action.payload;
+        const key = `${mainCategoryId}-${subMainCategoryId ?? ""}-${subCategoryId ?? ""}`;
         state.byCategory[key] = action.payload.products;
       })
       .addCase(fetchProductsByMainAndSubCategory.rejected, (state, action) => {
@@ -180,8 +190,10 @@ const productsSlice = createSlice({
   },
 });
 
-export const selectProductsByCategory = (state, mainId, subId) =>
-  state?.products?.byCategory?.[`${mainId}-${subId}`] || [];
+export const selectProductsByCategory = (state, mainId, subMainId, subId) =>
+  state?.products?.byCategory?.[
+    `${mainId}-${subMainId ?? ""}-${subId ?? ""}`
+  ] || [];
 export const selectProductsLoading = (state) =>
   state?.products?.loading || false;
 
