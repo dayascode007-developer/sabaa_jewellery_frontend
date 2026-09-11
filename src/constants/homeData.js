@@ -49,6 +49,8 @@ import vijayRing from "@/assets/CustomizeRing/vijay ring (1).webp";
 
 import newArrivalsBg from "@/assets/banner/Bg card image (1).webp";
 import heroBanner from "@/assets/banner/heroBanner.jpg.webp";
+// Square (1024x1024) phone cut of the same promo artwork.
+import heroBannerMobile from "@/assets/banner/mobile-hero banner.webp";
 
 import banner from "@/assets/banner/banner.webp";
 import banner1 from "@/assets/banner/banner1.jpg.webp";
@@ -423,6 +425,9 @@ export const CUSTOMER_VOICES = [
 // the artwork, so it renders as an image only — nothing overlaid in HTML.
 export const PROMO_BANNER = {
   image: heroBanner,
+  // Used below 640px. The wide strip's painted-in headline and buttons are too
+  // small to read on a phone, so phones get their own square cut.
+  mobileImage: heroBannerMobile,
   alt: "Crafted by tradition, personalized for you — customized Panchaloga rings",
   ratio: "1774/511",
   href: "#",

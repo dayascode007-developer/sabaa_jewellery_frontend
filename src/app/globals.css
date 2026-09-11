@@ -52,12 +52,10 @@
 @font-face { font-family: "Mukta"; src: url('/fonts/mukta-regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
 @font-face { font-family: "Hind"; src: url('/fonts/hind-regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
 
-/* Menu-bar face. Not a Google font, so it is self-hosted here rather than
-   loaded through next/font. No size-adjust needed: its cap-height is 0.708em
-   against Antic Didone's 0.700em, so it renders at the same size on the same
-   font-size values — unlike Mislian, which was half the size and needed
-   correcting. font-display:swap so the nav shows in the fallback immediately
-   rather than sitting blank while the file downloads. */
+/* --- PREVIOUS MENU-BAR FONT — commented out, not deleted --------------------
+   Ariane Coachella, self-hosted from public/fonts. To restore it, uncomment
+   this block and swap the --font-category line in :root back.
+
 @font-face {
   font-family: "Ariane Coachella";
   src: url('/fonts/ArianeCoachella-Regular.ttf') format('truetype');
@@ -65,20 +63,36 @@
   font-style: normal;
   font-display: swap;
 }
+   ------------------------------------------------------------------------- */
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 
-  /* The menu bar only. next/font used to supply this variable on <html>; with
-     Antic Didone commented out in layout.js it is defined here instead. */
-  --font-category: "Ariane Coachella", Georgia, serif;
+  /* ONE FONT FOR THE WHOLE SITE — ZCOOL XiaoWei.
+     --font-heading is ZCOOL (set by next/font in layout.js). Every other site
+     font variable now points at it, so the menu bar, the category labels and
+     the drawer wordmark all use the same face as the headings and body.
+
+     Not affected: the engraving fonts declared above (GoldenHillsDEMO, Baristo,
+     the Tamil faces and the rest). Those preview how a customer's name will
+     look on the ring, so they must stay distinct.
+
+     was: --font-category: "Ariane Coachella", Georgia, serif;  (menu bar)
+     was: --font-display  -> Cinzel          (mobile drawer wordmark)
+     was: --font-script   -> Pinyon Script   (declared, unused) */
+  --font-category: var(--font-heading);
+  --font-display: var(--font-heading);
+  --font-script: var(--font-heading);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  /* was: --font-sans: var(--font-geist-sans);
+     Tailwind's base font for the page root — ZCOOL too, so nothing falls back
+     to Geist anywhere. */
+  --font-sans: var(--font-heading);
   --font-mono: var(--font-geist-mono);
 }
 
