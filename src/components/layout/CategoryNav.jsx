@@ -53,7 +53,24 @@ const GLYPHS = {
       <path d="M12 9.5 8.8 14 12 20l3.2-6L12 9.5Z" />
     </>
   ),
-  bracelet: <ellipse cx="12" cy="12" rx="8" ry="5.5" />,
+  // A ring of beads — the same bracelet the mobile side menu uses. It replaced
+  // a plain oval, which read as a zero rather than as jewellery.
+  //
+  // Drawn smaller here than in the drawer. Edge to edge (about 72% of the box)
+  // a full circle out-weighed the narrow pendant and earrings beside it, so the
+  // ring is pulled in to about 56% and the beads made a touch smaller.
+  bracelet: (
+    <>
+      <circle cx="12" cy="6.6" r="1.25" />
+      <circle cx="15.82" cy="8.18" r="1.25" />
+      <circle cx="17.4" cy="12" r="1.25" />
+      <circle cx="15.82" cy="15.82" r="1.25" />
+      <circle cx="12" cy="17.4" r="1.25" />
+      <circle cx="8.18" cy="15.82" r="1.25" />
+      <circle cx="6.6" cy="12" r="1.25" />
+      <circle cx="8.18" cy="8.18" r="1.25" />
+    </>
+  ),
   earrings: (
     <>
       <path d="M8 4a2 2 0 1 0 0 4M16 4a2 2 0 1 1 0 4" />

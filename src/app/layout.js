@@ -1,8 +1,8 @@
 import {
   Geist,
   Geist_Mono,
-  Cinzel,
-  Pinyon_Script,
+  // Cinzel,        // previous drawer-wordmark face — site now uses ZCOOL only
+  // Pinyon_Script, // previous (unused) script face — site now uses ZCOOL only
   // Fraunces,      // previous heading face — kept for an easy switch back
   // IBM_Plex_Sans, // previous tab-menu face — kept for an easy switch back
   ZCOOL_XiaoWei,
@@ -28,22 +28,27 @@ const geistMono = Geist_Mono({
   preload: false,
 });
 
-// Engraved-serif. Only the mobile drawer uses it, and that is off-screen until
-// the hamburger is tapped.
-const cinzel = Cinzel({
-  variable: "--font-display",
-  subsets: ["latin"],
-  preload: false,
-});
-
-// Calligraphic accent. Currently referenced nowhere — the hero artwork carries
-// its own lettering — so it is kept declared but never preloaded.
-const pinyonScript = Pinyon_Script({
-  variable: "--font-script",
-  subsets: ["latin"],
-  weight: "400",
-  preload: false,
-});
+// --- ONE FONT FOR THE WHOLE SITE — commented out, not deleted -------------
+// --font-display and --font-script now point at ZCOOL XiaoWei in globals.css.
+// These two would set the same variables on <html> and fight that, so they are
+// switched off here. Restore by uncommenting both and their imports above, and
+// adding the two names back to the <html> className.
+//
+// // Engraved-serif. Only the mobile drawer uses it.
+// const cinzel = Cinzel({
+//   variable: "--font-display",
+//   subsets: ["latin"],
+//   preload: false,
+// });
+//
+// // Calligraphic accent. Currently referenced nowhere.
+// const pinyonScript = Pinyon_Script({
+//   variable: "--font-script",
+//   subsets: ["latin"],
+//   weight: "400",
+//   preload: false,
+// });
+// ---------------------------------------------------------------------------
 
 // --- PREVIOUS FONTS — commented out, not deleted -------------------------
 // Restore by uncommenting these two (and their imports above), then removing
@@ -71,10 +76,10 @@ const zcoolXiaoWei = ZCOOL_XiaoWei({
   weight: "400",
 });
 
-// --- MENU BAR FONT — now Ariane Coachella ----------------------------------
-// Self-hosted from public/fonts, so it is declared in globals.css (@font-face
-// plus --font-category on :root) rather than here — next/font/google only
-// serves Google's own library.
+// --- MENU BAR FONT — now ZCOOL XiaoWei, like everything else ---------------
+// --font-category is set in globals.css to var(--font-heading). The previous
+// menu faces — Ariane Coachella (self-hosted) and Antic Didone below — are kept
+// commented for an easy switch back.
 //
 // // Tab menu / category labels. Also a single 400 weight.
 // const anticDidone = Antic_Didone({
@@ -101,8 +106,10 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       // was: ${fraunces.variable} ${ibmPlexSans.variable} ${anticDidone.variable}
-      // --font-category now comes from globals.css, not from next/font.
-      className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} ${pinyonScript.variable} ${zcoolXiaoWei.variable} h-full antialiased`}
+      //      ${cinzel.variable} ${pinyonScript.variable}
+      // Only ZCOOL XiaoWei supplies a site font now; the other font variables
+      // are pointed at it in globals.css.
+      className={`${geistSans.variable} ${geistMono.variable} ${zcoolXiaoWei.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {/* Loaders live per section, in each folder's loading.js — nothing here. */}

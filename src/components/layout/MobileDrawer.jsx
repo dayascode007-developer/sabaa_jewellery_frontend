@@ -12,9 +12,114 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { BiSolidUserCircle } from "react-icons/bi";
 import { IoMdLogIn } from "react-icons/io";
 import LogoutConfirmModal from "@/components/account/LogoutConfirmModal";
+import Image from "next/image";
+// Decorative artwork for the drawer, from assets/side_bar.
+import drawerTopArt from "@/assets/side_bar/image2.webp"; // gold chain with the heart
+import drawerBottomArt from "@/assets/side_bar/side bar image.webp"; // ring, flowers, wave
 
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
+
+// Drawer palette, taken from the reference. (The cream ground, #F8F2E9, is set
+// on the panel's className.)
+const BADGE = "#F1E5D2"; // the round disc behind each icon
+const ICON_GOLD = "#A9792B";
+const INK = "#3B2A1E"; // row labels
+const RULE = "#E9DAC3"; // the thin divider between rows
+
+// Line-art glyphs, one per nav id, drawn in the gold of the reference. The
+// nav bar's own SVG files are dark maroon and cannot be recoloured as <img>,
+// and there is no bracelet file at all — so the drawer has its own set.
+const DRAWER_ICONS = {
+  // Solitaire — the diamond sits proud of the band.
+  all: (
+    <>
+      <circle cx="12" cy="15" r="5.6" />
+      <path d="M9.6 6.2 12 3.6l2.4 2.6-2.4 3-2.4-3Z" />
+      <path d="M9.6 6.2h4.8" />
+    </>
+  ),
+  // Ring with a crown setting.
+  rings: (
+    <>
+      <circle cx="12" cy="15.2" r="5.4" />
+      <path d="M8.8 8.2 9.8 5l2.2 1.8L14.2 5l1 3.2" />
+      <path d="M8.8 8.2h6.4" />
+    </>
+  ),
+  // Necklace dipping to a small pendant, beads along the chain.
+  impon: (
+    <>
+      <path d="M5 4c.6 4.6 3.2 8 7 8s6.4-3.4 7-8" />
+      <circle cx="6.6" cy="7.4" r="0.9" />
+      <circle cx="17.4" cy="7.4" r="0.9" />
+      <circle cx="12" cy="15.4" r="2.6" />
+      <path d="M12 12v.8" />
+    </>
+  ),
+  // A V of chain ending in a teardrop.
+  pendant: (
+    <>
+      <path d="M6 3.5 12 12l6-8.5" />
+      <path d="M12 12c-2 2.6-2.6 4-2.6 5.2a2.6 2.6 0 0 0 5.2 0c0-1.2-.6-2.6-2.6-5.2Z" />
+    </>
+  ),
+  // A ring of beads.
+  bracelet: (
+    <>
+      <circle cx="12" cy="4.8" r="1.5" />
+      <circle cx="17.1" cy="6.9" r="1.5" />
+      <circle cx="19.2" cy="12" r="1.5" />
+      <circle cx="17.1" cy="17.1" r="1.5" />
+      <circle cx="12" cy="19.2" r="1.5" />
+      <circle cx="6.9" cy="17.1" r="1.5" />
+      <circle cx="4.8" cy="12" r="1.5" />
+      <circle cx="6.9" cy="6.9" r="1.5" />
+    </>
+  ),
+  // A pair of drops on hooks.
+  earrings: (
+    <>
+      <path d="M8 3.5a1.4 1.4 0 0 1 1.4 1.4v1.8" />
+      <path d="M9.4 6.7c-2 2.8-3 4.8-3 6.6a3 3 0 0 0 6 0c0-1.8-1-3.8-3-6.6Z" />
+      <path d="M15.6 3.5a1.4 1.4 0 0 1 1.4 1.4v1.8" />
+      <path d="M17 6.7c-2 2.8-3 4.8-3 6.6a3 3 0 0 0 6 0c0-1.8-1-3.8-3-6.6Z" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="6" cy="12" r="1.3" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.3" fill="currentColor" />
+      <circle cx="18" cy="12" r="1.3" fill="currentColor" />
+    </>
+  ),
+};
+
+// Anything not in the set above (a category added in the admin panel later)
+// still gets a mark rather than an empty disc.
+const DRAWER_ICON_FALLBACK = <path d="M12 4 18 10 12 20 6 10Z" />;
+
+function DrawerBadge({ id }) {
+  return (
+    <span
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+      style={{ backgroundColor: BADGE, color: ICON_GOLD }}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-6 w-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        {DRAWER_ICONS[id] ?? DRAWER_ICON_FALLBACK}
+      </svg>
+    </span>
+  );
+}
 
 function Chevron({ open }) {
   return (
@@ -98,16 +203,96 @@ export default function MobileDrawer({ open, onClose }) {
         }`}
       />
 
-      {/* Panel — always mounted so it can slide rather than pop */}
+      {/* Panel — always mounted so it can animate rather than pop.
+          It unfolds like a sheet of paper hinged on the left edge: closed, it
+          stands edge-on at -90° and cannot be seen; open, it lies flat. The
+          perspective lives on this wrapper because a 3D transform only gets
+          depth from its parent. */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-[82%] max-w-[320px] lg:hidden ${
+          open ? "" : "pointer-events-none"
+        }`}
+        style={{ perspective: "1100px", perspectiveOrigin: "left center" }}
+      >
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Menu"
-        className={`fixed inset-y-0 left-0 z-50 flex w-[82%] max-w-[320px] flex-col bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
-          open ? "translate-x-0" : "-translate-x-full"
+        // visibility is switched off only AFTER the fold closes (the delay on
+        // the visibility transition), so the animation plays out in full and a
+        // closed menu's links cannot be reached with Tab.
+        // Cream instead of white, as in the reference. Rounded on the right
+        // only — the left edge meets the side of the screen. overflow-hidden
+        // clips the artwork to those rounded corners too.
+        className={`relative flex h-full w-full flex-col overflow-hidden rounded-r-3xl bg-[#F8F2E9] shadow-2xl [backface-visibility:hidden] motion-reduce:transition-none ${
+          open
+            ? "visible [transition:transform_480ms_cubic-bezier(0.22,0.9,0.3,1),visibility_0s]"
+            : "invisible [transition:transform_380ms_cubic-bezier(0.55,0,0.8,0.4),visibility_0s_380ms]"
         }`}
+        style={{
+          transformOrigin: "left center",
+          transform: open ? "rotateY(0deg)" : "rotateY(-90deg)",
+        }}
       >
-        <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
+        {/* Shading across the sheet while it turns — darkest on the far edge,
+            fading out as it flattens — which is what makes it read as paper
+            catching the light rather than a flat card swinging round. */}
+        <span
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-black/5 via-black/20 to-black/45 motion-reduce:transition-none ${
+            open
+              ? "opacity-0 [transition:opacity_480ms_ease-out]"
+              : "opacity-100 [transition:opacity_380ms_ease-in]"
+          }`}
+        />
+
+        {/* Top-right: the gold chain with its heart, tucked into the corner
+            behind the close button. The file is a wide landscape, so it is
+            cropped to its right-hand side, where the heart hangs, and faded
+            out along its left and bottom edges so it melts into the cream
+            rather than ending in a hard line. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0 right-0 z-0 h-[150px] w-[62%]"
+          style={{
+            WebkitMaskImage:
+              "radial-gradient(120% 110% at 100% 0%, #000 55%, transparent 100%)",
+            maskImage:
+              "radial-gradient(120% 110% at 100% 0%, #000 55%, transparent 100%)",
+          }}
+        >
+          <Image
+            src={drawerTopArt}
+            alt=""
+            fill
+            sizes="200px"
+            className="object-cover"
+            style={{ objectPosition: "82% 70%" }}
+          />
+        </div>
+
+        {/* Bottom: the ring on its stone, the flowers and the green wave with
+            gold leaves. Faded out at the top so the list above sits on plain
+            cream and the art rises out of it. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 aspect-[1515/1038]"
+          style={{
+            WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 28%)",
+            maskImage: "linear-gradient(to bottom, transparent 0%, #000 28%)",
+          }}
+        >
+          <Image
+            src={drawerBottomArt}
+            alt=""
+            fill
+            sizes="360px"
+            className="object-cover object-bottom"
+          />
+        </div>
+
+        {/* Everything interactive sits above the two pieces of art. */}
+        <div className="relative z-[1] flex items-center justify-between px-6 pt-6 pb-4">
           {/* Show SABAA if not logged in, Avatar icon + Name + Login icon if logged in */}
           {isLoggedIn && customer ? (
             <button
@@ -116,17 +301,17 @@ export default function MobileDrawer({ open, onClose }) {
               className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-70 transition-opacity"
             >
               <BiSolidUserCircle
-                className="h-[22px] w-[22px] flex-shrink-0"
+                className="h-7 w-7 flex-shrink-0"
                 style={{ color: MAROON }}
                 title={customer.name || "User"}
               />
-              <span className="font-[family-name:var(--font-category)] text-sm font-medium truncate max-w-[80px]" style={{ color: GOLD }}>
+              <span className="font-[family-name:var(--font-category)] text-[18px] truncate max-w-[96px]" style={{ color: GOLD }}>
                 {customer.name?.length > 5
                   ? `${customer.name.substring(0, 5)}...`
                   : customer.name}
               </span>
               <IoMdLogIn
-                className="h-[22px] w-[22px] flex-shrink-0"
+                className="h-7 w-7 flex-shrink-0"
                 style={{ color: GOLD }}
               />
             </button>
@@ -143,15 +328,18 @@ export default function MobileDrawer({ open, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="p-1 text-neutral-500 transition-colors hover:text-neutral-800 flex-shrink-0"
+            // Darker than before so it still reads over the chain artwork.
+            className="flex-shrink-0 p-1 text-[#3B2A1E] transition-opacity hover:opacity-70"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
         </div>
 
-        <nav className="min-h-0 flex-1 overflow-y-auto py-2">
+        {/* Above the art. The bottom padding leaves the ring artwork clear
+            once the list has been scrolled to its end. */}
+        <nav className="relative z-[1] min-h-0 flex-1 overflow-y-auto px-5 pt-3 pb-40">
           {loading && navItemsFromRedux.length === 0 ? (
             <MobileDrawerShimmer />
           ) : (
@@ -168,30 +356,51 @@ export default function MobileDrawer({ open, onClose }) {
                 : null;
 
               return (
-                <li key={item.id} className="border-b border-neutral-100">
+                // The divider starts under the label rather than under the
+                // icon, as in the reference — so it is drawn as a line inset
+                // by the badge's width instead of a full-width border.
+                <li key={item.id} className="relative">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-0 bottom-0 left-[3.75rem] h-px"
+                    style={{ backgroundColor: RULE }}
+                  />
                   {links ? (
                     <>
                       <button
                         type="button"
                         onClick={() => setExpandedId(isExpanded ? null : item.id)}
                         aria-expanded={isExpanded}
-                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left font-[family-name:var(--font-category)] text-[14px] text-neutral-800"
+                        className="flex w-full items-center gap-4 py-3.5 text-left"
                       >
-                        {item.label}
-                        <Chevron open={isExpanded} />
+                        <DrawerBadge id={item.id} />
+                        <span
+                          className="flex-1 font-[family-name:var(--font-category)] text-[17px]"
+                          style={{ color: INK }}
+                        >
+                          {item.label}
+                        </span>
+                        <span style={{ color: INK }}>
+                          <Chevron open={isExpanded} />
+                        </span>
                       </button>
 
                       {isExpanded ? (
-                        <ul className="bg-neutral-50 pb-2">
+                        // Indented to line up under the label, on a faint wash
+                        // of the badge colour rather than grey.
+                        <ul
+                          className="mb-2 ml-[3.75rem] rounded-md py-1"
+                          style={{ backgroundColor: "rgba(241,229,210,0.55)" }}
+                        >
                           {links.map((link) => (
                             <li key={link.label}>
                               <Link
                                 href={link.href}
                                 onClick={onClose}
-                                className={`block py-2 pr-4 pl-7 text-[13px] ${
+                                className={`block px-3 py-2 text-[14px] ${
                                   link.isHeading
                                     ? "font-semibold text-[#7B1E2B]"
-                                    : "text-neutral-600"
+                                    : "text-[#5A4636]"
                                 }`}
                               >
                                 {link.label}
@@ -205,9 +414,20 @@ export default function MobileDrawer({ open, onClose }) {
                     <Link
                       href={item.href}
                       onClick={onClose}
-                      className="block px-4 py-3 font-[family-name:var(--font-category)] text-[14px] text-neutral-800"
+                      className="flex w-full items-center gap-4 py-3.5"
                     >
-                      {item.label}
+                      <DrawerBadge id={item.id} />
+                      <span
+                        className="flex-1 font-[family-name:var(--font-category)] text-[17px]"
+                        style={{ color: INK }}
+                      >
+                        {item.label}
+                      </span>
+                      {/* On every row, as in the reference. Here it only marks
+                          the row — this item has no dropdown to open. */}
+                      <span style={{ color: INK }}>
+                        <Chevron open={false} />
+                      </span>
                     </Link>
                   )}
                 </li>
@@ -219,7 +439,12 @@ export default function MobileDrawer({ open, onClose }) {
 
         {/* Logout Section - Only show if logged in */}
         {isLoggedIn && (
-          <div className="border-t border-neutral-200 p-4">
+          // Sits over the bottom artwork, so it gets a soft cream backing to
+          // stay readable.
+          <div
+            className="relative z-[1] mx-5 mb-4 rounded-lg p-1 backdrop-blur-[2px]"
+            style={{ backgroundColor: "rgba(248,242,233,0.85)" }}
+          >
             <button
               type="button"
               onClick={handleLogoutClick}
@@ -231,6 +456,7 @@ export default function MobileDrawer({ open, onClose }) {
           </div>
         )}
       </aside>
+      </div>
 
       {/* Logout Confirmation Modal */}
       <LogoutConfirmModal
