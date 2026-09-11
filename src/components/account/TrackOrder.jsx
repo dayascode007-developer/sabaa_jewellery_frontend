@@ -1,14 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { MdCheckCircle, MdLocalShipping, MdDeliveryDining, MdHome, MdEdit, MdCancel } from "react-icons/md";
+import {
+  MdCheckCircle,
+  MdLocalShipping,
+  MdDeliveryDining,
+  MdHome,
+  MdEdit,
+  // MdCancel,
+} from "react-icons/md";
 
 const MAROON = "#430121";
+const GREEN = "#10b981";
 
 const ORDER_STATUSES = [
   { id: 1, label: "Ordered", icon: MdCheckCircle, completed: true },
   { id: 2, label: "Shipped", icon: MdLocalShipping, completed: true },
-  { id: 3, label: "Out for delivery", icon: MdDeliveryDining, completed: false },
+  {
+    id: 3,
+    label: "Out for delivery",
+    icon: MdDeliveryDining,
+    completed: false,
+  },
   { id: 4, label: "Delivered", icon: MdHome, completed: false },
 ];
 
@@ -62,7 +75,10 @@ export default function TrackOrder() {
           {/* Timeline */}
           <div className="hidden md:block">
             {/* Desktop Timeline */}
-            <div className="relative flex items-center justify-between mb-8" style={{ height: "80px" }}>
+            <div
+              className="relative flex items-center justify-between mb-8"
+              style={{ height: "80px" }}
+            >
               {/* Progress Line Background */}
               <div
                 className="absolute top-1/2 left-0 right-0 h-1 transform -translate-y-1/2"
@@ -76,7 +92,7 @@ export default function TrackOrder() {
                         key={index}
                         className="flex-1"
                         style={{
-                          backgroundColor: isCompleted ? MAROON : "#d1d5db",
+                          backgroundColor: isCompleted ? GREEN : "#d1d5db",
                         }}
                       />
                     );
@@ -104,7 +120,8 @@ export default function TrackOrder() {
                           : "bg-gray-200 text-gray-400"
                       }`}
                       style={{
-                        backgroundColor: isCompleted || isCurrent ? MAROON : "#e5e7eb",
+                        backgroundColor:
+                          isCompleted || isCurrent ? GREEN : "#e5e7eb",
                         borderColor: "white",
                       }}
                     >
@@ -114,7 +131,9 @@ export default function TrackOrder() {
                     {/* Label */}
                     <p
                       className={`text-xs md:text-sm font-medium text-center ${
-                        isCompleted || isCurrent ? "text-gray-900" : "text-gray-500"
+                        isCompleted || isCurrent
+                          ? "text-gray-900"
+                          : "text-gray-500"
                       }`}
                     >
                       {status.label}
@@ -138,15 +157,22 @@ export default function TrackOrder() {
                 preserveAspectRatio="none"
               >
                 {/* Gray line for all steps */}
-                <line x1="2" y1="0" x2="2" y2="100%" stroke="#d1d5db" strokeWidth="2" />
+                <line
+                  x1="2"
+                  y1="0"
+                  x2="2"
+                  y2="100%"
+                  stroke="#d1d5db"
+                  strokeWidth="2"
+                />
 
-                {/* Maroon line overlay - shows progress through current status */}
+                {/* Green line overlay - shows progress through current status */}
                 <line
                   x1="2"
                   y1="0"
                   x2="2"
                   y2={`${progressPercent}%`}
-                  stroke={MAROON}
+                  stroke={GREEN}
                   strokeWidth="2"
                 />
               </svg>
@@ -159,7 +185,10 @@ export default function TrackOrder() {
                   const isCurrent = status.id === order.status;
 
                   return (
-                    <div key={status.id} className="relative z-10 flex items-start gap-4">
+                    <div
+                      key={status.id}
+                      className="relative z-10 flex items-start gap-4"
+                    >
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors border-4 bg-white ${
                           isCompleted || isCurrent
@@ -168,7 +197,7 @@ export default function TrackOrder() {
                         }`}
                         style={{
                           backgroundColor:
-                            isCompleted || isCurrent ? MAROON : "#e5e7eb",
+                            isCompleted || isCurrent ? GREEN : "#e5e7eb",
                           borderColor: "white",
                         }}
                       >
@@ -263,7 +292,9 @@ export default function TrackOrder() {
               Shipping Address
             </h3>
             <div className="space-y-1 text-sm">
-              <p className="font-semibold text-gray-900">{order.address.name}</p>
+              <p className="font-semibold text-gray-900">
+                {order.address.name}
+              </p>
               <p className="text-gray-600">{order.address.street}</p>
               <p className="text-gray-600">{order.address.city}</p>
               <p className="text-gray-600">
@@ -273,7 +304,7 @@ export default function TrackOrder() {
           </div>
 
           {/* Order Info */}
-          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+          {/* <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
             <h3
               className="text-base md:text-lg font-bold mb-4"
               style={{ color: MAROON }}
@@ -295,7 +326,7 @@ export default function TrackOrder() {
                 Cancel order
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Estimated Delivery */}

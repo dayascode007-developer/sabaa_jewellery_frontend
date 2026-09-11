@@ -1,63 +1,79 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import OrderConfirmation from "./OrderConfirmation";
 import { selectCartItems } from "@/store/slices/cartSlice";
+import { selectShippingConfig } from "@/store/slices/settingsSlice";
+import { calculateOrderSummary } from "@/utils/orderCalculations";
+import {
+  selectAddressesList,
+  selectSelectedAddressId,
+  selectAddressesLoading,
+  createAddress,
+  selectAddress,
+} from "@/store/slices/addressesSlice";
+import { selectAppliedCoupon, applyCoupon } from "@/store/slices/couponSlice";
 
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
-const GREEN = "#1E7A45";
+const GREEN = "#22C55E";
 
 const rupees = (n) =>
   "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// Flat rate for now. When the order API exists this comes back from the server
-// along with the tax and any coupon.
-const DELIVERY = 200;
-const FREE_DELIVERY_ABOVE = 999;
-
-const STEPS = ["Address", "Payment", "Confirm order"];
-
-// Saved addresses are kept in the browser while this is still the static UI, so
-// they survive a reload. When the address API exists, delete this and read the
-// list from the server — the shape is the same.
-const ADDRESS_STORE = "sabaa.checkout.addresses";
+const STEPS = ["Address", "Payment", "Ordered Confirm"];
 
 /* ------------------------------------------------------------------ stepper */
 
 function Stepper({ current }) {
+  const isLastStep = (i) => i === STEPS.length - 1;
+  const icons = [
+    // Address icon
+    <svg key="address" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>,
+    // Payment icon
+    <svg key="payment" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+      <line x1="1" y1="10" x2="23" y2="10" />
+    </svg>,
+    // Checkmark icon
+    <svg key="confirm" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m5 12.5 4.5 4.5L19 7.5" />
+    </svg>,
+  ];
+
   return (
     <ol className="flex items-start">
       {STEPS.map((label, i) => {
-        const done = i < current;
-        const active = i === current;
+        const done = i < current || (i === current && isLastStep(i));
+        const active = i === current && !isLastStep(i);
         return (
           <li key={label} className="flex flex-1 items-start last:flex-none">
-            <div className="flex shrink-0 flex-col items-center gap-1.5">
+            <div className="flex shrink-0 flex-col items-center gap-2">
               <span
-                className="flex h-7 w-7 items-center justify-center rounded-full border-2 transition-colors"
+                className="flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors"
                 style={{
-                  borderColor: done || active ? MAROON : "#D8CFC6",
-                  backgroundColor: done ? MAROON : "transparent",
+                  borderColor: done || active ? GREEN : "#E5E7EB",
+                  backgroundColor: done || active ? GREEN : "#F3F4F6",
+                  color: done || active ? "#fff" : "#9CA3AF",
                 }}
                 aria-hidden="true"
               >
                 {done ? (
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m5 12.5 4.5 4.5L19 7.5" />
                   </svg>
                 ) : (
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: active ? MAROON : "#D8CFC6" }}
-                  />
+                  icons[i]
                 )}
               </span>
               <span
-                className="text-center text-[11px] leading-tight whitespace-nowrap sm:text-[13px]"
-                style={{ color: done || active ? MAROON : "#9C9086" }}
+                className="text-center text-[11px] leading-tight whitespace-nowrap sm:text-[13px] font-medium text-neutral-900"
               >
                 {label}
               </span>
@@ -66,8 +82,8 @@ function Stepper({ current }) {
             {/* Connector. Not after the last step. */}
             {i < STEPS.length - 1 ? (
               <span
-                className="mt-3.5 h-px flex-1 transition-colors"
-                style={{ backgroundColor: i < current ? MAROON : "#E0D6CC" }}
+                className="mt-5 h-px flex-1 transition-colors"
+                style={{ backgroundColor: i < current ? GREEN : "#E0D6CC" }}
                 aria-hidden="true"
               />
             ) : null}
@@ -172,63 +188,175 @@ const PAYMENT_METHODS = [
 /* ----------------------------------------------------------------- checkout */
 
 export default function Checkout() {
+  const dispatch = useDispatch();
   const items = useSelector(selectCartItems);
+  const shippingConfig = useSelector(selectShippingConfig);
+  const addresses = useSelector(selectAddressesList);
+  const selectedAddressId = useSelector(selectSelectedAddressId);
+  const addressesLoading = useSelector(selectAddressesLoading);
 
   const [step, setStep] = useState(0);
-
-  // The address step opens as a list of saved addresses, the way the reference
-  // does — the form only appears behind "Add New". Static for now: the list
-  // starts empty and lives in memory, so it resets on reload. When the address
-  // API exists this array comes from the server instead.
-  const [addresses, setAddresses] = useState([]);
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const appliedCoupon = useSelector(selectAppliedCoupon);
   const [addingAddress, setAddingAddress] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
 
   const [address, setAddress] = useState(EMPTY_ADDRESS);
   const [addressType, setAddressType] = useState("home");
   const [method, setMethod] = useState("online");
   const [placed, setPlaced] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [showCODModal, setShowCODModal] = useState(false);
 
-  // Read after mount, never during render: the server has no localStorage, and
-  // seeding state from it directly would make the first client paint disagree
-  // with the server's HTML.
   const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(ADDRESS_STORE) ?? "null");
-      if (Array.isArray(saved?.addresses)) setAddresses(saved.addresses);
-      if (saved?.selectedAddressId) setSelectedAddressId(saved.selectedAddressId);
-    } catch {
-      // Private mode, cleared storage, or a value from an older shape — start
-      // empty rather than breaking the page.
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState("processing"); // "processing" | "success"
+  const [showCODSuccessModal, setShowCODSuccessModal] = useState(false);
+  const [orderData, setOrderData] = useState(null);
+
+  const handlePaymentMethodClick = useCallback((methodId) => {
+    if (methodId === "cod") {
+      setMethod("cod");
+      setShowCODModal(true);
+    } else {
+      setMethod("online");
+      setShowPaymentModal(true);
+      setPaymentStatus("processing");
+      // Simulate payment processing
+      setTimeout(() => {
+        setPaymentStatus("success");
+      }, 2000);
     }
-    setHydrated(true);
+  }, []);
+
+  const handleCODConfirm = useCallback(() => {
+    setShowCODModal(false);
+    setShowCODSuccessModal(true);
   }, []);
 
   useEffect(() => {
-    // Guarded: without this the empty initial state would overwrite the saved
-    // list on the very first render, before the read above has run.
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(
-        ADDRESS_STORE,
-        JSON.stringify({ addresses, selectedAddressId })
-      );
-    } catch {
-      // Storage full or blocked — the addresses simply do not persist.
+    if (paymentStatus === "success" && showPaymentModal) {
+      const timer = setTimeout(() => {
+        const orderId = Math.random().toString().slice(2, 10);
+        const order = {
+          orderId: `#SABA${orderId}`,
+          items,
+          subtotal: orderSummary.subtotal,
+          discount: orderSummary.discount,
+          shipping: orderSummary.shippingCost,
+          total: orderSummary.grandTotal,
+          address: selectedAddress || {},
+          paymentMethod: "online",
+          orderDate: new Date().toLocaleDateString("en-IN"),
+          estimatedDelivery: "5-7 business days",
+        };
+        setOrderData(order);
+        if (appliedCoupon) {
+          dispatch(applyCoupon({
+            couponId: appliedCoupon.couponId,
+            discountAmount: appliedCoupon.discountAmount,
+            orderId: parseInt(orderId)
+          }));
+        }
+        setShowPaymentModal(false);
+        setStep(2);
+      }, 2000);
+      return () => clearTimeout(timer);
     }
-  }, [hydrated, addresses, selectedAddressId]);
+  }, [paymentStatus, showPaymentModal, appliedCoupon, dispatch]);
+
+  useEffect(() => {
+    if (showCODSuccessModal) {
+      const timer = setTimeout(() => {
+        const orderId = Math.random().toString().slice(2, 10);
+        const order = {
+          orderId: `#SABA${orderId}`,
+          items,
+          subtotal: orderSummary.subtotal,
+          discount: orderSummary.discount,
+          shipping: orderSummary.shippingCost,
+          total: orderSummary.grandTotal,
+          address: selectedAddress || {},
+          paymentMethod: "cod",
+          orderDate: new Date().toLocaleDateString("en-IN"),
+          estimatedDelivery: "5-7 business days",
+        };
+        setOrderData(order);
+        if (appliedCoupon) {
+          dispatch(applyCoupon({
+            couponId: appliedCoupon.couponId,
+            discountAmount: appliedCoupon.discountAmount,
+            orderId: parseInt(orderId)
+          }));
+        }
+        setShowCODSuccessModal(false);
+        setStep(2);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showCODSuccessModal, appliedCoupon, dispatch]);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null;
 
-  const saveAddress = () => {
-    const saved = { ...address, type: addressType, id: Date.now() };
-    setAddresses((list) => [...list, saved]);
-    // A freshly added address is the one you meant to use.
-    setSelectedAddressId(saved.id);
-    setAddress(EMPTY_ADDRESS);
-    setAddressType("home");
-    setAddingAddress(false);
+  const saveAddress = async () => {
+    setSavingAddress(true);
+    try {
+      const addressData = {
+        name: address.name,
+        mobile: address.mobile,
+        pincode: address.pincode,
+        house: address.house,
+        area: address.area,
+        landmark: address.landmark,
+        city: address.city,
+        state: address.state,
+        type: addressType,
+        isDefault: addresses.length === 0, // Set first address as default
+      };
+
+      let result;
+      if (editingAddressId) {
+        // Update existing address
+        const { updateAddress } = await import("@/store/slices/addressesSlice");
+        result = await dispatch(updateAddress({ addressId: editingAddressId, addressData }));
+      } else {
+        // Create new address
+        result = await dispatch(createAddress(addressData));
+      }
+
+      if (result.payload) {
+        setAddress(EMPTY_ADDRESS);
+        setAddressType("home");
+        setAddingAddress(false);
+        setEditingAddressId(null);
+        if (!editingAddressId) {
+          dispatch(selectAddress(result.payload.id));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to save address:", error);
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  const startEditAddress = (addr) => {
+    setAddress({
+      name: addr.name,
+      mobile: addr.mobile,
+      pincode: addr.pincode,
+      house: addr.house,
+      area: addr.area,
+      landmark: addr.landmark || "",
+      city: addr.city,
+      state: addr.state,
+    });
+    setAddressType(addr.type);
+    setEditingAddressId(addr.id);
+    setAddingAddress(true);
   };
 
   const setField = (e) =>
@@ -244,8 +372,8 @@ export default function Checkout() {
 
   const itemCount = items.reduce((n, i) => n + i.quantity, 0);
   const itemsTotal = items.reduce((t, i) => t + i.price * i.quantity, 0);
-  const freeDelivery = itemsTotal >= FREE_DELIVERY_ABOVE;
-  const orderTotal = itemsTotal + (freeDelivery ? 0 : DELIVERY);
+  const discount = appliedCoupon?.discountAmount || 0;
+  const orderSummary = calculateOrderSummary(itemsTotal, discount, shippingConfig);
 
   // Enough to move on, not a full validation pass — the server has to check
   // again anyway, and the real rules arrive with the order API.
@@ -337,7 +465,7 @@ export default function Checkout() {
         <Stepper current={step} />
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_340px]">
+      <div className="mt-5 flex flex-col-reverse gap-5 lg:grid lg:grid-cols-[1fr_340px]">
         <div className="space-y-5">
           {/* ---------------------------------------------------- 1. address */}
           {step === 0 && !addingAddress ? (
@@ -412,7 +540,7 @@ export default function Checkout() {
                             type="radio"
                             name="address"
                             checked={selected}
-                            onChange={() => setSelectedAddressId(a.id)}
+                            onChange={() => dispatch(selectAddress(a.id))}
                             className="mt-0.5 h-4 w-4 shrink-0 accent-[#7B1E2B]"
                           />
                           <span className="min-w-0 flex-1">
@@ -436,6 +564,21 @@ export default function Checkout() {
                               Mobile: {a.mobile}
                             </span>
                           </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              startEditAddress(a);
+                            }}
+                            className="ml-auto shrink-0 self-start text-neutral-500 transition-colors hover:text-neutral-900"
+                            title="Edit address"
+                            aria-label="Edit address"
+                          >
+                            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
                         </label>
                       </li>
                     );
@@ -446,7 +589,7 @@ export default function Checkout() {
           ) : null}
 
           {step === 0 && addingAddress ? (
-            <Card title="Add New Address">
+            <Card title={editingAddressId ? "Edit Address" : "Add New Address"}>
               <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                 <Field label="Full name" name="name" value={address.name} onChange={setField} />
                 <Field
@@ -543,10 +686,7 @@ export default function Checkout() {
                         continuing are one action, not two. */}
                     <button
                       type="button"
-                      onClick={() => {
-                        setMethod(m.id);
-                        setStep(2);
-                      }}
+                      onClick={() => handlePaymentMethodClick(m.id)}
                       className="mt-3 w-full shrink-0 rounded-md px-6 py-2.5 text-[14px] font-medium text-white transition-opacity hover:opacity-90 sm:mt-0 sm:w-auto"
                       style={{ backgroundColor: MAROON }}
                     >
@@ -570,7 +710,11 @@ export default function Checkout() {
           {/* ---------------------------------------------------- 3. confirm */}
           {step === 2 ? (
             <>
-              <Card title="Review Your Order">
+              {orderData ? (
+                <OrderConfirmation orderData={orderData} />
+              ) : (
+                <>
+                  <Card title="Review Your Order">
                 <ul className="divide-y divide-neutral-100">
                   {items.map((item) => (
                     <li key={item.id} className="flex gap-3 py-3 first:pt-0 last:pb-0">
@@ -616,32 +760,9 @@ export default function Checkout() {
                   <br />
                   <span className="text-neutral-500">Mobile: {selectedAddress?.mobile}</span>
                 </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAddingAddress(false);
-                    setStep(0);
-                  }}
-                  className="mt-3 text-[13px] underline underline-offset-2"
-                  style={{ color: MAROON, textDecorationColor: GOLD }}
-                >
-                  Change address
-                </button>
-              </Card>
-
-              <Card title="Paying With">
-                <p className="text-[14px] text-neutral-700">
-                  {PAYMENT_METHODS.find((m) => m.id === method)?.label}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="mt-3 text-[13px] underline underline-offset-2"
-                  style={{ color: MAROON, textDecorationColor: GOLD }}
-                >
-                  Change payment method
-                </button>
-              </Card>
+                  </Card>
+                </>
+              )}
             </>
           ) : null}
 
@@ -650,7 +771,12 @@ export default function Checkout() {
             {step === 0 && addingAddress ? (
               <button
                 type="button"
-                onClick={() => setAddingAddress(false)}
+                onClick={() => {
+                  setAddingAddress(false);
+                  setEditingAddressId(null);
+                  setAddress(EMPTY_ADDRESS);
+                  setAddressType("home");
+                }}
                 className="flex items-center gap-1.5 text-[14px] text-neutral-600 transition-colors hover:text-neutral-900"
               >
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -685,18 +811,21 @@ export default function Checkout() {
             {step === 0 && addingAddress ? (
               <button
                 type="button"
-                disabled={!addressReady}
+                disabled={!addressReady || savingAddress}
                 onClick={saveAddress}
                 className="rounded-md px-7 py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed"
-                style={{ backgroundColor: addressReady ? MAROON : "#CFA9B0" }}
+                style={{ backgroundColor: addressReady && !savingAddress ? MAROON : "#CFA9B0" }}
               >
-                Save address
+                {savingAddress ? "Saving..." : editingAddressId ? "Update address" : "Save address"}
               </button>
             ) : step === 0 ? (
               <button
                 type="button"
                 disabled={!selectedAddress}
-                onClick={() => setStep(1)}
+                onClick={() => {
+                  setMethod("online");
+                  setStep(1);
+                }}
                 className="rounded-md px-7 py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed"
                 style={{ backgroundColor: selectedAddress ? MAROON : "#CFA9B0" }}
               >
@@ -724,15 +853,24 @@ export default function Checkout() {
                 <span className="text-neutral-800">{rupees(itemsTotal)}</span>
               </div>
               <div className="flex justify-between gap-4">
-                <span className="text-neutral-600">Delivery</span>
-                <span className="text-neutral-800">{rupees(DELIVERY)}</span>
+                <span className="text-neutral-600">Subtotal</span>
+                <span className="text-neutral-800">{rupees(itemsTotal)}</span>
               </div>
-              {freeDelivery ? (
+              <div className="flex justify-between gap-4">
+                <span className="text-neutral-600">Shipping</span>
+                <span
+                  className="text-neutral-800"
+                  style={orderSummary.freeDelivery ? { color: GREEN } : undefined}
+                >
+                  {orderSummary.freeDelivery ? "FREE" : rupees(orderSummary.deliveryCharge)}
+                </span>
+              </div>
+              {discount > 0 && (
                 <div className="flex justify-between gap-4">
-                  <span style={{ color: GREEN }}>FREE Delivery</span>
-                  <span style={{ color: GREEN }}>−{rupees(DELIVERY)}</span>
+                  <span style={{ color: GREEN }}>Discount ({appliedCoupon.code})</span>
+                  <span style={{ color: GREEN }}>−{rupees(discount)}</span>
                 </div>
-              ) : null}
+              )}
             </div>
 
             <div className="mt-4 flex items-baseline justify-between gap-4">
@@ -743,41 +881,11 @@ export default function Checkout() {
                 Order Total
               </span>
               <span className="text-[20px] font-semibold text-neutral-900">
-                {rupees(orderTotal)}
+                {rupees(orderSummary.grandTotal)}
               </span>
             </div>
 
-            {!freeDelivery ? (
-              <p className="mt-1.5 text-[12px]" style={{ color: GREEN }}>
-                Add {rupees(FREE_DELIVERY_ABOVE - itemsTotal)} more for free delivery.
-              </p>
-            ) : null}
-
-            {/* Only on the last step, like the reference — you cannot place an
-                order before you have said where it goes. */}
-            {step === 2 ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setPlaced(true)}
-                  className="mt-4 w-full rounded-md py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: MAROON }}
-                >
-                  Place Your Order
-                </button>
-                <p className="mt-2.5 text-center text-[11px] leading-relaxed text-neutral-500">
-                  By placing your order, you agree to Sabaa&apos;s{" "}
-                  <Link href="/policy#privacy" className="underline underline-offset-2" style={{ color: MAROON }}>
-                    privacy notice
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/policy#terms" className="underline underline-offset-2" style={{ color: MAROON }}>
-                    conditions of use
-                  </Link>
-                  .
-                </p>
-              </>
-            ) : (
+            {step > 0 ? (
               <p className="mt-4 flex items-center justify-center gap-1.5 text-[12px] text-neutral-500">
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M12 3.5 19 6v6c0 4.2-2.9 7.5-7 8.5-4.1-1-7-4.3-7-8.5V6l7-2.5Z" />
@@ -785,10 +893,106 @@ export default function Checkout() {
                 </svg>
                 100% Secure Checkout
               </p>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm p-4 z-50" style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}>
+          <div className="max-w-sm w-full p-6 sm:p-8 rounded-2xl" style={{
+            background: "rgba(255, 255, 255, 0.95)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)"
+          }}>
+            {paymentStatus === "processing" ? (
+              <>
+                <div className="flex flex-col items-center gap-4">
+                  <div className="animate-spin h-12 w-12 border-4 border-neutral-200 border-t-[#A91D3A] rounded-full" />
+                  <h2 className="text-xl font-semibold text-neutral-900">Processing Payment</h2>
+                  <p className="text-[14px] text-neutral-600 text-center">Please wait while we process your payment...</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col items-center gap-4">
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E8F5E9" }}>
+                    <svg viewBox="0 0 24 24" className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m5 12.5 4.5 4.5L19 7.5" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-semibold text-neutral-900">Payment Successful!</h2>
+                  <p className="text-[14px] text-neutral-600 text-center">Your payment has been processed successfully.</p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* COD Modal */}
+      {showCODModal && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm p-4 z-50" style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}>
+          <div className="max-w-sm w-full p-6 sm:p-8 rounded-2xl" style={{
+            background: "rgba(255, 255, 255, 0.95)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)"
+          }}>
+            <h2 className="text-xl font-semibold text-neutral-900" style={{ color: MAROON }}>
+              Cash on Delivery
+            </h2>
+            <p className="mt-4 text-[14px] text-neutral-600 leading-relaxed">
+              You will need to pay an advancement payment of{" "}
+              <span className="font-semibold px-2 py-1 rounded" style={{ color: MAROON, backgroundColor: "#FDF0F2" }}>
+                ₹120
+              </span>
+              {" "}to confirm your order. This will be deducted from your final payment.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowCODModal(false)}
+                className="flex-1 px-4 py-3 text-[14px] font-medium text-neutral-700 border border-neutral-300 rounded-md transition-colors hover:bg-neutral-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleCODConfirm}
+                className="flex-1 px-4 py-3 text-[14px] font-medium text-white rounded-md transition-opacity hover:opacity-90"
+                style={{ backgroundColor: MAROON }}
+              >
+                Pay now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* COD Success Modal */}
+      {showCODSuccessModal && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm p-4 z-50" style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}>
+          <div className="max-w-sm w-full p-6 sm:p-8 rounded-2xl" style={{
+            background: "rgba(255, 255, 255, 0.95)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)"
+          }}>
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E8F5E9" }}>
+                <svg viewBox="0 0 24 24" className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m5 12.5 4.5 4.5L19 7.5" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-neutral-900">Order Confirmed!</h2>
+              <p className="text-[14px] text-neutral-600 text-center">Your order has been confirmed. We'll contact you soon.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -20,6 +20,7 @@ const VIEW_ALL_SLUG = {
   pendant: "all-pendant",
   earrings: "all-earrings",
   bracelet: "all-bracelet",
+  anklet: "all-anklet",
 };
 
 const MAROON = "#7B1E2B";
@@ -54,6 +55,14 @@ const GLYPHS = {
     </>
   ),
   bracelet: <ellipse cx="12" cy="12" rx="8" ry="5.5" />,
+  anklet: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="6.5" fill="none" />
+      <circle cx="8" cy="12" r="1.2" />
+      <circle cx="16" cy="12" r="1.2" />
+    </>
+  ),
   earrings: (
     <>
       <path d="M8 4a2 2 0 1 0 0 4M16 4a2 2 0 1 1 0 4" />
@@ -156,6 +165,15 @@ const ITEM_MARKS = {
     <>
       <ellipse cx="12" cy="13" rx="7.5" ry="5.5" />
       <circle cx="12" cy="7.5" r="1.5" />
+    </>
+  ),
+  // An anklet is a foot ornament — drawn as a ring with beads.
+  anklet: (
+    <>
+      <circle cx="12" cy="13" r="7" />
+      <circle cx="9" cy="13" r="1" />
+      <circle cx="15" cy="13" r="1" />
+      <circle cx="12" cy="8.5" r="0.8" />
     </>
   ),
 };

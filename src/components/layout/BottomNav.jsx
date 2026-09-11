@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectCartCount } from "@/store/slices/cartSlice";
 import AuthModal from "@/components/common/AuthModal";
+import CategoriesSheet from "@/components/layout/CategoriesSheet";
 
 const MAROON = "#7B1E2B";
 
@@ -65,6 +66,7 @@ export default function BottomNav() {
   const pathname = usePathname();
   const [activeId, setActiveId] = useState("home");
   const [authOpen, setAuthOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const cartCount = useSelector(selectCartCount);
   const customer = useSelector((state) => state.auth.customer);
 
@@ -99,11 +101,10 @@ export default function BottomNav() {
       <ul className="mx-auto flex max-w-[600px] items-stretch">
         {ITEMS.map((item) => {
           const isActive = activeId === item.id;
-          // Account opens the login dialog rather than going anywhere — the
-          // desktop header does the same thing, and on a phone this is the
-          // only way in.
           const isAccount = item.id === "account";
-          const Tag = isAccount ? "button" : Link;
+          const isCategories = item.id === "categories";
+          const Tag = isAccount || isCategories ? "button" : Link;
+
           const handleAccountClick = () => {
             if (customer) {
               router.push("/account");
@@ -112,8 +113,15 @@ export default function BottomNav() {
               setAuthOpen(true);
             }
           };
+
+          const handleCategoriesClick = () => {
+            setCategoriesOpen(true);
+          };
+
           const tagProps = isAccount
             ? { type: "button", "aria-haspopup": "dialog", onClick: handleAccountClick }
+            : isCategories
+            ? { type: "button", onClick: handleCategoriesClick }
             : { href: item.href, onClick: () => setActiveId(item.id) };
 
           return (
@@ -164,6 +172,7 @@ export default function BottomNav() {
       </ul>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <CategoriesSheet isOpen={categoriesOpen} onClose={() => setCategoriesOpen(false)} />
     </nav>
   );
 }

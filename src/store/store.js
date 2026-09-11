@@ -7,6 +7,9 @@ import blogsReducer from "./slices/blogsSlice";
 import bannerReducer from "./slices/bannerSlice";
 import categoriesReducer from "./slices/categoriesSlice";
 import productsReducer from "./slices/productsSlice";
+import couponReducer from "./slices/couponSlice";
+import settingsReducer from "./slices/settingsSlice";
+import addressesReducer from "./slices/addressesSlice";
 
 // A new store is created per request so server-rendered pages never share state
 // between users. Register additional slice reducers here as you add them.
@@ -21,5 +24,8 @@ export const makeStore = () =>
       banners: bannerReducer,
       categories: categoriesReducer,
       products: productsReducer,
+      coupon: couponReducer,
+      settings: settingsReducer,
+      addresses: addressesReducer,
     },
   });

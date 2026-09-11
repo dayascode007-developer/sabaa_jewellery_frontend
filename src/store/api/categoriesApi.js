@@ -15,33 +15,29 @@ export const fetchCategoriesFromAPI = async () => {
   return data || [];
 };
 
-// Merge API categories with existing NAV_ITEMS structure (keeps icons, features, promos)
+// Build navbar items from API categories, merging with static NAV_ITEMS for icons/features
 export const mergeWithNavItems = (apiCategories, staticNavItems) => {
-  return staticNavItems.map((navItem) => {
-    // Find matching API category by name
-    const apiCategory = apiCategories.find(
-      (cat) => cat.name.toLowerCase() === navItem.label.toLowerCase()
+  // Keep "All Jewellery" (first item) and "More" (last item) static
+  const allJewellery = staticNavItems.find((item) => item.id === "all");
+  const more = staticNavItems.find((item) => item.id === "more");
+
+  const toLink = (node) => ({
+    label: node.name,
+    href: `/category/${toSlug(node.name)}`,
+  });
+
+  // Build dynamic items from API categories
+  const dynamicItems = apiCategories.map((apiCategory) => {
+    // Find static nav item for this category (for icons, images, features)
+    const staticItem = staticNavItems.find(
+      (item) => item.label.toLowerCase() === apiCategory.name.toLowerCase()
     );
-
-    if (!apiCategory || !navItem.menu) {
-      return navItem; // Return unchanged if no API match
-    }
-
-    const toLink = (node) => ({
-      label: node.name,
-      href: `/category/${toSlug(node.name)}`,
-    });
 
     // Three levels: category -> sub_main_categories -> subcategories.
     //
     // A sub-main that has children becomes a group — one row in the menu that
     // opens its children beside it. A sub-main with none is a plain link.
     // Emitted in API order, so the admin panel decides the order of the menu.
-    //
-    // This replaces the old guesswork: the previous payload put every child
-    // flat on the category and the menu split them by POSITION — first three
-    // on the left, everything after under a hardcoded "GOD SYMBOL RINGS" — so
-    // anything added later was mis-filed. The grouping is real data now.
     const subMains = apiCategory.sub_main_categories || [];
     const legacySubs = apiCategory.subcategories || [];
     const columns = [];
@@ -60,17 +56,27 @@ export const mergeWithNavItems = (apiCategories, staticNavItems) => {
       columns.push({ items: legacySubs.map(toLink) });
     }
 
+    // Build nav item from API, merge in static properties (icons, images, etc)
     return {
-      ...navItem,
-      menu:
-        columns.length > 0
-          ? {
-              ...navItem.menu,
-              columns,
-            }
-          : navItem.menu,
+      id: apiCategory.name.toLowerCase().replace(/\s+/g, "-"),
+      label: apiCategory.name,
+      href: `/category/${toSlug(apiCategory.name)}`,
+      icon: staticItem?.icon,
+      ...(columns.length > 0 && staticItem?.menu && {
+        menu: {
+          ...staticItem.menu,
+          columns,
+        },
+      }),
     };
   });
+
+  // Combine: All Jewellery + Dynamic API categories + More
+  return [
+    ...(allJewellery ? [allJewellery] : []),
+    ...dynamicItems,
+    ...(more ? [more] : []),
+  ];
 };
 
 /**

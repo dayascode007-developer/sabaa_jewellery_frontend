@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { initializeAuth } from "@/store/slices/authSlice";
 import { fetchCart, clearCartLocal } from "@/store/slices/cartSlice";
 import { fetchWishlist } from "@/store/slices/wishlistSlice";
+import { fetchSettings } from "@/store/slices/settingsSlice";
+import { fetchAddresses, clearAddresses } from "@/store/slices/addressesSlice";
 
 export default function AuthInitializer({ children }) {
   const dispatch = useDispatch();
@@ -13,6 +15,16 @@ export default function AuthInitializer({ children }) {
   const customer = useSelector((state) => state.auth.customer);
   const initializingRef = useRef(false);
   const cartFetchedRef = useRef(false);
+  const settingsFetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!settingsFetchedRef.current) {
+      settingsFetchedRef.current = true;
+      dispatch(fetchSettings()).catch((err) => {
+        console.error("⚠️ Failed to fetch settings:", err);
+      });
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     console.log("🔐 AuthInitializer - State Check:", {
@@ -70,14 +82,16 @@ export default function AuthInitializer({ children }) {
         dispatch(clearCartLocal());
         cartFetchedRef.current = false;
       }
+      dispatch(clearAddresses());
     }
   }, [token, customer, dispatch]);
 
-  // Fetch wishlist when user is authenticated
+  // Fetch wishlist and addresses when user is authenticated
   useEffect(() => {
     if (token && customer && customer.id !== "temp") {
-      console.log("❤️ Fetching wishlist...");
+      console.log("❤️ Fetching wishlist and addresses...");
       dispatch(fetchWishlist());
+      dispatch(fetchAddresses());
     }
   }, [token, customer, dispatch]);
 

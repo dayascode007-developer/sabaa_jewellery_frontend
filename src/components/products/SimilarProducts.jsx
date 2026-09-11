@@ -25,16 +25,22 @@ export default function SimilarProducts({ product }) {
         setLoading(true);
 
         const categoryId = product.category_id;
+        const subMainCategoryId = product.sub_main_category_id;
         const subCategoryId = product.subcategories?.[0]?.id;
 
-        if (!categoryId || !subCategoryId) {
+        if (!categoryId) {
           setProducts([]);
           return;
         }
 
-        const response = await fetch(
-          `${API_URL}/api/products/categories-with-products?main=${categoryId}&sub=${subCategoryId}`
-        );
+        let url = `${API_URL}/api/products/categories-with-products?main=${categoryId}`;
+        if (subMainCategoryId) {
+          url += `&submain=${subMainCategoryId}`;
+        } else if (subCategoryId) {
+          url += `&sub=${subCategoryId}`;
+        }
+
+        const response = await fetch(url);
 
         if (!response.ok) {
           throw new Error("Failed to fetch similar products");
@@ -59,7 +65,7 @@ export default function SimilarProducts({ product }) {
     if (product?.id) {
       fetchSimilarProducts();
     }
-  }, [product?.id, product?.category_id, product?.subcategories]);
+  }, [product?.id, product?.category_id, product?.sub_main_category_id, product?.subcategories]);
 
   if (loading) {
     return (

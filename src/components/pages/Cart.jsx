@@ -11,6 +11,14 @@ import {
   removeFromCart,
   clearCart,
 } from "@/store/slices/cartSlice";
+import {
+  validateCoupon,
+  selectAppliedCoupon,
+  selectCouponError,
+  selectCouponLoading,
+} from "@/store/slices/couponSlice";
+import { selectShippingConfig } from "@/store/slices/settingsSlice";
+import { calculateOrderSummary } from "@/utils/orderCalculations";
 
 const MAROON = "#7B1E2B";
 
@@ -212,9 +220,31 @@ export default function Cart() {
   const subtotal = selectedItems.reduce((t, i) => t + i.price * i.quantity, 0);
 
   const [coupon, setCoupon] = useState("");
-  // Nothing validates a code yet — the API decides what is valid, so the field
-  // collects it and the discount stays at zero until that exists.
-  const discount = 0;
+
+  const appliedCoupon = useSelector(selectAppliedCoupon);
+  const couponError = useSelector(selectCouponError);
+  const couponLoading = useSelector(selectCouponLoading);
+  const shippingConfig = useSelector(selectShippingConfig);
+
+  const discount = appliedCoupon?.discountAmount || 0;
+  const orderSummary = calculateOrderSummary(subtotal, discount, shippingConfig);
+
+  const handleCouponChange = (e) => {
+    const value = e.target.value;
+    // Allow only alphanumeric characters, convert to uppercase
+    const filtered = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    setCoupon(filtered);
+  };
+
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault();
+
+    if (!coupon.trim()) {
+      return;
+    }
+
+    dispatch(validateCoupon({ code: coupon, cartTotal: subtotal }));
+  };
 
   if (cartState.loading) {
     return (
@@ -353,28 +383,47 @@ export default function Cart() {
               Have a Coupon?
             </p>
 
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="mt-3 flex items-stretch overflow-hidden rounded border border-neutral-300"
-            >
-              <label htmlFor="coupon" className="sr-only">
-                Coupon code
-              </label>
-              <input
-                id="coupon"
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value)}
-                placeholder="Enter Coupon Code"
-                className="min-w-0 flex-1 px-3 py-2.5 text-[13px] text-neutral-800 outline-none placeholder:text-neutral-400"
-              />
-              <button
-                type="submit"
-                className="shrink-0 border-l border-neutral-300 px-5 text-[13px] font-medium transition-colors hover:bg-[#FDF0F2]"
-                style={{ color: MAROON }}
+            {appliedCoupon ? (
+              <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3">
+                <p className="text-[13px] font-medium text-green-900">
+                  ✓ {appliedCoupon.code} applied
+                </p>
+                <p className="text-[12px] text-green-700">
+                  {appliedCoupon.description}
+                </p>
+              </div>
+            ) : (
+              <form
+                onSubmit={handleApplyCoupon}
+                className="mt-3 flex items-stretch overflow-hidden rounded border border-neutral-300"
               >
-                Apply
-              </button>
-            </form>
+                <label htmlFor="coupon" className="sr-only">
+                  Coupon code
+                </label>
+                <input
+                  id="coupon"
+                  value={coupon}
+                  onChange={handleCouponChange}
+                  placeholder="Enter Coupon Code"
+                  disabled={couponLoading}
+                  className="min-w-0 flex-1 px-3 py-2.5 text-[13px] text-neutral-800 outline-none placeholder:text-neutral-400 disabled:bg-gray-50"
+                />
+                <button
+                  type="submit"
+                  disabled={couponLoading || !coupon.trim()}
+                  className="shrink-0 border-l border-neutral-300 px-5 text-[13px] font-medium transition-colors hover:bg-[#FDF0F2] disabled:cursor-not-allowed disabled:opacity-50"
+                  style={{ color: MAROON }}
+                >
+                  {couponLoading ? "Validating..." : "Apply"}
+                </button>
+              </form>
+            )}
+
+            {couponError && (
+              <p className="mt-2 text-[12px] text-red-600">
+                ✗ {couponError}
+              </p>
+            )}
           </div>
 
           <div className="rounded-lg border border-neutral-200 bg-white p-4">
@@ -388,8 +437,18 @@ export default function Cart() {
             <div className="mt-4 space-y-2.5 border-b border-neutral-200 pb-4">
               <SummaryRow label={`Items (${count})`} value={rupees(subtotal)} />
               <SummaryRow label="Subtotal" value={rupees(subtotal)} />
-              <SummaryRow label="Shipping" value="FREE" accent="#1E7A45" />
-              <SummaryRow label="Discount" value={rupees(discount)} />
+              <SummaryRow
+                label="Shipping"
+                value={orderSummary.freeDelivery ? "FREE" : rupees(orderSummary.deliveryCharge)}
+                accent={orderSummary.freeDelivery ? "#1E7A45" : undefined}
+              />
+              {discount > 0 && (
+                <SummaryRow
+                  label={`Discount (${appliedCoupon.code})`}
+                  value={`−${rupees(discount)}`}
+                  accent="#1E7A45"
+                />
+              )}
             </div>
 
             <div className="mt-4 flex items-baseline justify-between gap-4">
@@ -400,7 +459,7 @@ export default function Cart() {
                 Grand Total
               </span>
               <span className="text-[20px] font-semibold text-neutral-900">
-                {rupees(subtotal - discount)}
+                {rupees(orderSummary.grandTotal)}
               </span>
             </div>
 
