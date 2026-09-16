@@ -10,6 +10,8 @@ import productsReducer from "./slices/productsSlice";
 import couponReducer from "./slices/couponSlice";
 import settingsReducer from "./slices/settingsSlice";
 import addressesReducer from "./slices/addressesSlice";
+import paymentReducer from "./slices/paymentSlice";
+import ordersReducer from "./slices/ordersSlice";
 
 // A new store is created per request so server-rendered pages never share state
 // between users. Register additional slice reducers here as you add them.
@@ -27,5 +29,7 @@ export const makeStore = () =>
       coupon: couponReducer,
       settings: settingsReducer,
       addresses: addressesReducer,
+      payment: paymentReducer,
+      orders: ordersReducer,
     },
   });

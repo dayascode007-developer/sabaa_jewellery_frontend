@@ -7,46 +7,57 @@ import {
   MdDeliveryDining,
   MdHome,
   MdEdit,
-  // MdCancel,
+  MdOpenInNew,
 } from "react-icons/md";
 
 const MAROON = "#430121";
 const GREEN = "#10b981";
 
+const STATUS_ICONS = {
+  pending: MdCheckCircle,
+  confirmed: MdCheckCircle,
+  shipped: MdLocalShipping,
+  out_for_delivery: MdDeliveryDining,
+  delivered: MdHome,
+  cancelled: MdHome,
+};
+
 const ORDER_STATUSES = [
-  { id: 1, label: "Ordered", icon: MdCheckCircle, completed: true },
-  { id: 2, label: "Shipped", icon: MdLocalShipping, completed: true },
-  {
-    id: 3,
-    label: "Out for delivery",
-    icon: MdDeliveryDining,
-    completed: false,
-  },
-  { id: 4, label: "Delivered", icon: MdHome, completed: false },
+  { label: "Order Placed", icon: MdCheckCircle },
+  { label: "Shipped", icon: MdLocalShipping },
+  { label: "Out for Delivery", icon: MdDeliveryDining },
+  { label: "Delivered", icon: MdHome },
 ];
 
-export default function TrackOrder() {
+export default function TrackOrder({ trackingData }) {
   const [showInstructions, setShowInstructions] = useState(false);
   const [instructions, setInstructions] = useState("Leave at door");
 
-  const order = {
-    id: "171-1261698-7565901",
-    date: "29 July 2026",
-    total: "₹212.10",
-    shipTo: "Venkataesan",
-    arriving: "7 August",
-    status: 2, // Shipped
-    address: {
-      name: "Venkataesan",
-      street: "No. 90/22, Mariyamman Kovil Street",
-      city: "Tripadirupuliyur",
-      state: "Tamil Nadu",
-      zip: "607002",
-    },
-  };
+  if (!trackingData) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">No tracking data available</p>
+      </div>
+    );
+  }
 
-  // Calculate progress percentage - same for both desktop and mobile
-  const progressPercent = (order.status / ORDER_STATUSES.length) * 100;
+  const { purchase_id, status_label, timeline = [], shipment = {}, address = {}, items = [], total_amount, estimated_delivery } = trackingData;
+
+  // Keep only 4 main statuses, filter out intermediate ones
+  const mainStatuses = ["pending", "shipped", "out_for_delivery", "delivered"];
+
+  const filteredTimeline = timeline
+    .filter((step) => mainStatuses.includes(step.status))
+    .map((step) => ({
+      ...step,
+      label: ORDER_STATUSES[
+        mainStatuses.indexOf(step.status)
+      ]?.label || step.label,
+    }));
+
+  const currentStep = filteredTimeline.find((s) => s.current);
+  const currentIndex = filteredTimeline.findIndex((s) => s.current);
+  const progressPercent = filteredTimeline.length > 0 ? ((currentIndex + 1) / filteredTimeline.length) * 100 : 25;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -56,7 +67,7 @@ export default function TrackOrder() {
           Track Order
         </h1>
         <p className="text-sm md:text-base text-gray-600 mt-1">
-          Order #{order.id}
+          Order #{purchase_id}
         </p>
       </div>
 
@@ -68,8 +79,7 @@ export default function TrackOrder() {
             className="text-xl md:text-2xl font-bold mb-6 md:mb-8"
             style={{ color: MAROON }}
           >
-            {ORDER_STATUSES.find((s) => s.id === order.status)?.label ||
-              "Ordered"}
+            {currentStep?.label || status_label || "Order Placed"}
           </h2>
 
           {/* Timeline */}
@@ -85,8 +95,8 @@ export default function TrackOrder() {
                 style={{ zIndex: 1 }}
               >
                 <div className="flex h-full">
-                  {ORDER_STATUSES.map((status, index) => {
-                    const isCompleted = status.id <= order.status;
+                  {filteredTimeline.map((step, index) => {
+                    const isCompleted = step.completed;
                     return (
                       <div
                         key={index}
@@ -101,14 +111,14 @@ export default function TrackOrder() {
               </div>
 
               {/* Status Steps */}
-              {ORDER_STATUSES.map((status) => {
-                const Icon = status.icon;
-                const isCompleted = status.completed;
-                const isCurrent = status.id === order.status;
+              {timeline.map((step, index) => {
+                const Icon = ORDER_STATUSES[index]?.icon || MdCheckCircle;
+                const isCompleted = step.completed;
+                const isCurrent = step.current;
 
                 return (
                   <div
-                    key={status.id}
+                    key={index}
                     className="flex flex-col items-center justify-center flex-1"
                     style={{ zIndex: 2, position: "relative" }}
                   >
@@ -136,7 +146,7 @@ export default function TrackOrder() {
                           : "text-gray-500"
                       }`}
                     >
-                      {status.label}
+                      {step.label}
                     </p>
                   </div>
                 );
@@ -179,14 +189,14 @@ export default function TrackOrder() {
 
               {/* Status items */}
               <div className="space-y-6">
-                {ORDER_STATUSES.map((status) => {
-                  const Icon = status.icon;
-                  const isCompleted = status.completed;
-                  const isCurrent = status.id === order.status;
+                {timeline.map((step, index) => {
+                  const Icon = ORDER_STATUSES[index]?.icon || MdCheckCircle;
+                  const isCompleted = step.completed;
+                  const isCurrent = step.current;
 
                   return (
                     <div
-                      key={status.id}
+                      key={index}
                       className="relative z-10 flex items-start gap-4"
                     >
                       <div
@@ -211,7 +221,7 @@ export default function TrackOrder() {
                               : "text-gray-500"
                           }`}
                         >
-                          {status.label}
+                          {step.label}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                           {isCompleted
@@ -240,46 +250,41 @@ export default function TrackOrder() {
               Delivery Info
             </h3>
 
-            {!showInstructions ? (
-              <>
-                <p className="text-sm text-gray-600 mb-4">
-                  Estimated delivery: <strong>{order.arriving}</strong>
-                </p>
-                <button
-                  onClick={() => setShowInstructions(true)}
-                  className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70 cursor-pointer"
-                  style={{ color: MAROON }}
-                >
-                  <MdEdit className="text-base" />
-                  Update delivery instructions
-                </button>
-              </>
-            ) : (
+            {shipment?.courier_name ? (
               <div className="space-y-3">
-                <textarea
-                  value={instructions}
-                  onChange={(e) => setInstructions(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:outline-none"
-                  style={{ "--tw-ring-color": MAROON }}
-                  rows="3"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowInstructions(false)}
-                    className="flex-1 py-2 px-3 text-xs md:text-sm font-semibold rounded transition-all hover:opacity-90 text-white cursor-pointer"
-                    style={{ backgroundColor: MAROON }}
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setShowInstructions(false)}
-                    className="flex-1 py-2 px-3 text-xs md:text-sm font-semibold rounded border-2 transition-all hover:opacity-70 cursor-pointer"
-                    style={{ borderColor: MAROON, color: MAROON }}
-                  >
-                    Cancel
-                  </button>
+                <div>
+                  <p className="text-xs text-gray-600">Courier</p>
+                  <p className="text-sm font-semibold text-gray-900">{shipment.courier_name}</p>
                 </div>
+                {shipment.tracking_number && (
+                  <div>
+                    <p className="text-xs text-gray-600">Tracking Number</p>
+                    <p className="text-sm font-semibold text-gray-900">{shipment.tracking_number}</p>
+                  </div>
+                )}
+                {shipment.estimated_delivery && (
+                  <div>
+                    <p className="text-xs text-gray-600">Estimated Delivery</p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {new Date(shipment.estimated_delivery).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+                {shipment.tracking_url && (
+                  <a
+                    href={shipment.tracking_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
+                    style={{ color: MAROON }}
+                  >
+                    <MdOpenInNew className="text-base" />
+                    Track on courier website
+                  </a>
+                )}
               </div>
+            ) : (
+              <p className="text-sm text-gray-600">Shipment details will be available soon</p>
             )}
           </div>
 
@@ -293,12 +298,13 @@ export default function TrackOrder() {
             </h3>
             <div className="space-y-1 text-sm">
               <p className="font-semibold text-gray-900">
-                {order.address.name}
+                {address.name || "N/A"}
               </p>
-              <p className="text-gray-600">{order.address.street}</p>
-              <p className="text-gray-600">{order.address.city}</p>
+              <p className="text-gray-600">{address.house || ""} {address.area || ""}</p>
+              <p className="text-gray-600">{address.landmark || ""}</p>
+              <p className="text-gray-600">{address.city || ""}</p>
               <p className="text-gray-600">
-                {order.address.state} {order.address.zip}
+                {address.state || ""} {address.pincode || ""}
               </p>
             </div>
           </div>
@@ -330,14 +336,21 @@ export default function TrackOrder() {
         </div>
 
         {/* Estimated Delivery */}
-        <div className="bg-white rounded-lg p-4 md:p-6 mt-6 md:mt-8 border-2 border-green-500">
-          <p className="text-sm md:text-base text-gray-600">
-            Your order is estimated to arrive by{" "}
-            <strong className="text-gray-900" style={{ color: MAROON }}>
-              {order.arriving}
-            </strong>
-          </p>
-        </div>
+        {estimated_delivery && (
+          <div className="bg-white rounded-lg p-4 md:p-6 mt-6 md:mt-8 border-2 border-green-500">
+            <p className="text-sm md:text-base text-gray-600">
+              Your order is estimated to arrive by{" "}
+              <strong className="text-gray-900" style={{ color: MAROON }}>
+                {new Date(estimated_delivery).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </strong>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

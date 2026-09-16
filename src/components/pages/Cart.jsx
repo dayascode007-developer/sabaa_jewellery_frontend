@@ -22,8 +22,10 @@ import { calculateOrderSummary } from "@/utils/orderCalculations";
 
 const MAROON = "#7B1E2B";
 
-const rupees = (n) =>
-  "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const rupees = (n) => {
+  if (n === undefined || n === null) return "₹0.00";
+  return "₹" + Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 function Stepper({ item }) {
   const dispatch = useDispatch();

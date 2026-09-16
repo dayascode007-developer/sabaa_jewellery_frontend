@@ -1,23 +1,69 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+import { selectOrder } from "@/store/slices/paymentSlice";
+import { selectSelectedAddressId, selectAddressesList } from "@/store/slices/addressesSlice";
+import { selectAppliedCoupon } from "@/store/slices/couponSlice";
+import { selectShippingConfig } from "@/store/slices/settingsSlice";
+import { calculateOrderSummary } from "@/utils/orderCalculations";
+import { getOrderItemsApi } from "@/store/api/ordersApi";
 
 const MAROON = "#A91D3A";
 const GREEN = "#22C55E";
 
-export default function OrderConfirmation({ orderData }) {
+export default function OrderConfirmation() {
+  const createdOrder = useSelector(selectOrder);
+  const selectedAddressId = useSelector(selectSelectedAddressId);
+  const addresses = useSelector(selectAddressesList);
+  const appliedCoupon = useSelector(selectAppliedCoupon);
+  const shippingConfig = useSelector(selectShippingConfig);
+
+  const [orderItems, setOrderItems] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(false);
+
+  console.log("🔍 OrderConfirmation createdOrder data:", createdOrder);
+
+  // Fetch order items from database
+  useEffect(() => {
+    if (createdOrder?.orderId) {
+      setLoadingItems(true);
+      getOrderItemsApi(createdOrder.orderId)
+        .then((items) => {
+          setOrderItems(items || []);
+        })
+        .catch((error) => {
+          console.error("Error fetching order items:", error);
+          setOrderItems([]);
+        })
+        .finally(() => {
+          setLoadingItems(false);
+        });
+    }
+  }, [createdOrder?.orderId]);
+
+  const address = addresses.find((a) => a.id === selectedAddressId) || {};
+
+  // Use order data from database
+  const subtotal = parseFloat(createdOrder?.subtotal || 0);
+  const discount = parseFloat(createdOrder?.discount_amount || 0);
+  const orderSummary = {
+    subtotal,
+    discount,
+    shippingCost: parseFloat(createdOrder?.shipping_cost || 0),
+    grandTotal: parseFloat(createdOrder?.total_amount || 0),
+    freeDelivery: parseFloat(createdOrder?.shipping_cost || 0) === 0,
+  };
+
   const {
-    orderId = `#SABA${Math.random().toString().slice(2, 10)}`,
-    items = [],
-    subtotal = 0,
-    discount = 0,
-    shipping = 0,
-    total = 0,
-    address = {},
+    orderId = `#SABA${createdOrder?.orderId || ""}`,
+    purchaseId = createdOrder?.purchaseId || "",
     paymentMethod = "online",
-    orderDate = new Date().toLocaleDateString("en-IN"),
-    estimatedDelivery = "5-7 business days",
-  } = orderData || {};
+  } = createdOrder || {};
+
+  const orderDate = new Date().toLocaleDateString("en-IN");
+  const estimatedDelivery = "5-7 business days";
 
   const rupees = (amount) => `₹${Number(amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
@@ -60,15 +106,17 @@ export default function OrderConfirmation({ orderData }) {
       <div className="mb-6 rounded-lg border border-neutral-200 bg-white p-6">
         <h3 className="mb-4 text-[16px] font-semibold text-neutral-900">Order Items</h3>
         <ul className="divide-y divide-neutral-100">
-          {items && items.length > 0 ? (
-            items.map((item) => (
+          {loadingItems ? (
+            <li className="py-4 text-center text-[14px] text-neutral-500">Loading items...</li>
+          ) : orderItems && orderItems.length > 0 ? (
+            orderItems.map((item) => (
               <li key={item.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
                 <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded bg-neutral-100">
-                  {item.image ? (
-                    typeof item.image === "string" && item.image.startsWith("http") ? (
-                      <img src={item.image} alt={item.title} className="absolute inset-0 h-full w-full object-cover" />
+                  {item.main_image ? (
+                    typeof item.main_image === "string" && item.main_image.startsWith("http") ? (
+                      <img src={item.main_image} alt={item.title} className="absolute inset-0 h-full w-full object-cover" />
                     ) : (
-                      <Image src={item.image} alt={item.title} fill sizes="64px" className="object-cover" />
+                      <Image src={item.main_image} alt={item.title} fill sizes="64px" className="object-cover" />
                     )
                   ) : (
                     <span className="block h-full w-full bg-gradient-to-br from-[#EDE3D3] to-[#D8C6A8]" />
@@ -78,9 +126,9 @@ export default function OrderConfirmation({ orderData }) {
                   <p className="text-[14px] font-medium text-neutral-900">{item.title}</p>
                   <p className="mt-1 text-[12px] text-neutral-600">
                     Qty {item.quantity}
-                    {item.size ? ` • Size: ${item.size}` : ""}
+                    {item.ring_size ? ` • Size: ${item.ring_size}` : ""}
                   </p>
-                  <p className="mt-2 text-[14px] font-semibold text-neutral-900">{rupees(item.price * item.quantity)}</p>
+                  <p className="mt-2 text-[14px] font-semibold text-neutral-900">{rupees(item.sale_price * item.quantity)}</p>
                 </div>
               </li>
             ))
@@ -111,7 +159,7 @@ export default function OrderConfirmation({ orderData }) {
         <div className="space-y-3">
           <div className="flex justify-between text-[14px]">
             <span className="text-neutral-600">Subtotal</span>
-            <span className="font-medium text-neutral-900">{rupees(subtotal)}</span>
+            <span className="font-medium text-neutral-900">{rupees(orderSummary.subtotal)}</span>
           </div>
           {discount > 0 && (
             <div className="flex justify-between text-[14px]">
@@ -121,13 +169,13 @@ export default function OrderConfirmation({ orderData }) {
           )}
           <div className="flex justify-between text-[14px]">
             <span className="text-neutral-600">Shipping</span>
-            <span className="font-medium text-neutral-900">{shipping === 0 ? "FREE" : rupees(shipping)}</span>
+            <span className="font-medium text-neutral-900">{orderSummary.freeDelivery ? "FREE" : rupees(orderSummary.shippingCost)}</span>
           </div>
           <div className="border-t border-neutral-100 pt-3">
             <div className="flex justify-between">
               <span className="font-semibold text-neutral-900">Order Total</span>
               <span className="text-[18px] font-bold" style={{ color: MAROON }}>
-                {rupees(total)}
+                {rupees(orderSummary.grandTotal)}
               </span>
             </div>
           </div>

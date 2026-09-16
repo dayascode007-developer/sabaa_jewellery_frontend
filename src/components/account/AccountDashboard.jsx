@@ -15,6 +15,7 @@ import OrderHistory from "./OrderHistory";
 import TrackOrder from "./TrackOrder";
 import LogoutConfirmModal from "./LogoutConfirmModal";
 import Footer from "@/components/layout/Footer";
+import { getOrderTrackingApi } from "@/store/api/ordersApi";
 
 const MAROON = "#430121";
 
@@ -39,7 +40,9 @@ export default function AccountDashboard() {
   const [activeSection, setActiveSection] = useState("personal");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [trackedOrder, setTrackedOrder] = useState(null);
-  const { token, customer } = useSelector((state) => state.auth);
+  const [trackingLoading, setTrackingLoading] = useState(false);
+  const [trackingError, setTrackingError] = useState(null);
+  const { token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -70,6 +73,20 @@ export default function AccountDashboard() {
 
   const handleLogout = () => {
     setShowLogoutModal(true);
+  };
+
+  const handleTrackOrder = async (order) => {
+    try {
+      setTrackingLoading(true);
+      setTrackingError(null);
+      const trackingData = await getOrderTrackingApi(order.id);
+      setTrackedOrder(trackingData);
+    } catch (error) {
+      setTrackingError(error.message);
+      console.error("Failed to fetch tracking data:", error);
+    } finally {
+      setTrackingLoading(false);
+    }
   };
 
   return (
@@ -226,10 +243,10 @@ export default function AccountDashboard() {
                     <MdArrowBack className="text-base" />
                     Back to Orders
                   </button>
-                  <TrackOrder />
+                  <TrackOrder trackingData={trackedOrder} />
                 </div>
               ) : activeSection === "orders" ? (
-                <OrderHistory onTrackOrder={(order) => setTrackedOrder(order)} />
+                <OrderHistory onTrackOrder={handleTrackOrder} />
               ) : null}
             </main>
           </div>

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import OrderConfirmation from "./OrderConfirmation";
-import { selectCartItems } from "@/store/slices/cartSlice";
+import { selectCartItems, clearCart } from "@/store/slices/cartSlice";
 import { selectShippingConfig } from "@/store/slices/settingsSlice";
 import { calculateOrderSummary } from "@/utils/orderCalculations";
 import {
@@ -16,13 +16,27 @@ import {
   selectAddress,
 } from "@/store/slices/addressesSlice";
 import { selectAppliedCoupon, applyCoupon } from "@/store/slices/couponSlice";
+import {
+  createRazorpayOrder,
+  verifyPayment,
+  createOrder,
+  selectRazorpayOrder,
+  selectPaymentVerified,
+  selectOrder,
+  selectPaymentLoading,
+  selectRazorpayError,
+  clearPayment,
+} from "@/store/slices/paymentSlice";
 
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
 const GREEN = "#22C55E";
+const COD_ADVANCEMENT = 120; // Fixed advancement payment for COD
 
-const rupees = (n) =>
-  "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const rupees = (n) => {
+  if (n === undefined || n === null) return "₹0.00";
+  return "₹" + Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 const STEPS = ["Address", "Payment", "Ordered Confirm"];
 
@@ -190,7 +204,7 @@ const PAYMENT_METHODS = [
 export default function Checkout() {
   const dispatch = useDispatch();
   const items = useSelector(selectCartItems);
-  const shippingConfig = useSelector(selectShippingConfig);
+  const shippingConfig = useSelector(selectShippingConfig) || { deliveryCharge: 200, freeDeliveryAbove: 999 };
   const addresses = useSelector(selectAddressesList);
   const selectedAddressId = useSelector(selectSelectedAddressId);
   const addressesLoading = useSelector(selectAddressesLoading);
@@ -202,102 +216,219 @@ export default function Checkout() {
 
   const [address, setAddress] = useState(EMPTY_ADDRESS);
   const [addressType, setAddressType] = useState("home");
-  const [method, setMethod] = useState("online");
-  const [placed, setPlaced] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [showCODModal, setShowCODModal] = useState(false);
 
-  const [hydrated, setHydrated] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState("processing"); // "processing" | "success"
-  const [showCODSuccessModal, setShowCODSuccessModal] = useState(false);
-  const [orderData, setOrderData] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  const handlePaymentMethodClick = useCallback((methodId) => {
-    if (methodId === "cod") {
-      setMethod("cod");
-      setShowCODModal(true);
-    } else {
-      setMethod("online");
-      setShowPaymentModal(true);
-      setPaymentStatus("processing");
-      // Simulate payment processing
-      setTimeout(() => {
-        setPaymentStatus("success");
-      }, 2000);
-    }
-  }, []);
+  // Store Razorpay instance to close it after payment
+  const razorpayInstanceRef = useRef(null);
+  const razorpayOpenedRef = useRef(false);
+
+  // Redux payment state
+  const razorpayOrder = useSelector(selectRazorpayOrder);
+  const paymentVerified = useSelector(selectPaymentVerified);
+  const createdOrder = useSelector(selectOrder);
+  const paymentLoading = useSelector(selectPaymentLoading);
+  const razorpayError = useSelector(selectRazorpayError);
+
+  const handlePaymentMethodClick = useCallback(
+    (methodId, amount = 0) => {
+      if (methodId === "cod") {
+        setShowCODModal(true);
+      } else if (amount > 0) {
+        razorpayOpenedRef.current = false; // Reset so Razorpay can open again
+        dispatch(clearPayment());
+        dispatch(createRazorpayOrder(amount));
+      }
+    },
+    [dispatch]
+  );
 
   const handleCODConfirm = useCallback(() => {
     setShowCODModal(false);
-    setShowCODSuccessModal(true);
-  }, []);
+    // Charge ₹120 advancement payment for COD
+    setPaymentMethod("cod");
+    dispatch(clearPayment());
+    dispatch(createRazorpayOrder(COD_ADVANCEMENT));
+  }, [dispatch]);
 
+  // Handle Razorpay order creation and checkout opening
   useEffect(() => {
-    if (paymentStatus === "success" && showPaymentModal) {
-      const timer = setTimeout(() => {
-        const orderId = Math.random().toString().slice(2, 10);
-        const order = {
-          orderId: `#SABA${orderId}`,
-          items,
-          subtotal: orderSummary.subtotal,
-          discount: orderSummary.discount,
-          shipping: orderSummary.shippingCost,
-          total: orderSummary.grandTotal,
-          address: selectedAddress || {},
-          paymentMethod: "online",
-          orderDate: new Date().toLocaleDateString("en-IN"),
-          estimatedDelivery: "5-7 business days",
-        };
-        setOrderData(order);
-        if (appliedCoupon) {
-          dispatch(applyCoupon({
+    if (razorpayOrder && !paymentLoading && !razorpayOpenedRef.current) {
+      razorpayOpenedRef.current = true;
+      openRazorpayCheckout();
+    }
+  }, [razorpayOrder, paymentLoading]);
+
+  const openRazorpayCheckout = () => {
+    if (!window.Razorpay) {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      document.body.appendChild(script);
+      script.onload = () => startRazorpayCheckout();
+    } else {
+      startRazorpayCheckout();
+    }
+  };
+
+  const startRazorpayCheckout = () => {
+    // Disable Razorpay's browser detection to work in all environments
+    window.RazorpayConfig = { disable_validation: true };
+
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      order_id: razorpayOrder.orderId,
+      amount: razorpayOrder.amount,
+      currency: "INR",
+      name: "Sabaa Jewellery",
+      description: "Order Purchase",
+      handler: handlePaymentSuccess,
+      prefill: {
+        email: "customer@example.com",
+        contact: selectedAddress?.mobile || "",
+      },
+      theme: { color: MAROON },
+      modal: {
+        ondismiss: () => {
+          console.log("Razorpay modal closed");
+        },
+      },
+      redirect: false,
+    };
+
+    try {
+      // Force Razorpay to ignore browser checks
+      const RazorpayCheckout = window.Razorpay;
+      const rzp = new RazorpayCheckout(options);
+      razorpayInstanceRef.current = rzp;
+
+      // Only trigger failure handler if payment processing hasn't already succeeded
+      rzp.on("payment.failed", (error) => {
+        if (!isProcessingPayment) {
+          console.error("Razorpay payment failed:", error);
+          razorpayOpenedRef.current = false; // Allow retry
+          dispatch(clearPayment());
+        }
+      });
+
+      rzp.open();
+    } catch (error) {
+      console.error("Razorpay initialization error:", error);
+      razorpayOpenedRef.current = false; // Allow retry
+      // If Razorpay fails, fallback to COD message
+      alert("Online payment unavailable. Please use Cash on Delivery instead.");
+      dispatch(clearPayment());
+    }
+  };
+
+  const handlePaymentSuccess = (response) => {
+    // Guard: prevent processing the same payment twice
+    if (isProcessingPayment) {
+      console.warn("Payment already being processed, ignoring duplicate callback");
+      return;
+    }
+
+    console.log("Payment success response received:", {
+      paymentId: response.razorpay_payment_id,
+      orderId: response.razorpay_order_id,
+    });
+
+    setIsProcessingPayment(true);
+
+    // Inject CSS to hide Razorpay modals and show OrderConfirmation
+    const injectHidingCSS = () => {
+      if (document.getElementById('razorpay-hide-css')) return; // Already injected
+
+      const style = document.createElement('style');
+      style.id = 'razorpay-hide-css';
+      style.textContent = `
+        /* Hide all Razorpay error modals */
+        [role="dialog"] { display: none !important; }
+        .razorpay-dialog { display: none !important; }
+        .razorpay-modal { display: none !important; }
+        .razorpay-container { display: none !important; }
+        [class*="razorpay"] { display: none !important; }
+
+        /* Hide overlays/backdrops */
+        [class*="overlay"] { display: none !important; }
+        [class*="backdrop"] { display: none !important; }
+
+        /* Ensure checkout content is visible */
+        body { overflow: auto !important; }
+      `;
+      document.head.appendChild(style);
+      console.log("✅ Razorpay hiding CSS injected");
+    };
+
+    injectHidingCSS();
+
+    dispatch(
+      verifyPayment({
+        razorpayOrderId: razorpayOrder.orderId,
+        razorpayPaymentId: response.razorpay_payment_id,
+        razorpaySignature: response.razorpay_signature,
+      })
+    );
+  };
+
+  // Handle payment verification and order creation
+  useEffect(() => {
+    if (paymentVerified && razorpayOrder && !paymentLoading && !createdOrder) {
+      // Recalculate order summary with fresh values
+      const itemsTotal = items.reduce((t, i) => t + i.price * i.quantity, 0);
+      const discount = appliedCoupon?.discountAmount || 0;
+      const freshOrderSummary = calculateOrderSummary(itemsTotal, discount, shippingConfig);
+
+      const method = paymentMethod === "cod" ? "cod" : "online";
+
+      const orderPayload = {
+        subtotal: freshOrderSummary.subtotal,
+        discountAmount: discount,
+        shippingCost: freshOrderSummary.shippingCost,
+        paymentMethod: method,
+        couponId: appliedCoupon?.couponId || null,
+        addressId: selectedAddressId,
+        itemCount: items.length,
+        cartItems: items, // Send cart items to backend for order_items table
+      };
+
+      console.log("Creating order with payload:", orderPayload);
+      dispatch(createOrder(orderPayload));
+    }
+  }, [paymentVerified, razorpayOrder, paymentLoading, createdOrder, items, shippingConfig, appliedCoupon, paymentMethod, selectedAddressId, dispatch]);
+
+  // Handle order created (Online payment)
+  useEffect(() => {
+    if (createdOrder && paymentVerified && paymentMethod !== "cod") {
+      if (appliedCoupon) {
+        dispatch(
+          applyCoupon({
             couponId: appliedCoupon.couponId,
             discountAmount: appliedCoupon.discountAmount,
-            orderId: parseInt(orderId)
-          }));
-        }
-        setShowPaymentModal(false);
-        setStep(2);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [paymentStatus, showPaymentModal, appliedCoupon, dispatch]);
+            orderId: createdOrder.orderId,
+          })
+        );
+      }
 
-  useEffect(() => {
-    if (showCODSuccessModal) {
-      const timer = setTimeout(() => {
-        const orderId = Math.random().toString().slice(2, 10);
-        const order = {
-          orderId: `#SABA${orderId}`,
-          items,
-          subtotal: orderSummary.subtotal,
-          discount: orderSummary.discount,
-          shipping: orderSummary.shippingCost,
-          total: orderSummary.grandTotal,
-          address: selectedAddress || {},
-          paymentMethod: "cod",
-          orderDate: new Date().toLocaleDateString("en-IN"),
-          estimatedDelivery: "5-7 business days",
-        };
-        setOrderData(order);
-        if (appliedCoupon) {
-          dispatch(applyCoupon({
-            couponId: appliedCoupon.couponId,
-            discountAmount: appliedCoupon.discountAmount,
-            orderId: parseInt(orderId)
-          }));
-        }
-        setShowCODSuccessModal(false);
-        setStep(2);
-      }, 2000);
-      return () => clearTimeout(timer);
+      dispatch(clearCart());
+      setPaymentMethod(null);
+      setIsProcessingPayment(false);
+      setStep(2);
     }
-  }, [showCODSuccessModal, appliedCoupon, dispatch]);
+  }, [createdOrder, paymentVerified, paymentMethod, appliedCoupon, dispatch]);
 
+  // Handle order created (COD payment)
   useEffect(() => {
-    setHydrated(true);
-  }, []);
+    if (createdOrder && paymentVerified && paymentMethod === "cod") {
+      dispatch(clearCart());
+      setPaymentMethod(null);
+      setIsProcessingPayment(false);
+      setStep(2);
+    }
+  }, [createdOrder, paymentVerified, paymentMethod, dispatch]);
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null;
 
@@ -373,7 +504,17 @@ export default function Checkout() {
   const itemCount = items.reduce((n, i) => n + i.quantity, 0);
   const itemsTotal = items.reduce((t, i) => t + i.price * i.quantity, 0);
   const discount = appliedCoupon?.discountAmount || 0;
-  const orderSummary = calculateOrderSummary(itemsTotal, discount, shippingConfig);
+
+  // Use created order data on confirmation step, otherwise use cart calculation
+  const orderSummary = step === 2 && createdOrder
+    ? {
+        subtotal: parseFloat(createdOrder.subtotal || 0),
+        grandTotal: parseFloat(createdOrder.total_amount || 0),
+        deliveryCharge: parseFloat(createdOrder.shipping_cost || 0),
+        freeDelivery: parseFloat(createdOrder.shipping_cost || 0) === 0,
+        discountAmount: parseFloat(createdOrder.discount_amount || 0),
+      }
+    : calculateOrderSummary(itemsTotal, discount, shippingConfig);
 
   // Enough to move on, not a full validation pass — the server has to check
   // again anyway, and the real rules arrive with the order API.
@@ -386,7 +527,8 @@ export default function Checkout() {
     address.city.trim() &&
     address.state.trim();
 
-  if (items.length === 0 && !placed) {
+  // Show empty message only if cart is empty AND not on Order Confirmation step
+  if (items.length === 0 && step !== 2) {
     return (
       <main className="mx-auto w-full max-w-[1400px] px-4 py-16 text-center sm:px-6">
         <h1
@@ -404,49 +546,6 @@ export default function Checkout() {
           style={{ backgroundColor: MAROON }}
         >
           Start shopping
-        </Link>
-      </main>
-    );
-  }
-
-  if (placed) {
-    return (
-      <main className="mx-auto w-full max-w-[560px] px-4 py-16 text-center sm:px-6">
-        <span
-          className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white"
-          style={{ boxShadow: `0 0 0 2px ${GOLD}` }}
-        >
-          <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke={MAROON} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="m5 12.5 4.5 4.5L19 7.5" />
-          </svg>
-        </span>
-        <h1
-          className="mt-4 font-[family-name:var(--font-heading)] text-[28px] leading-tight sm:text-[34px]"
-          style={{ color: MAROON }}
-        >
-          Thank you for your order
-        </h1>
-        <div className="mt-2 flex items-center justify-center gap-2">
-          <span className="h-px w-12 bg-[#E0CDBA]" />
-          <span className="text-[10px]" style={{ color: MAROON }} aria-hidden="true">&#10050;</span>
-          <span className="h-px w-12 bg-[#E0CDBA]" />
-        </div>
-        <p className="mt-3 text-[15px] leading-relaxed text-neutral-600">
-          We will send the confirmation to{" "}
-          <span className="font-medium text-neutral-800">{selectedAddress?.mobile}</span> and
-          begin work on your piece.
-        </p>
-        {/* Nothing has been charged — this screen is the UI only, until the
-            order and payment APIs exist. */}
-        <p className="mt-2 text-[12px] text-neutral-400">
-          Demo screen — no payment has been taken and no order was recorded.
-        </p>
-        <Link
-          href="/"
-          className="mt-6 inline-block rounded-md px-6 py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90"
-          style={{ backgroundColor: MAROON }}
-        >
-          Continue shopping
         </Link>
       </main>
     );
@@ -686,7 +785,7 @@ export default function Checkout() {
                         continuing are one action, not two. */}
                     <button
                       type="button"
-                      onClick={() => handlePaymentMethodClick(m.id)}
+                      onClick={() => handlePaymentMethodClick(m.id, orderSummary.grandTotal)}
                       className="mt-3 w-full shrink-0 rounded-md px-6 py-2.5 text-[14px] font-medium text-white transition-opacity hover:opacity-90 sm:mt-0 sm:w-auto"
                       style={{ backgroundColor: MAROON }}
                     >
@@ -710,8 +809,8 @@ export default function Checkout() {
           {/* ---------------------------------------------------- 3. confirm */}
           {step === 2 ? (
             <>
-              {orderData ? (
-                <OrderConfirmation orderData={orderData} />
+              {createdOrder ? (
+                <OrderConfirmation />
               ) : (
                 <>
                   <Card title="Review Your Order">
@@ -822,10 +921,7 @@ export default function Checkout() {
               <button
                 type="button"
                 disabled={!selectedAddress}
-                onClick={() => {
-                  setMethod("online");
-                  setStep(1);
-                }}
+                onClick={() => setStep(1)}
                 className="rounded-md px-7 py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed"
                 style={{ backgroundColor: selectedAddress ? MAROON : "#CFA9B0" }}
               >
@@ -850,11 +946,11 @@ export default function Checkout() {
             <div className="mt-4 space-y-2.5 border-b border-neutral-200 pb-4 text-[13px]">
               <div className="flex justify-between gap-4">
                 <span className="text-neutral-600">Items ({itemCount})</span>
-                <span className="text-neutral-800">{rupees(itemsTotal)}</span>
+                <span className="text-neutral-800">{rupees(step === 2 && createdOrder ? orderSummary.subtotal : itemsTotal)}</span>
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-neutral-600">Subtotal</span>
-                <span className="text-neutral-800">{rupees(itemsTotal)}</span>
+                <span className="text-neutral-800">{rupees(step === 2 && createdOrder ? orderSummary.subtotal : itemsTotal)}</span>
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-neutral-600">Shipping</span>
@@ -898,40 +994,6 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm p-4 z-50" style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}>
-          <div className="max-w-sm w-full p-6 sm:p-8 rounded-2xl" style={{
-            background: "rgba(255, 255, 255, 0.95)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.3)",
-            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)"
-          }}>
-            {paymentStatus === "processing" ? (
-              <>
-                <div className="flex flex-col items-center gap-4">
-                  <div className="animate-spin h-12 w-12 border-4 border-neutral-200 border-t-[#A91D3A] rounded-full" />
-                  <h2 className="text-xl font-semibold text-neutral-900">Processing Payment</h2>
-                  <p className="text-[14px] text-neutral-600 text-center">Please wait while we process your payment...</p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex flex-col items-center gap-4">
-                  <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E8F5E9" }}>
-                    <svg viewBox="0 0 24 24" className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m5 12.5 4.5 4.5L19 7.5" />
-                    </svg>
-                  </div>
-                  <h2 className="text-xl font-semibold text-neutral-900">Payment Successful!</h2>
-                  <p className="text-[14px] text-neutral-600 text-center">Your payment has been processed successfully.</p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* COD Modal */}
       {showCODModal && (
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm p-4 z-50" style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}>
@@ -967,28 +1029,6 @@ export default function Checkout() {
               >
                 Pay now
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* COD Success Modal */}
-      {showCODSuccessModal && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm p-4 z-50" style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}>
-          <div className="max-w-sm w-full p-6 sm:p-8 rounded-2xl" style={{
-            background: "rgba(255, 255, 255, 0.95)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.3)",
-            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)"
-          }}>
-            <div className="flex flex-col items-center gap-4">
-              <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E8F5E9" }}>
-                <svg viewBox="0 0 24 24" className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m5 12.5 4.5 4.5L19 7.5" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-neutral-900">Order Confirmed!</h2>
-              <p className="text-[14px] text-neutral-600 text-center">Your order has been confirmed. We'll contact you soon.</p>
             </div>
           </div>
         </div>

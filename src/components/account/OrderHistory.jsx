@@ -1,36 +1,71 @@
 "use client";
 
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import { MdLocalShipping, MdEdit, MdStarBorder, MdDownload } from "react-icons/md";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { MdLocalShipping, MdStarBorder, MdDownload } from "react-icons/md";
 import { downloadInvoicePDF } from "@/utils/invoiceGenerator";
+import { fetchOrders } from "@/store/slices/ordersSlice";
 
 const MAROON = "#430121";
 
 export default function OrderHistory({ onTrackOrder }) {
+  const dispatch = useDispatch();
   const customer = useSelector((state) => state.auth.customer);
-  const [orders] = useState([
-    {
-      id: "171-1261698-7565901",
-      date: "29 July 2026",
-      total: "₹212.10",
-      shipTo: "Venkataesan",
-      arriving: "7 August",
-      status: "arriving",
-      products: [
-        {
-          id: 1,
-          name: "Vama Soya Flour 500g | 100% Natural & Gluten free Soyabean Atta | High Plant Protein (50%) | 98% Fat free | No Preservatives & No Adulteration",
-          image: "https://via.placeholder.com/100x100?text=Product",
-          qty: 1,
-        },
-      ],
-    },
-  ]);
+  const { list: orders, loading, error } = useSelector((state) => state.orders);
+
+  useEffect(() => {
+    dispatch(fetchOrders());
+  }, [dispatch]);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const formatRupees = (amount) => {
+    return `₹${Number(amount).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
+  const getStatusMessage = (status) => {
+    const messages = {
+      pending: "Order Placed",
+      confirmed: "Order Confirmed",
+      shipped: "Shipped",
+      delivered: "Delivered",
+      cancelled: "Cancelled",
+    };
+    return messages[status] || status;
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-maroon mx-auto mb-4" style={{ borderColor: MAROON }}></div>
+        <p className="text-gray-600">Loading orders...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <MdLocalShipping className="mx-auto text-4xl text-red-300 mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Error loading orders</h3>
+        <p className="text-sm text-gray-600">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {orders.length > 0 ? (
+      {orders && orders.length > 0 ? (
         orders.map((order) => (
           <div
             key={order.id}
@@ -48,7 +83,7 @@ export default function OrderHistory({ onTrackOrder }) {
                     ORDER PLACED
                   </p>
                   <p className="text-sm md:text-base font-semibold text-gray-900">
-                    {order.date}
+                    {formatDate(order.created_at)}
                   </p>
                 </div>
 
@@ -58,7 +93,7 @@ export default function OrderHistory({ onTrackOrder }) {
                     TOTAL
                   </p>
                   <p className="text-sm md:text-base font-semibold text-gray-900">
-                    {order.total}
+                    {formatRupees(order.total_amount)}
                   </p>
                 </div>
 
@@ -69,7 +104,7 @@ export default function OrderHistory({ onTrackOrder }) {
                   </p>
                   <div className="flex items-center gap-2">
                     <p className="text-sm md:text-base font-semibold text-gray-900">
-                      {order.shipTo}
+                      {order.address?.name || "N/A"}
                     </p>
                     <svg
                       className="w-4 h-4 text-gray-600"
@@ -94,7 +129,7 @@ export default function OrderHistory({ onTrackOrder }) {
                   </p>
                   <div className="flex items-center gap-2">
                     <p className="text-xs md:text-sm font-semibold text-gray-900">
-                      {order.id}
+                      {order.purchase_id}
                     </p>
                   </div>
                 </div>
@@ -121,7 +156,7 @@ export default function OrderHistory({ onTrackOrder }) {
               {/* Mobile Order Number & Actions */}
               <div className="md:hidden mt-3 pt-3 border-t border-gray-300">
                 <p className="text-xs font-medium text-gray-600 mb-2">
-                  ORDER # {order.id}
+                  ORDER # {order.purchase_id}
                 </p>
                 <div className="flex flex-col gap-1.5">
                   <button
@@ -146,36 +181,46 @@ export default function OrderHistory({ onTrackOrder }) {
               </div>
               <div>
                 <p className="text-xs md:text-sm font-medium text-gray-600">
-                  Arriving {order.arriving}
+                  {getStatusMessage(order.status)}
                 </p>
-                <p className="text-xs text-gray-500">Track your package</p>
+                <p className="text-xs text-gray-500">
+                  {order.tracking_url ? "Track your package" : "Awaiting shipment"}
+                </p>
               </div>
             </div>
 
             {/* Products */}
             <div className="px-4 md:px-6 py-4 md:py-5">
-              {order.products.map((product) => (
-                <div key={product.id} className="flex gap-3 md:gap-4 mb-4">
-                  {/* Product Image */}
-                  <div className="flex-shrink-0">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-20 h-20 md:w-24 md:h-24 object-cover rounded bg-gray-100"
-                    />
-                  </div>
+              {order.items && order.items.length > 0 ? (
+                order.items.map((item) => (
+                  <div key={item.id} className="flex gap-3 md:gap-4 mb-4">
+                    {/* Product Image */}
+                    <div className="flex-shrink-0">
+                      <img
+                        src={item.main_image || "https://via.placeholder.com/100x100?text=Product"}
+                        alt={item.title}
+                        className="w-20 h-20 md:w-24 md:h-24 object-cover rounded bg-gray-100"
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100?text=Product")}
+                      />
+                    </div>
 
-                  {/* Product Details */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-gray-900 line-clamp-2 md:line-clamp-3">
-                      {product.name}
-                    </p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Qty: {product.qty}
-                    </p>
+                    {/* Product Details */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs md:text-sm font-medium text-gray-900 line-clamp-2 md:line-clamp-3">
+                        {item.title}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Qty: {item.quantity}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {formatRupees(item.sale_price)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-gray-500 text-sm">No items in this order</p>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -186,7 +231,7 @@ export default function OrderHistory({ onTrackOrder }) {
                 className="flex-1 py-2.5 md:py-3 px-4 md:px-6 rounded-lg font-semibold text-white text-sm md:text-base transition-all hover:opacity-90 cursor-pointer"
                 style={{ backgroundColor: MAROON }}
               >
-                Track package
+                Tracking Package
               </button>
 
               {/* View or Edit Order - Secondary Button */}
@@ -196,7 +241,7 @@ export default function OrderHistory({ onTrackOrder }) {
                   color: MAROON,
                 }}
               >
-                View or edit order
+                View order details
               </button>
 
               {/* Write Review - Secondary Button */}

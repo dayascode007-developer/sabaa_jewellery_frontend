@@ -159,6 +159,18 @@ const generateInvoiceHTML = (order, customerName) => {
     year: "numeric",
   });
 
+  const orderDate = order.created_at
+    ? new Date(order.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
+    : currentDate;
+
+  const subtotal = parseFloat(order.subtotal || order.total_amount || 0);
+  const discount = parseFloat(order.discount_amount || 0);
+  const shipping = parseFloat(order.shipping_cost || 0);
+  const total = parseFloat(order.total_amount || 0);
+
+  // Get item details - handle both single item and array
+  const item = order.item || (order.items && order.items[0]) || {};
+
   return `
     <div class="invoice-container">
       <div class="header">
@@ -169,21 +181,24 @@ const generateInvoiceHTML = (order, customerName) => {
         </div>
         <div class="invoice-title">
           <h2>INVOICE</h2>
-          <p><strong>${order.id}</strong></p>
+          <p><strong>${order.purchase_id || order.id}</strong></p>
         </div>
       </div>
 
       <div class="invoice-details">
         <div>
           <h3>Bill To</h3>
-          <p><strong>${customerName}</strong></p>
-          <p>${order.shipTo}</p>
+          <p><strong>${order.customer?.name || customerName}</strong></p>
+          ${order.address ? `
+            <p>${order.address.house}, ${order.address.area}</p>
+            <p>${order.address.city}, ${order.address.state} - ${order.address.pincode}</p>
+          ` : ''}
         </div>
         <div>
           <h3>Invoice Details</h3>
           <p><strong>Invoice Date:</strong> ${currentDate}</p>
-          <p><strong>Order Date:</strong> ${order.date}</p>
-          <p><strong>Due Date:</strong> ${order.arriving}</p>
+          <p><strong>Order Date:</strong> ${orderDate}</p>
+          <p><strong>Payment Method:</strong> ${order.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</p>
         </div>
       </div>
 
@@ -197,43 +212,48 @@ const generateInvoiceHTML = (order, customerName) => {
           </tr>
         </thead>
         <tbody>
-          ${order.products
-            .map(
-              (product) => `
+          ${item && item.title ? `
             <tr>
-              <td>${product.name}</td>
-              <td style="text-align: center;">${product.qty}</td>
-              <td style="text-align: right;">₹${(parseFloat(order.total.replace("₹", "")) / product.qty).toFixed(2)}</td>
-              <td style="text-align: right;">${order.total}</td>
+              <td>${item.title}${item.sku ? ` (${item.sku})` : ''}</td>
+              <td style="text-align: center;">${item.quantity || 1}</td>
+              <td style="text-align: right;">₹${parseFloat(item.sale_price || 0).toFixed(2)}</td>
+              <td style="text-align: right;">₹${(parseFloat(item.sale_price || 0) * (item.quantity || 1)).toFixed(2)}</td>
             </tr>
-          `
-            )
-            .join("")}
+          ` : '<tr><td colspan="4" style="text-align: center;">No items</td></tr>'}
         </tbody>
       </table>
 
       <div class="summary">
         <div class="summary-row">
           <div class="summary-label">Subtotal:</div>
-          <div class="summary-value">${order.total}</div>
+          <div class="summary-value">₹${subtotal.toFixed(2)}</div>
         </div>
-        <div class="summary-row">
-          <div class="summary-label">Shipping:</div>
-          <div class="summary-value">FREE</div>
-        </div>
-        <div class="summary-row">
-          <div class="summary-label">Tax (GST):</div>
-          <div class="summary-value">₹0.00</div>
-        </div>
+        ${discount > 0 ? `
+          <div class="summary-row">
+            <div class="summary-label">Discount:</div>
+            <div class="summary-value">-₹${discount.toFixed(2)}</div>
+          </div>
+        ` : ''}
+        ${shipping > 0 ? `
+          <div class="summary-row">
+            <div class="summary-label">Shipping:</div>
+            <div class="summary-value">₹${shipping.toFixed(2)}</div>
+          </div>
+        ` : `
+          <div class="summary-row">
+            <div class="summary-label">Shipping:</div>
+            <div class="summary-value">FREE</div>
+          </div>
+        `}
         <div class="summary-row total">
           <div class="summary-label">TOTAL:</div>
-          <div class="summary-value">${order.total}</div>
+          <div class="summary-value">₹${total.toFixed(2)}</div>
         </div>
       </div>
 
       <div class="footer">
         <p>Thank you for your order! | Sabaa Jewel Arts | www.sabaajewelarts.com</p>
-        <p>Invoice #${order.id} | Generated on ${currentDate}</p>
+        <p>Invoice #${order.purchase_id || order.id} | Generated on ${currentDate}</p>
       </div>
     </div>
   `;
