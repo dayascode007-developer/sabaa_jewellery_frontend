@@ -5,12 +5,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { MdLocalShipping, MdStarBorder, MdDownload } from "react-icons/md";
 import { downloadInvoicePDF } from "@/utils/invoiceGenerator";
 import { fetchOrders } from "@/store/slices/ordersSlice";
+import { OrderHistoryShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 
 const MAROON = "#430121";
 
 export default function OrderHistory({ onTrackOrder }) {
   const dispatch = useDispatch();
-  const customer = useSelector((state) => state.auth.customer);
   const { list: orders, loading, error } = useSelector((state) => state.orders);
 
   useEffect(() => {
@@ -45,12 +45,7 @@ export default function OrderHistory({ onTrackOrder }) {
   };
 
   if (loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-maroon mx-auto mb-4" style={{ borderColor: MAROON }}></div>
-        <p className="text-gray-600">Loading orders...</p>
-      </div>
-    );
+    return <OrderHistoryShimmer count={3} />;
   }
 
   if (error) {
@@ -143,7 +138,7 @@ export default function OrderHistory({ onTrackOrder }) {
                     View order details
                   </button>
                   <button
-                    onClick={() => downloadInvoicePDF(order, customer?.name || "Customer")}
+                    onClick={() => downloadInvoicePDF(order)}
                     className="text-xs font-medium transition-opacity hover:opacity-70 flex items-center gap-1"
                     style={{ color: MAROON }}
                   >
@@ -160,7 +155,7 @@ export default function OrderHistory({ onTrackOrder }) {
                 </p>
                 <div className="flex flex-col gap-1.5">
                   <button
-                    onClick={() => downloadInvoicePDF(order, customer?.name || "Customer")}
+                    onClick={() => downloadInvoicePDF(order)}
                     className="text-xs font-medium transition-opacity hover:opacity-70 flex items-center gap-1"
                     style={{ color: MAROON }}
                   >
@@ -228,14 +223,14 @@ export default function OrderHistory({ onTrackOrder }) {
               {/* Track Package - Primary Button */}
               <button
                 onClick={() => onTrackOrder && onTrackOrder(order)}
-                className="flex-1 py-2.5 md:py-3 px-4 md:px-6 rounded-lg font-semibold text-white text-sm md:text-base transition-all hover:opacity-90 cursor-pointer"
+                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-white text-xs md:text-sm transition-all hover:opacity-90 cursor-pointer"
                 style={{ backgroundColor: MAROON }}
               >
                 Tracking Package
               </button>
 
               {/* View or Edit Order - Secondary Button */}
-              <button className="flex-1 py-2.5 md:py-3 px-4 md:px-6 rounded-lg font-semibold text-sm md:text-base border-2 transition-all hover:opacity-70 cursor-pointer"
+              <button className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer"
                 style={{
                   borderColor: MAROON,
                   color: MAROON,
@@ -245,13 +240,13 @@ export default function OrderHistory({ onTrackOrder }) {
               </button>
 
               {/* Write Review - Secondary Button */}
-              <button className="flex-1 py-2.5 md:py-3 px-4 md:px-6 rounded-lg font-semibold text-sm md:text-base border-2 transition-all hover:opacity-70 flex items-center justify-center gap-2 cursor-pointer"
+              <button className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 flex items-center justify-center gap-1 md:gap-2 cursor-pointer"
                 style={{
                   borderColor: MAROON,
                   color: MAROON,
                 }}
               >
-                <MdStarBorder className="text-lg" />
+                <MdStarBorder className="text-xs md:text-sm" />
                 <span className="hidden sm:inline">Write review</span>
                 <span className="sm:hidden">Review</span>
               </button>

@@ -714,4 +714,174 @@ export function WishlistCardShimmer({ count = 6 }) {
   );
 }
 
+export function TrackOrderShimmer() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-4 md:px-6 py-4 md:py-6">
+        <div className="h-8 w-48 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+        <div className="h-4 w-32 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mt-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
+        {/* Stepper */}
+        <div className="bg-white rounded-lg p-4 md:p-8 mb-6 md:mb-8">
+          <div className="flex items-center justify-between">
+            {[1, 2, 3, 4].map((step) => (
+              <div key={step} className="flex flex-col items-center flex-1">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 mb-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="h-3 w-16 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Timeline Section */}
+        <div className="bg-white rounded-lg p-4 md:p-8 mb-6 md:mb-8">
+          <div className="h-6 w-40 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-8" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+
+          {/* Desktop Timeline */}
+          <div className="hidden md:flex items-center justify-between mb-8">
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="flex flex-col items-center flex-1">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 mb-3" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="h-4 w-20 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Timeline */}
+          <div className="md:hidden space-y-6">
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 flex-shrink-0" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="flex-1">
+                  <div className="h-4 w-24 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                  <div className="h-3 w-20 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Info Sections Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          {[1, 2, 3].map((card) => (
+            <div key={card} className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+              <div className="h-5 w-32 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-4" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              <div className="space-y-3">
+                <div className="h-4 w-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="h-4 w-5/6 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="h-4 w-4/6 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Estimated Delivery Card */}
+        <div className="bg-white rounded-lg p-4 md:p-6 mt-6 md:mt-8 border-2 border-gray-200">
+          <div className="h-5 w-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export function OrderHistoryShimmer({ count = 3 }) {
+  const orders = Array.from({ length: count });
+
+  return (
+    <div className="space-y-6">
+      {orders.map((_, i) => (
+        <div
+          key={i}
+          className="bg-white border border-gray-200 rounded-lg overflow-hidden"
+        >
+          {/* Order Header */}
+          <div className="px-4 md:px-6 py-4 md:py-5" style={{ backgroundColor: "#F5F5F5" }}>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              {/* Order Placed */}
+              <div>
+                <div className="h-3 w-20 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-2 animate-pulse" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="h-5 w-32 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              </div>
+
+              {/* Total */}
+              <div>
+                <div className="h-3 w-16 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="h-5 w-28 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              </div>
+
+              {/* Ship To */}
+              <div>
+                <div className="h-3 w-20 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="h-5 w-32 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              </div>
+
+              {/* Order Number */}
+              <div className="hidden md:block">
+                <div className="h-3 w-24 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="h-5 w-28 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              </div>
+
+              {/* Action Links */}
+              <div className="hidden lg:flex flex-col gap-2">
+                <div className="h-4 w-32 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                <div className="h-4 w-24 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Section */}
+          <div className="px-4 md:px-6 py-4 md:py-5 border-b border-gray-200 flex items-center gap-3">
+            <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+            <div className="flex-1">
+              <div className="h-4 w-32 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+              <div className="h-3 w-24 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+            </div>
+          </div>
+
+          {/* Products */}
+          <div className="px-4 md:px-6 py-4 md:py-5">
+            {[1, 2].map((item) => (
+              <div key={item} className="flex gap-3 md:gap-4 mb-4">
+                {/* Product Image */}
+                <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+
+                {/* Product Details */}
+                <div className="flex-1 min-w-0">
+                  <div className="h-4 w-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                  <div className="h-4 w-2/3 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded mb-2" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                  <div className="h-4 w-1/2 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="px-4 md:px-6 py-4 md:py-5 border-t border-gray-200 flex flex-col sm:flex-row gap-2 md:gap-3">
+            <div className="flex-1 h-10 md:h-12 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+            <div className="flex-1 h-10 md:h-12 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+            <div className="flex-1 h-10 md:h-12 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded" style={{ backgroundSize: "200% 100%", animation: "shimmer 2s infinite" }}></div>
+          </div>
+        </div>
+      ))}
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export default ShimmerLoader;

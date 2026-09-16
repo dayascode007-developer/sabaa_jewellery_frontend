@@ -243,7 +243,7 @@ export default function AccountDashboard() {
                     <MdArrowBack className="text-base" />
                     Back to Orders
                   </button>
-                  <TrackOrder trackingData={trackedOrder} />
+                  <TrackOrder trackingData={trackedOrder} loading={trackingLoading} />
                 </div>
               ) : activeSection === "orders" ? (
                 <OrderHistory onTrackOrder={handleTrackOrder} />

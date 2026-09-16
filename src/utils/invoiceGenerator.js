@@ -1,17 +1,13 @@
 // Generate and download invoice as PDF
-export const downloadInvoicePDF = (order, customerName) => {
-  const element = document.createElement("div");
-  element.innerHTML = generateInvoiceHTML(order, customerName);
-  element.style.display = "none";
-  document.body.appendChild(element);
-
+export const downloadInvoicePDF = (order) => {
+  const logoUrl = "/invoice.webp";
   // Print to PDF
-  const printWindow = window.open("", "", "height=600,width=800");
+  const printWindow = window.open("", "", "height=900,width=1000");
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Invoice ${order.id}</title>
+        <title>Invoice ${order.purchase_id || order.id}</title>
         <style>
           * {
             margin: 0;
@@ -19,241 +15,372 @@ export const downloadInvoicePDF = (order, customerName) => {
             box-sizing: border-box;
           }
           body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             color: #333;
+            background: #f5f5f5;
           }
           .invoice-container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 40px;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 30px;
             border: 1px solid #ddd;
             background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           }
-          .header {
+          .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+          }
+          .header-left {
+            flex: 1;
+          }
+          .header-left h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #430121;
+            margin-bottom: 3px;
+          }
+          .order-info {
+            display: flex;
+            gap: 40px;
+            margin-top: 5px;
+          }
+          .order-info span {
+            font-size: 13px;
+            color: #666;
+          }
+          .header-right {
+            text-align: right;
+          }
+          .company-details {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 8px;
+            line-height: 1.5;
+          }
+          .print-btn {
+            display: inline-block;
+            background: #ffc107;
+            color: #333;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+          }
+          .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+          }
+          .section {
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 4px;
+          }
+          .section h3 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #430121;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+          }
+          .section p {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 4px;
+            line-height: 1.5;
+          }
+          .order-summary-section {
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 4px;
+          }
+          .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+          }
+          .summary-item-label {
+            color: #666;
+          }
+          .summary-item-value {
+            color: #333;
+            font-weight: 500;
+          }
+          .summary-total {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            color: #430121;
+          }
+          .products-section {
+            margin-top: 30px;
+          }
+          .products-section h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #430121;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+          }
+          .product-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            margin-bottom: 15px;
+          }
+          .product-image {
+            width: 80px;
+            height: 80px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            flex-shrink: 0;
+          }
+          .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+          }
+          .product-details {
+            flex: 1;
+          }
+          .product-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+          }
+          .product-seller {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 6px;
+          }
+          .product-bottom {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
-            border-bottom: 2px solid #430121;
-            padding-bottom: 20px;
           }
-          .company-info h1 {
+          .product-price {
+            font-size: 14px;
+            font-weight: 600;
             color: #430121;
-            font-size: 28px;
-            margin-bottom: 5px;
           }
-          .company-info p {
+          .product-qty {
+            font-size: 12px;
             color: #666;
-            font-size: 12px;
-          }
-          .invoice-title {
-            text-align: right;
-          }
-          .invoice-title h2 {
-            color: #430121;
-            font-size: 24px;
-            margin-bottom: 5px;
-          }
-          .invoice-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 40px;
-          }
-          .invoice-details h3 {
-            color: #430121;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-          }
-          .invoice-details p {
-            font-size: 14px;
-            margin-bottom: 5px;
-          }
-          .products-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 40px;
-          }
-          .products-table th {
-            background-color: #430121;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-size: 12px;
-            font-weight: bold;
-          }
-          .products-table td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            font-size: 14px;
-          }
-          .products-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-          }
-          .summary {
-            width: 100%;
-            margin-bottom: 40px;
-          }
-          .summary-row {
-            display: flex;
-            justify-content: flex-end;
-            padding: 10px 0;
-            font-size: 14px;
-          }
-          .summary-row.total {
-            border-top: 2px solid #430121;
-            border-bottom: 2px solid #430121;
-            padding: 15px 0;
-            font-weight: bold;
-            color: #430121;
-            font-size: 16px;
-          }
-          .summary-label {
-            width: 150px;
-            text-align: right;
-            margin-right: 20px;
-          }
-          .summary-value {
-            width: 100px;
-            text-align: right;
-            font-weight: bold;
           }
           .footer {
-            text-align: center;
-            border-top: 1px solid #ddd;
+            margin-top: 30px;
             padding-top: 20px;
-            font-size: 12px;
-            color: #666;
-            margin-top: 40px;
+            border-top: 1px solid #f0f0f0;
+            text-align: center;
+            font-size: 11px;
+            color: #999;
           }
           @media print {
             body {
-              margin: 0;
-              padding: 0;
+              background: #fff;
             }
             .invoice-container {
-              max-width: 100%;
-              margin: 0;
-              padding: 0;
+              box-shadow: none;
               border: none;
+              margin: 0;
+              padding: 20px;
+            }
+            .print-btn {
+              display: none;
             }
           }
         </style>
       </head>
       <body>
-        ${generateInvoiceHTML(order, customerName)}
+        ${generateInvoiceHTML(order, logoUrl)}
       </body>
     </html>
   `);
   printWindow.document.close();
-  printWindow.print();
 };
 
-const generateInvoiceHTML = (order, customerName) => {
-  const currentDate = new Date().toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
+const generateInvoiceHTML = (order, logoUrl) => {
+  const orderDate = order.created_at
+    ? new Date(order.created_at).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+  // Get all items for subtotal calculation
+  const items = order.items || (order.item ? [order.item] : []);
+
+  // Calculate items subtotal from individual items
+  let calculatedSubtotal = 0;
+  items.forEach((item) => {
+    calculatedSubtotal +=
+      parseFloat(item.sale_price || item.price || 0) * (item.quantity || 1);
   });
 
-  const orderDate = order.created_at
-    ? new Date(order.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
-    : currentDate;
-
-  const subtotal = parseFloat(order.subtotal || order.total_amount || 0);
+  // Use provided subtotal if available, otherwise use calculated
+  const itemsSubtotal = order.subtotal
+    ? parseFloat(order.subtotal)
+    : calculatedSubtotal;
   const discount = parseFloat(order.discount_amount || 0);
   const shipping = parseFloat(order.shipping_cost || 0);
-  const total = parseFloat(order.total_amount || 0);
+  const advancePayment = order.payment_method === "cod" ? 120 : 0;
 
-  // Get item details - handle both single item and array
-  const item = order.item || (order.items && order.items[0]) || {};
+  // Calculate totals dynamically
+  const subtotalBeforeDiscount = itemsSubtotal + shipping;
+  const grandTotal = subtotalBeforeDiscount - discount;
 
   return `
     <div class="invoice-container">
-      <div class="header">
-        <div class="company-info">
-          <h1>Sabaa</h1>
-          <p>Jewel Arts</p>
-          <p>Since 1984</p>
+      <div class="header-top">
+        <div class="header-left">
+          <h1>Order Summary</h1>
+          <div class="order-info">
+            <span><strong>Order placed</strong> ${orderDate}</span>
+            <span><strong>Order number</strong> ${
+              order.purchase_id || order.id
+            }</span>
+          </div>
         </div>
-        <div class="invoice-title">
-          <h2>INVOICE</h2>
-          <p><strong>${order.purchase_id || order.id}</strong></p>
+        <div class="header-right">
+          <img src="${logoUrl}" alt="Sabaa Logo" style="height: 60px; margin-bottom: 10px;">
+          <div class="company-details">
+            <strong>SABAA JEWEL ARTS</strong><br>
+            GST: 33BHPPV7845F1ZQ<br>
+            NAKSHATH INTERNATIONAL<br>
+            <button class="print-btn" onclick="window.print()">Print</button>
+          </div>
         </div>
       </div>
 
-      <div class="invoice-details">
-        <div>
-          <h3>Bill To</h3>
-          <p><strong>${order.customer?.name || customerName}</strong></p>
-          ${order.address ? `
-            <p>${order.address.house}, ${order.address.area}</p>
-            <p>${order.address.city}, ${order.address.state} - ${order.address.pincode}</p>
-          ` : ''}
+      <div class="content-grid">
+        <div class="section">
+          <h3>Ship to</h3>
+          <p><strong>${order.address?.name || "N/A"}</strong></p>
+          <p>${order.address?.house || ""} ${order.address?.area || ""}</p>
+          ${order.address?.landmark ? `<p>${order.address.landmark}</p>` : ""}
+          <p>${order.address?.city || ""}</p>
+          <p>${order.address?.state || ""} ${order.address?.pincode || ""}</p>
+          <p>India</p>
         </div>
-        <div>
-          <h3>Invoice Details</h3>
-          <p><strong>Invoice Date:</strong> ${currentDate}</p>
-          <p><strong>Order Date:</strong> ${orderDate}</p>
-          <p><strong>Payment Method:</strong> ${order.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</p>
+
+        <div class="section">
+          <h3>Payment method</h3>
+          <p>${
+            order.payment_method === "cod"
+              ? "Pay on Delivery"
+              : "Online Payment"
+          }</p>
+        </div>
+
+        <div class="order-summary-section">
+          <h3>Order Summary</h3>
+          ${
+            advancePayment > 0
+              ? `
+            <div class="summary-item">
+              <span class="summary-item-label">Advance Payment:</span>
+              <span class="summary-item-value">₹${advancePayment.toFixed(
+                2
+              )}</span>
+            </div>
+          `
+              : ""
+          }
+          <div class="summary-item">
+            <span class="summary-item-label">Item(s) Subtotal:</span>
+            <span class="summary-item-value">₹${itemsSubtotal.toFixed(2)}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-item-label">Shipping:</span>
+            <span class="summary-item-value">₹${shipping.toFixed(2)}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-item-label">Total:</span>
+            <span class="summary-item-value">₹${subtotalBeforeDiscount.toFixed(
+              2
+            )}</span>
+          </div>
+          ${
+            discount > 0
+              ? `
+            <div class="summary-item">
+              <span class="summary-item-label">Promotion Applied:</span>
+              <span class="summary-item-value" style="color: #d9534f;">-₹${discount.toFixed(
+                2
+              )}</span>
+            </div>
+          `
+              : ""
+          }
+          <div class="summary-total">
+            <span>Grand Total:</span>
+            <span>₹${grandTotal.toFixed(2)}</span>
+          </div>
         </div>
       </div>
 
-      <table class="products-table">
-        <thead>
-          <tr>
-            <th style="width: 50%;">Product</th>
-            <th style="width: 15%; text-align: center;">Quantity</th>
-            <th style="width: 20%; text-align: right;">Price</th>
-            <th style="width: 15%; text-align: right;">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${item && item.title ? `
-            <tr>
-              <td>${item.title}${item.sku ? ` (${item.sku})` : ''}</td>
-              <td style="text-align: center;">${item.quantity || 1}</td>
-              <td style="text-align: right;">₹${parseFloat(item.sale_price || 0).toFixed(2)}</td>
-              <td style="text-align: right;">₹${(parseFloat(item.sale_price || 0) * (item.quantity || 1)).toFixed(2)}</td>
-            </tr>
-          ` : '<tr><td colspan="4" style="text-align: center;">No items</td></tr>'}
-        </tbody>
-      </table>
-
-      <div class="summary">
-        <div class="summary-row">
-          <div class="summary-label">Subtotal:</div>
-          <div class="summary-value">₹${subtotal.toFixed(2)}</div>
-        </div>
-        ${discount > 0 ? `
-          <div class="summary-row">
-            <div class="summary-label">Discount:</div>
-            <div class="summary-value">-₹${discount.toFixed(2)}</div>
+      <div class="products-section">
+        <h3>Product Ordered</h3>
+        ${
+          items.length > 0
+            ? items
+                .map(
+                  (item) => `
+          <div class="product-item">
+            <div class="product-image">
+              ${
+                item.image
+                  ? `<img src="${item.image}" alt="${item.title}">`
+                  : '<div style="background: #f0f0f0;"></div>'
+              }
+            </div>
+            <div class="product-details">
+              <div class="product-name">${item.title}</div>
+              <div class="product-seller">Sold by: Sabaa Jewel Arts</div>
+              <div class="product-bottom">
+                <span class="product-price">₹${(
+                  item.sale_price ||
+                  item.price ||
+                  0
+                ).toFixed(2)}</span>
+                <span class="product-qty">Item Quantity: ${
+                  item.quantity || 1
+                }</span>
+              </div>
+            </div>
           </div>
-        ` : ''}
-        ${shipping > 0 ? `
-          <div class="summary-row">
-            <div class="summary-label">Shipping:</div>
-            <div class="summary-value">₹${shipping.toFixed(2)}</div>
-          </div>
-        ` : `
-          <div class="summary-row">
-            <div class="summary-label">Shipping:</div>
-            <div class="summary-value">FREE</div>
-          </div>
-        `}
-        <div class="summary-row total">
-          <div class="summary-label">TOTAL:</div>
-          <div class="summary-value">₹${total.toFixed(2)}</div>
-        </div>
+        `
+                )
+                .join("")
+            : "<p>No items</p>"
+        }
       </div>
 
       <div class="footer">
         <p>Thank you for your order! | Sabaa Jewel Arts | www.sabaajewelarts.com</p>
-        <p>Invoice #${order.purchase_id || order.id} | Generated on ${currentDate}</p>
       </div>
     </div>
   `;

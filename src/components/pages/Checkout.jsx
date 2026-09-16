@@ -8,6 +8,7 @@ import OrderConfirmation from "./OrderConfirmation";
 import { selectCartItems, clearCart } from "@/store/slices/cartSlice";
 import { selectShippingConfig } from "@/store/slices/settingsSlice";
 import { calculateOrderSummary } from "@/utils/orderCalculations";
+import { fetchShippingRatesApi } from "@/store/api/settingsApi";
 import {
   selectAddressesList,
   selectSelectedAddressId,
@@ -222,9 +223,16 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
+  // Dynamic shipping rates state
+  const [dynamicShippingCost, setDynamicShippingCost] = useState(null);
+  const [shippingRatesLoading, setShippingRatesLoading] = useState(false);
+  const [availableCouriers, setAvailableCouriers] = useState([]);
+
   // Store Razorpay instance to close it after payment
   const razorpayInstanceRef = useRef(null);
   const razorpayOpenedRef = useRef(false);
+  const paymentDetailsRef = useRef(null); // Store payment verification details
+  const orderSummaryRef = useRef(null); // Ref for Order Summary auto-scroll
 
   // Redux payment state
   const razorpayOrder = useSelector(selectRazorpayOrder);
@@ -253,6 +261,51 @@ export default function Checkout() {
     dispatch(clearPayment());
     dispatch(createRazorpayOrder(COD_ADVANCEMENT));
   }, [dispatch]);
+
+  // Fetch shipping rates based on payment method (no pincode needed)
+  useEffect(() => {
+    setShippingRatesLoading(true);
+    console.log(`📦 Fetching shipping rate for payment method: ${paymentMethod || "cod"}`);
+
+    const method = paymentMethod === "cod" ? "cod" : "prepaid";
+    // Use any pincode or dummy pincode since rates are fixed
+    fetchShippingRatesApi("560001", 0.5, method)
+      .then((data) => {
+        console.log("✅ Shipping rate fetched:", data);
+
+        // Use the rate from Shiprocket
+        const shippingCost = data.rate || (method === "cod" ? 100 : 60);
+        setDynamicShippingCost(shippingCost);
+
+        // Show courier info if available
+        if (data.courier) {
+          setAvailableCouriers([{
+            courierName: data.courier,
+            rate: data.rate,
+          }]);
+        }
+      })
+      .catch((error) => {
+        console.error("❌ Failed to fetch shipping rates:", error.message);
+        // Fallback: ₹100 for COD, ₹60 for Prepaid
+        const fallbackRate = method === "cod" ? 100 : 60;
+        setDynamicShippingCost(fallbackRate);
+        setAvailableCouriers([]);
+      })
+      .finally(() => {
+        setShippingRatesLoading(false);
+      });
+  }, [paymentMethod]);
+
+  // Auto-scroll to Order Summary when payment method is selected
+  useEffect(() => {
+    if (paymentMethod && orderSummaryRef.current) {
+      console.log(`📜 Auto-scrolling to Order Summary`);
+      setTimeout(() => {
+        orderSummaryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [paymentMethod]);
 
   // Handle Razorpay order creation and checkout opening
   useEffect(() => {
@@ -336,6 +389,13 @@ export default function Checkout() {
       orderId: response.razorpay_order_id,
     });
 
+    // Store payment details for later use in order creation
+    paymentDetailsRef.current = {
+      razorpayOrderId: razorpayOrder.orderId,
+      razorpayPaymentId: response.razorpay_payment_id,
+      razorpaySignature: response.razorpay_signature,
+    };
+
     setIsProcessingPayment(true);
 
     // Inject CSS to hide Razorpay modals and show OrderConfirmation
@@ -376,6 +436,8 @@ export default function Checkout() {
 
   // Handle payment verification and order creation
   useEffect(() => {
+    console.log("🔍 Payment verification check:", { paymentVerified, hasRazorpayOrder: !!razorpayOrder, paymentLoading, hasCreatedOrder: !!createdOrder });
+
     if (paymentVerified && razorpayOrder && !paymentLoading && !createdOrder) {
       // Recalculate order summary with fresh values
       const itemsTotal = items.reduce((t, i) => t + i.price * i.quantity, 0);
@@ -384,25 +446,37 @@ export default function Checkout() {
 
       const method = paymentMethod === "cod" ? "cod" : "online";
 
+      // Use dynamic shipping cost if available, otherwise use calculated shipping cost
+      const finalShippingCost = dynamicShippingCost !== null ? dynamicShippingCost : freshOrderSummary.shippingCost;
+
       const orderPayload = {
         subtotal: freshOrderSummary.subtotal,
         discountAmount: discount,
-        shippingCost: freshOrderSummary.shippingCost,
+        shippingCost: finalShippingCost,
         paymentMethod: method,
         couponId: appliedCoupon?.couponId || null,
         addressId: selectedAddressId,
         itemCount: items.length,
         cartItems: items, // Send cart items to backend for order_items table
+        // Include payment verification details for storing in payment_transactions table
+        ...(paymentDetailsRef.current && {
+          razorpayOrderId: paymentDetailsRef.current.razorpayOrderId,
+          razorpayPaymentId: paymentDetailsRef.current.razorpayPaymentId,
+          razorpaySignature: paymentDetailsRef.current.razorpaySignature,
+        }),
       };
 
-      console.log("Creating order with payload:", orderPayload);
+      console.log("✅ Creating order with payload:", orderPayload);
       dispatch(createOrder(orderPayload));
     }
-  }, [paymentVerified, razorpayOrder, paymentLoading, createdOrder, items, shippingConfig, appliedCoupon, paymentMethod, selectedAddressId, dispatch]);
+  }, [paymentVerified, razorpayOrder, paymentLoading, createdOrder, items, shippingConfig, appliedCoupon, paymentMethod, selectedAddressId, dynamicShippingCost, dispatch]);
 
   // Handle order created (Online payment)
   useEffect(() => {
+    console.log("🔍 Online payment order check:", { createdOrder: !!createdOrder, paymentVerified, paymentMethod, shouldProcess: createdOrder && paymentVerified && paymentMethod !== "cod" });
+
     if (createdOrder && paymentVerified && paymentMethod !== "cod") {
+      console.log("✅ Online payment order created, moving to step 2");
       if (appliedCoupon) {
         dispatch(
           applyCoupon({
@@ -422,7 +496,10 @@ export default function Checkout() {
 
   // Handle order created (COD payment)
   useEffect(() => {
+    console.log("🔍 COD payment order check:", { createdOrder: !!createdOrder, paymentVerified, paymentMethod, shouldProcess: createdOrder && paymentVerified && paymentMethod === "cod" });
+
     if (createdOrder && paymentVerified && paymentMethod === "cod") {
+      console.log("✅ COD payment order created, moving to step 2");
       dispatch(clearCart());
       setPaymentMethod(null);
       setIsProcessingPayment(false);
@@ -513,6 +590,15 @@ export default function Checkout() {
         deliveryCharge: parseFloat(createdOrder.shipping_cost || 0),
         freeDelivery: parseFloat(createdOrder.shipping_cost || 0) === 0,
         discountAmount: parseFloat(createdOrder.discount_amount || 0),
+      }
+    : dynamicShippingCost !== null
+    ? {
+        subtotal: itemsTotal,
+        deliveryCharge: dynamicShippingCost,
+        shippingCost: dynamicShippingCost,
+        freeDelivery: false,
+        discountAmount: discount,
+        grandTotal: itemsTotal - discount + dynamicShippingCost, // Calculate with dynamic shipping
       }
     : calculateOrderSummary(itemsTotal, discount, shippingConfig);
 
@@ -752,13 +838,28 @@ export default function Checkout() {
           {/* ---------------------------------------------------- 2. payment */}
           {step === 1 ? (
             <Card title="Payment Method">
-              <div className="space-y-3">
+              <fieldset className="space-y-2.5">
+                <legend className="sr-only">Choose payment method</legend>
                 {PAYMENT_METHODS.map((m) => (
-                  <div
+                  <label
                     key={m.id}
-                    className="rounded-lg border p-3.5 transition-colors sm:flex sm:items-center sm:gap-4"
-                    style={{ borderColor: "#E5DDD5" }}
+                    className="flex cursor-pointer items-start gap-3 rounded-lg border p-3.5 transition-colors hover:bg-neutral-50"
+                    style={{
+                      borderColor: paymentMethod === m.id ? MAROON : "#E5DDD5",
+                      backgroundColor: paymentMethod === m.id ? "#FDF8F3" : "transparent"
+                    }}
                   >
+                    <input
+                      type="radio"
+                      name="payment-method"
+                      value={m.id}
+                      checked={paymentMethod === m.id}
+                      onChange={() => {
+                        setPaymentMethod(m.id);
+                        console.log(`💳 Payment method selected: ${m.id}`);
+                      }}
+                      className="mt-1 h-4 w-4 accent-[#7B1E2B]"
+                    />
                     <div className="flex min-w-0 flex-1 items-start gap-3">
                       <svg
                         viewBox="0 0 24 24"
@@ -778,22 +879,14 @@ export default function Checkout() {
                         <p className="mt-0.5 text-[12px] leading-snug text-neutral-500">
                           {m.note}
                         </p>
+                        <p className="mt-1 text-[12px] font-semibold" style={{ color: MAROON }}>
+                          Shipping: {m.id === "cod" ? "₹100.00" : "₹60.00"}
+                        </p>
                       </div>
                     </div>
-
-                    {/* The button is the choice — picking a method and
-                        continuing are one action, not two. */}
-                    <button
-                      type="button"
-                      onClick={() => handlePaymentMethodClick(m.id, orderSummary.grandTotal)}
-                      className="mt-3 w-full shrink-0 rounded-md px-6 py-2.5 text-[14px] font-medium text-white transition-opacity hover:opacity-90 sm:mt-0 sm:w-auto"
-                      style={{ backgroundColor: MAROON }}
-                    >
-                      {m.action}
-                    </button>
-                  </div>
+                  </label>
                 ))}
-              </div>
+              </fieldset>
 
               <p className="mt-4 flex items-start gap-2 rounded-md bg-[#FDF8F3] p-3 text-[12px] leading-relaxed text-neutral-600">
                 <svg viewBox="0 0 24 24" className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke={MAROON} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -803,6 +896,16 @@ export default function Checkout() {
                 Your card details never reach our servers. Payments are handled by
                 Razorpay, an RBI-authorised payment gateway.
               </p>
+
+              <button
+                type="button"
+                disabled={!paymentMethod}
+                onClick={() => handlePaymentMethodClick(paymentMethod, orderSummary.grandTotal)}
+                className="mt-4 w-full rounded-md px-6 py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed"
+                style={{ backgroundColor: paymentMethod ? MAROON : "#CFA9B0" }}
+              >
+                Continue to Payment
+              </button>
             </Card>
           ) : null}
 
@@ -934,7 +1037,7 @@ export default function Checkout() {
         </div>
 
         {/* ------------------------------------------------------- summary */}
-        <div className="lg:sticky lg:top-4 lg:self-start">
+        <div ref={orderSummaryRef} className="lg:sticky lg:top-4 lg:self-start">
           <div className="rounded-lg border border-[#EFDCD4] bg-white p-4">
             <h2
               className="font-[family-name:var(--font-heading)] text-[20px] leading-none"
@@ -958,9 +1061,16 @@ export default function Checkout() {
                   className="text-neutral-800"
                   style={orderSummary.freeDelivery ? { color: GREEN } : undefined}
                 >
-                  {orderSummary.freeDelivery ? "FREE" : rupees(orderSummary.deliveryCharge)}
+                  {shippingRatesLoading ? (
+                    <span className="text-xs text-neutral-500">Calculating...</span>
+                  ) : orderSummary.freeDelivery ? (
+                    "FREE"
+                  ) : (
+                    rupees(orderSummary.deliveryCharge)
+                  )}
                 </span>
               </div>
+
               {discount > 0 && (
                 <div className="flex justify-between gap-4">
                   <span style={{ color: GREEN }}>Discount ({appliedCoupon.code})</span>

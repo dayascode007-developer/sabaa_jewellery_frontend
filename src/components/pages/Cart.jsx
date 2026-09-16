@@ -439,11 +439,6 @@ export default function Cart() {
             <div className="mt-4 space-y-2.5 border-b border-neutral-200 pb-4">
               <SummaryRow label={`Items (${count})`} value={rupees(subtotal)} />
               <SummaryRow label="Subtotal" value={rupees(subtotal)} />
-              <SummaryRow
-                label="Shipping"
-                value={orderSummary.freeDelivery ? "FREE" : rupees(orderSummary.deliveryCharge)}
-                accent={orderSummary.freeDelivery ? "#1E7A45" : undefined}
-              />
               {discount > 0 && (
                 <SummaryRow
                   label={`Discount (${appliedCoupon.code})`}

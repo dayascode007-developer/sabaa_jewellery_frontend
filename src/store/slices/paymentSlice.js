@@ -82,14 +82,17 @@ const paymentSlice = createSlice({
 
       // Verify Payment
       .addCase(verifyPayment.pending, (state) => {
+        console.log("🔄 Payment verification pending...");
         state.loading = true;
         state.error = null;
       })
       .addCase(verifyPayment.fulfilled, (state, action) => {
+        console.log("✅ Payment verification fulfilled:", action.payload);
         state.loading = false;
         state.paymentVerified = action.payload.verified;
       })
       .addCase(verifyPayment.rejected, (state, action) => {
+        console.error("❌ Payment verification rejected:", action.payload);
         state.loading = false;
         state.error = action.payload;
         state.paymentVerified = false;
@@ -97,14 +100,17 @@ const paymentSlice = createSlice({
 
       // Create Order
       .addCase(createOrder.pending, (state) => {
+        console.log("🔄 Order creation pending...");
         state.loading = true;
         state.error = null;
       })
       .addCase(createOrder.fulfilled, (state, action) => {
+        console.log("✅ Order created successfully:", action.payload);
         state.loading = false;
         state.order = action.payload;
       })
       .addCase(createOrder.rejected, (state, action) => {
+        console.error("❌ Order creation rejected:", action.payload);
         state.loading = false;
         state.error = action.payload;
       });

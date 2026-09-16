@@ -6,9 +6,9 @@ import {
   MdLocalShipping,
   MdDeliveryDining,
   MdHome,
-  MdEdit,
   MdOpenInNew,
 } from "react-icons/md";
+import { TrackOrderShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 
 const MAROON = "#430121";
 const GREEN = "#10b981";
@@ -29,9 +29,13 @@ const ORDER_STATUSES = [
   { label: "Delivered", icon: MdHome },
 ];
 
-export default function TrackOrder({ trackingData }) {
+export default function TrackOrder({ trackingData, loading = false }) {
   const [showInstructions, setShowInstructions] = useState(false);
   const [instructions, setInstructions] = useState("Leave at door");
+
+  if (loading) {
+    return <TrackOrderShimmer />;
+  }
 
   if (!trackingData) {
     return (

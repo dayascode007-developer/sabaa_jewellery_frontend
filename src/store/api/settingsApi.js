@@ -16,3 +16,31 @@ export const fetchSettingsApi = async () => {
 
   return data.data;
 };
+
+// Fetch dynamic shipping rates from Shiprocket based on destination pincode
+export const fetchShippingRatesApi = async (toPincode, weight = 0.5, paymentMethod = "cod") => {
+  if (!toPincode) {
+    throw new Error("Destination pincode is required");
+  }
+
+  const params = new URLSearchParams({
+    toPincode,
+    weight,
+    paymentMethod,
+  });
+
+  const response = await fetch(`${API_URL}/api/settings/shipping-rates?${params}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to fetch shipping rates");
+  }
+
+  return data.data;
+};
