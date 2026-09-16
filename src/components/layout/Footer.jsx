@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { useState } from "react";
 import { USEFUL_LINKS, COMPANY_INFO, LEGAL_LINKS } from "@/constants/footerData";
 import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
-import instagramQr from "@/assets/logo/Untitled.svg";
+import instagramQr from "@/assets/logo/image.png";
 import AuthModal from "@/components/common/AuthModal";
 
 const FOOTER_BG = "#3D0F0F";
@@ -174,10 +174,11 @@ export default function Footer() {
               <Image
                 src={instagramQr}
                 alt="Scan to follow Sabaa Jewel Arts on Instagram"
-                // next/image refuses to optimise SVG unless dangerouslyAllowSVG
-                // is set, so this one is served as-is.
-                unoptimized
-                className="h-full w-full"
+                // A PNG, so it goes through the optimiser. Sized generously
+                // (the card is up to 240px, phones draw at 2-3x) so the squares
+                // stay crisp — a blurred QR code may not scan.
+                sizes="480px"
+                className="h-full w-full object-contain"
               />
             </div>
 
