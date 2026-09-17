@@ -157,7 +157,7 @@ function CartLine({ item, selected, onToggle }) {
           <p className="text-[12px] text-neutral-400">SKU: {item.code}</p>
         ) : null}
 
-        <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+        <div className="mt-auto flex flex-col-reverse md:flex-row md:items-end md:justify-between gap-3 pt-3">
           <div className="flex flex-col">
             <Stepper item={item} />
             {item.limit_purchases && (
@@ -166,7 +166,7 @@ function CartLine({ item, selected, onToggle }) {
               </p>
             )}
           </div>
-          <span className="text-[16px] font-semibold text-neutral-900">
+          <span className="font-semibold text-neutral-900 flex-shrink-0 whitespace-nowrap md:text-right" style={{fontSize: 'clamp(14px, 4vw, 18px)'}}>
             {rupees(item.price * item.quantity)}
           </span>
         </div>

@@ -20,13 +20,41 @@ export const addToCartApi = async (cartItem) => {
 
   if (!token) throw new Error("Authentication required");
 
+  // If there's a photo file, send FormData; otherwise send JSON
+  const hasPhoto = cartItem.customerPhoto instanceof File;
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  let body;
+  if (hasPhoto) {
+    // FormData - don't set Content-Type header; browser will set it with boundary
+    const formData = new FormData();
+    formData.append("id", cartItem.id);
+    formData.append("title", cartItem.title);
+    formData.append("price", cartItem.price);
+    formData.append("image", cartItem.image);
+    formData.append("sku", cartItem.sku);
+    formData.append("quantity", cartItem.quantity);
+    if (cartItem.size) formData.append("size", cartItem.size);
+    if (cartItem.ringName) formData.append("ringName", cartItem.ringName);
+    if (cartItem.fontId) formData.append("fontId", cartItem.fontId);
+    if (cartItem.symbolId) formData.append("symbolId", cartItem.symbolId);
+    if (cartItem.symbolSide) formData.append("symbolSide", cartItem.symbolSide);
+    if (cartItem.colorId) formData.append("colorId", cartItem.colorId);
+    formData.append("customer_photo", cartItem.customerPhoto);
+    body = formData;
+  } else {
+    // JSON
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify(cartItem);
+  }
+
   const response = await fetch(`${API_URL}/api/customer/cart`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(cartItem),
+    headers,
+    body,
   });
 
   const data = await response.json();
