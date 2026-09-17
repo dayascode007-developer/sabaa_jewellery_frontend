@@ -63,6 +63,9 @@ const paymentSlice = createSlice({
       state.error = null;
       state.razorpayError = null;
     },
+    clearOrderConfirmation: (state) => {
+      state.order = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -117,7 +120,7 @@ const paymentSlice = createSlice({
   },
 });
 
-export const { clearPaymentError, clearPayment } = paymentSlice.actions;
+export const { clearPaymentError, clearPayment, clearOrderConfirmation } = paymentSlice.actions;
 
 export const selectRazorpayOrder = (state) => state.payment.razorpayOrder;
 export const selectPaymentVerified = (state) => state.payment.paymentVerified;
