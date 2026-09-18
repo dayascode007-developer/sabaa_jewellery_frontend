@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import {
@@ -12,6 +11,7 @@ import {
   removeFromWishlist,
 } from "@/store/slices/wishlistSlice";
 import SuccessModal from "@/components/common/SuccessModal";
+import AuthModal from "@/components/common/AuthModal";
 import { getCategoryLabel } from "@/constants/productData";
 
 const MAROON = "#7B1E2B";
@@ -21,7 +21,6 @@ const rupees = (n) =>
 
 export default function ProductCard({ product }) {
   const dispatch = useDispatch();
-  const router = useRouter();
   const token = useSelector((state) => state.auth.token);
   const wishlistItems = useSelector((state) => state.wishlist.items);
   const cartItems = useSelector(selectCartItems);
@@ -42,6 +41,8 @@ export default function ProductCard({ product }) {
   // silently and only the header badge changed.
   const [added, setAdded] = useState(false);
   const [wishlistSuccess, setWishlistSuccess] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null); // "addToCart" or "wishlist"
   // The dialog is portalled to <body>, which does not exist during the server
   // render, so it can only be mounted once we are on the client.
   const [mounted, setMounted] = useState(false);
@@ -73,7 +74,8 @@ export default function ProductCard({ product }) {
   const onWishlist = (e) => {
     stop(e);
     if (!token) {
-      router.push("/login");
+      setPendingAction("wishlist");
+      setAuthOpen(true);
       return;
     }
 
@@ -89,7 +91,8 @@ export default function ProductCard({ product }) {
     stop(e);
 
     if (!token) {
-      router.push("/login");
+      setPendingAction("addToCart");
+      setAuthOpen(true);
       return;
     }
 
@@ -279,6 +282,14 @@ export default function ProductCard({ product }) {
             document.body
           )
         : null}
+
+      {/* Auth modal for login/signup */}
+      {mounted ? (
+        <AuthModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+        />
+      ) : null}
     </article>
   );
 }

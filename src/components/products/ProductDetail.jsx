@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
 import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import {
@@ -16,6 +15,7 @@ import CareGuide from "@/components/products/CareGuide";
 import FontDropdown from "@/components/products/FontDropdown";
 import ShareMenu from "@/components/products/ShareMenu";
 import SuccessModal from "@/components/common/SuccessModal";
+import AuthModal from "@/components/common/AuthModal";
 import SpecificationSection from "@/components/products/SpecificationSection";
 import SimilarProducts from "@/components/products/SimilarProducts";
 import { FONT_STYLES, SYMBOLS, NAME_MAX_LENGTH } from "@/constants/productData";
@@ -626,6 +626,8 @@ export default function ProductDetail({ product }) {
   // The button gave no sign it had worked — the same gap the product cards had.
   const [added, setAdded] = useState(false);
   const [wishlistSuccess, setWishlistSuccess] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null); // "addToCart" or "wishlist"
   // Portalled to <body>, which does not exist during the server render.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -639,7 +641,6 @@ export default function ProductDetail({ product }) {
       (item) => item?.product_id === product.id || item?.id === product.id
     );
   }, [cartItems, product.id]);
-  const router = useRouter();
   const isAddingToWishlist = useRef(false);
 
   const wishlisted = useMemo(() => {
@@ -661,7 +662,8 @@ export default function ProductDetail({ product }) {
   const onAddToCart = async () => {
     // Check if user is logged in
     if (!token) {
-      router.push("/login");
+      setPendingAction("addToCart");
+      setAuthOpen(true);
       return;
     }
 
@@ -762,7 +764,8 @@ export default function ProductDetail({ product }) {
                 type="button"
                 onClick={() => {
                   if (!token) {
-                    router.push("/login");
+                    setPendingAction("wishlist");
+                    setAuthOpen(true);
                     return;
                   }
                   if (wishlisted) {
@@ -1267,6 +1270,14 @@ export default function ProductDetail({ product }) {
             document.body
           )
         : null}
+
+      {/* Auth modal for login/signup */}
+      {mounted ? (
+        <AuthModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }
