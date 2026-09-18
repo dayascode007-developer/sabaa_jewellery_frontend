@@ -884,4 +884,85 @@ export function OrderHistoryShimmer({ count = 3 }) {
   );
 }
 
+export function ReviewShimmer({ count = 3 }) {
+  const reviews = Array.from({ length: count });
+
+  return (
+    <div className="space-y-6">
+      {reviews.map((_, i) => (
+        <div key={i} className="pb-6 border-b border-neutral-200 md:border-b-0">
+          {/* Reviewer Info Shimmer */}
+          <div className="flex items-center gap-3 mb-3">
+            <div
+              className="h-10 w-10 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+            <div className="h-4 w-32 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+          </div>
+
+          {/* Rating and Title Shimmer */}
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, j) => (
+                <div
+                  key={j}
+                  className="h-4 w-4 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+                  style={{
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 2s infinite",
+                  }}
+                />
+              ))}
+            </div>
+            <div className="h-4 w-24 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+          </div>
+
+          {/* Meta Shimmer */}
+          <div className="h-3 w-48 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 mb-3"
+            style={{
+              backgroundSize: "200% 100%",
+              animation: "shimmer 2s infinite",
+            }}
+          />
+
+          {/* Review Text Shimmer */}
+          <div className="space-y-2 mb-3">
+            <div className="h-4 w-full rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+            <div className="h-4 w-5/6 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"
+              style={{
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s infinite",
+              }}
+            />
+          </div>
+        </div>
+      ))}
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export default ShimmerLoader;

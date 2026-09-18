@@ -6,16 +6,35 @@ import { MdLocalShipping, MdStarBorder, MdDownload } from "react-icons/md";
 import { downloadInvoicePDF } from "@/utils/invoiceGenerator";
 import { fetchOrders } from "@/store/slices/ordersSlice";
 import { OrderHistoryShimmer } from "@/components/shimmer-loader/Shimmer-loader";
+import ReviewModal from "@/components/reviews/ReviewModal";
+import { openReviewModal, selectIsModalOpen, closeReviewModal } from "@/store/slices/reviewsSlice";
 
 const MAROON = "#430121";
 
 export default function OrderHistory({ onTrackOrder }) {
   const dispatch = useDispatch();
   const { list: orders, loading, error } = useSelector((state) => state.orders);
+  const isModalOpen = useSelector(selectIsModalOpen);
 
   useEffect(() => {
     dispatch(fetchOrders());
   }, [dispatch]);
+
+  const handleWriteReview = (order) => {
+    // Open modal for first item if multiple items, or single item
+    if (order.items && order.items.length > 0) {
+      const firstItem = order.items[0];
+      dispatch(openReviewModal({ product: firstItem, orderId: order.id }));
+    }
+  };
+
+  const handleModalClose = () => {
+    dispatch(closeReviewModal());
+    // Re-fetch orders to update has_reviewed status
+    setTimeout(() => {
+      dispatch(fetchOrders());
+    }, 100);
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -234,16 +253,32 @@ export default function OrderHistory({ onTrackOrder }) {
               </button>
 
               {/* Write Review - Secondary Button */}
-              <button className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 flex items-center justify-center gap-1 md:gap-2 cursor-pointer"
-                style={{
-                  borderColor: MAROON,
-                  color: MAROON,
-                }}
-              >
-                <MdStarBorder className="text-xs md:text-sm" />
-                <span className="hidden sm:inline">Write review</span>
-                <span className="sm:hidden">Review</span>
-              </button>
+              {order.items?.[0]?.has_reviewed ? (
+                <button
+                  disabled
+                  className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all opacity-50 cursor-not-allowed flex items-center justify-center gap-1 md:gap-2"
+                  style={{
+                    borderColor: MAROON,
+                    color: MAROON,
+                  }}
+                >
+                  <MdStarBorder className="text-xs md:text-sm" />
+                  <span className="hidden sm:inline">Already Reviewed</span>
+                  <span className="sm:hidden">Reviewed</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleWriteReview(order)}
+                  className="flex-1 py-2 md:py-3 px-2 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 flex items-center justify-center gap-1 md:gap-2 cursor-pointer"
+                  style={{
+                    borderColor: MAROON,
+                    color: MAROON,
+                  }}
+                >
+                  <MdStarBorder className="text-xs md:text-sm flex-shrink-0" />
+                  <span>Write review</span>
+                </button>
+              )}
             </div>
           </div>
         ))
@@ -265,6 +300,9 @@ export default function OrderHistory({ onTrackOrder }) {
           </a>
         </div>
       )}
+
+      {/* Review Modal */}
+      <ReviewModal isOpen={isModalOpen} onSuccess={handleModalClose} />
     </div>
   );
 }

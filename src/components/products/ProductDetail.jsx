@@ -1221,7 +1221,7 @@ export default function ProductDetail({ product }) {
         </div>
       </div>
 
-      <ReviewsSection />
+      <ReviewsSection productId={product.id} />
 
       {/* Similar Products Section */}
       <SimilarProducts product={product} />
