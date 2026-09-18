@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useSelector } from "react-redux";
-import { selectOrder } from "@/store/slices/paymentSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { selectOrder, clearOrderConfirmation } from "@/store/slices/paymentSlice";
 import { selectSelectedAddressId, selectAddressesList } from "@/store/slices/addressesSlice";
 import { selectAppliedCoupon } from "@/store/slices/couponSlice";
 import { selectShippingConfig } from "@/store/slices/settingsSlice";
@@ -14,6 +14,7 @@ const MAROON = "#A91D3A";
 const GREEN = "#22C55E";
 
 export default function OrderConfirmation() {
+  const dispatch = useDispatch();
   const createdOrder = useSelector(selectOrder);
   const selectedAddressId = useSelector(selectSelectedAddressId);
   const addresses = useSelector(selectAddressesList);
@@ -22,6 +23,7 @@ export default function OrderConfirmation() {
 
   const [orderItems, setOrderItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
 
   console.log("🔍 OrderConfirmation createdOrder data:", createdOrder);
 
@@ -42,6 +44,15 @@ export default function OrderConfirmation() {
         });
     }
   }, [createdOrder?.orderId]);
+
+  // Auto-open tracking modal after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowTrackingModal(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const address = addresses.find((a) => a.id === selectedAddressId) || {};
 
@@ -67,8 +78,40 @@ export default function OrderConfirmation() {
 
   const rupees = (amount) => `₹${Number(amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
+  const handleViewTracking = () => {
+    dispatch(clearOrderConfirmation());
+    window.location.href = "/account?tab=orders";
+  };
+
   return (
     <>
+      {/* Tracking Modal - Auto opens after 2 seconds */}
+      {showTrackingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm text-center animate-fade-in">
+            <div className="mb-6">
+              <div className="mx-auto mb-4 h-16 w-16 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E8F5E9" }}>
+                <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke={GREEN} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-neutral-900">Track Your Order</h3>
+              <p className="mt-2 text-sm text-neutral-600">You can now view your order status and tracking information.</p>
+            </div>
+            <button
+              onClick={handleViewTracking}
+              className="w-full py-3 px-4 rounded-lg font-semibold text-white transition-colors"
+              style={{ backgroundColor: MAROON }}
+              onMouseEnter={(e) => (e.target.style.opacity = "0.9")}
+              onMouseLeave={(e) => (e.target.style.opacity = "1")}
+            >
+              View Tracking
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Order Confirmation Header */}
       <div className="mb-6 rounded-lg p-6 text-center" style={{ backgroundColor: "#F0F8F5", border: `1px solid ${GREEN}` }}>
         <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E8F5E9" }}>

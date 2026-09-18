@@ -51,6 +51,7 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
   hasRingSize: (apiProduct.ring_sizes?.length || 0) > 0,
   limit_purchases: apiProduct.limit_purchases || false,
   maxQty: apiProduct.limit_purchases ? 10 : 99,
+  is_photo_ring: apiProduct.is_photo_ring || false,
   rating: 4,
   bestseller: true,
   sections: [],

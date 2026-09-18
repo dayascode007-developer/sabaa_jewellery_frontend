@@ -606,9 +606,13 @@ function StylePreview({ name, fontId, symbolId, side }) {
 }
 
 export default function ProductDetail({ product }) {
+  // Detect if this is a "Real Photo Ring" product
+  const isRealPhotoRing = product.is_photo_ring === true;
+
   const [size, setSize] = useState(product.sizes?.[2] ?? "");
   const [qty, setQty] = useState(1);
   const [giftWrap, setGiftWrap] = useState(false);
+  const [customerPhoto, setCustomerPhoto] = useState(null);
 
   // Engraving options. Only rings carry them — a chain has no "ring name".
   const [ringName, setRingName] = useState("");
@@ -680,6 +684,8 @@ export default function ProductDetail({ product }) {
         ...(product.isCustomisable
           ? { ringName, fontId, symbolId: symbolLabel, symbolSide }
           : {}),
+        // Include customer photo for Real Photo Ring products
+        ...(isRealPhotoRing && customerPhoto ? { customerPhoto } : {}),
       };
 
       // Call backend API via Redux thunk
@@ -687,6 +693,9 @@ export default function ProductDetail({ product }) {
 
       // Remove from wishlist after successful add to cart
       dispatch(removeFromWishlist(product.id));
+
+      // Clear photo field after successful add to cart
+      setCustomerPhoto(null);
 
       setAdded(true);
     } catch (error) {
@@ -853,8 +862,33 @@ export default function ProductDetail({ product }) {
             </div>
           ) : null}
 
+          {/* Photo upload for Real Photo Ring */}
+          {isRealPhotoRing ? (
+            <div className="mt-5">
+              <label
+                htmlFor="customer-photo"
+                className="block text-[14px] font-bold"
+                style={{ color: MAROON }}
+              >
+                Upload Your Photo
+              </label>
+              <input
+                id="customer-photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => setCustomerPhoto(e.target.files?.[0] || null)}
+                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
+              />
+              {customerPhoto && (
+                <p className="mt-1 text-[12px] text-green-600">
+                  ✓ {customerPhoto.name} ({(customerPhoto.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
+              )}
+            </div>
+          ) : null}
+
           {/* Enamel Color selection */}
-          {product.colors && product.colors.length > 0 ? (
+          {!isRealPhotoRing && product.colors && product.colors.length > 0 ? (
             <div className="mt-4">
               <label
                 htmlFor="color"
@@ -880,8 +914,8 @@ export default function ProductDetail({ product }) {
 
           {/* Engraving — Name Engrave Rings only. The other ring categories are
             finished designs, so they get the size selector above but nothing
-            here: there is nothing to cut into them. */}
-          {product.isCustomisable ? (
+            here: there is nothing to cut into them. Real Photo Rings also skip this. */}
+          {!isRealPhotoRing && product.isCustomisable ? (
             <>
               <div className="mt-4">
                 <label

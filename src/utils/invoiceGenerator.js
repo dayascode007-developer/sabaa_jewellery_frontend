@@ -359,6 +359,7 @@ const generateInvoiceHTML = (order, logoUrl) => {
             </div>
             <div class="product-details">
               <div class="product-name">${item.title}</div>
+              ${item.purchase_id ? `<div class="product-seller" style="color: #430121; font-weight: 600;">Purchase ID: ${item.purchase_id}</div>` : ''}
               <div class="product-seller">Sold by: Sabaa Jewel Arts</div>
               <div class="product-bottom">
                 <span class="product-price">₹${(
