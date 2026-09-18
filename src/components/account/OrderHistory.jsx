@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MdLocalShipping, MdStarBorder, MdDownload } from "react-icons/md";
-import { downloadInvoicePDF } from "@/utils/invoiceGenerator";
+import { downloadOrderInvoice } from "@/utils/downloadInvoice";
 import { fetchOrders } from "@/store/slices/ordersSlice";
 import { OrderHistoryShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import ReviewModal from "@/components/reviews/ReviewModal";
@@ -151,7 +151,7 @@ export default function OrderHistory({ onTrackOrder }) {
                 {/* Download Invoice - Hidden on mobile */}
                 <div className="hidden lg:flex items-center">
                   <button
-                    onClick={() => downloadInvoicePDF(order)}
+                    onClick={() => downloadOrderInvoice(order)}
                     className="flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 cursor-pointer"
                     style={{ backgroundColor: MAROON }}
                   >
@@ -168,7 +168,7 @@ export default function OrderHistory({ onTrackOrder }) {
                 </p>
                 <div className="flex flex-col gap-1.5">
                   <button
-                    onClick={() => downloadInvoicePDF(order)}
+                    onClick={() => downloadOrderInvoice(order)}
                     className="text-xs font-medium transition-opacity hover:opacity-70 flex items-center gap-1"
                     style={{ color: MAROON }}
                   >
