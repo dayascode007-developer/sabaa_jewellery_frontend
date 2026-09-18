@@ -129,21 +129,15 @@ export default function OrderHistory({ onTrackOrder }) {
                   </div>
                 </div>
 
-                {/* Action Links - Hidden on mobile */}
-                <div className="hidden lg:flex flex-col gap-2">
-                  <button
-                    className="text-xs font-medium transition-opacity hover:opacity-70"
-                    style={{ color: MAROON }}
-                  >
-                    View order details
-                  </button>
+                {/* Download Invoice - Hidden on mobile */}
+                <div className="hidden lg:flex items-center">
                   <button
                     onClick={() => downloadInvoicePDF(order)}
-                    className="text-xs font-medium transition-opacity hover:opacity-70 flex items-center gap-1"
-                    style={{ color: MAROON }}
+                    className="flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 cursor-pointer"
+                    style={{ backgroundColor: MAROON }}
                   >
-                    <MdDownload className="text-sm" />
-                    Invoice
+                    <MdDownload className="text-lg" />
+                    Download Invoice
                   </button>
                 </div>
               </div>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import { USEFUL_LINKS, COMPANY_INFO, LEGAL_LINKS } from "@/constants/footerData";
+import useStoreSettings from "@/hooks/useStoreSettings";
 import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
 import instagramQr from "@/assets/logo/image.png";
 import AuthModal from "@/components/common/AuthModal";
@@ -140,6 +141,9 @@ export default function Footer() {
   const router = useRouter();
   const { token } = useSelector((state) => state.auth);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  // Address, phone, email and WhatsApp come from the admin panel's Settings
+  // page; the map and social profiles are still constants.
+  const info = useStoreSettings();
 
   const handleOrderTracking = () => {
     if (token) {
@@ -243,20 +247,20 @@ export default function Footer() {
                   Information
                 </h3>
                 <p className="mt-5 font-[family-name:var(--font-heading)] text-[15px] text-neutral-200">
-                  {COMPANY_INFO.addressLabel}
+                  {info.addressLabel}
                 </p>
                 <address className="mt-4 font-[family-name:var(--font-heading)] text-[15px] leading-relaxed text-neutral-200 not-italic">
-                  {COMPANY_INFO.address.map((line) => (
+                  {info.address.map((line) => (
                     <span key={line} className="block">
                       {line}
                     </span>
                   ))}
-                  <span className="block">{COMPANY_INFO.mobileLabel}</span>
+                  <span className="block">{info.mobileLabel}</span>
                   <a
-                    href={`mailto:${COMPANY_INFO.email}`}
+                    href={`mailto:${info.email}`}
                     className="block transition-colors hover:text-white"
                   >
-                    {COMPANY_INFO.email}
+                    {info.email}
                   </a>
                 </address>
 
@@ -264,7 +268,7 @@ export default function Footer() {
 
                 <div className="mt-4 flex items-center gap-6 text-white">
                   <a
-                    href={`https://wa.me/${COMPANY_INFO.whatsapp}`}
+                    href={`https://wa.me/${info.whatsapp}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="WhatsApp"
@@ -273,7 +277,7 @@ export default function Footer() {
                     <Icon path={GLYPHS.whatsapp} filled className="h-6 w-6" />
                   </a>
                   <a
-                    href={`mailto:${COMPANY_INFO.email}`}
+                    href={`mailto:${info.email}`}
                     aria-label="Email"
                     className="transition-opacity hover:opacity-70"
                   >
@@ -291,10 +295,10 @@ export default function Footer() {
                   Contact Us
                 </h3>
                 <a
-                  href={`tel:${COMPANY_INFO.phone.replace(/\s/g, "")}`}
+                  href={`tel:${info.phone.replace(/\s/g, "")}`}
                   className="mt-2 block font-[family-name:var(--font-heading)] text-[15px] text-neutral-200 transition-colors hover:text-white"
                 >
-                  {COMPANY_INFO.phone}
+                  {info.phone}
                 </a>
 
                 {/* Embedded Google map. The iframe is absolutely positioned so
@@ -330,7 +334,13 @@ export default function Footer() {
                 {SOCIAL_LINKS.map((social) => (
                   <a
                     key={social.key}
-                    href={social.href}
+                    // WhatsApp follows the contact number from Settings; the
+                    // Instagram and Facebook profiles stay constants.
+                    href={
+                      social.key === "whatsapp"
+                        ? `https://wa.me/${info.whatsapp}`
+                        : social.href
+                    }
                     // The placeholders stay in-page; the live WhatsApp link opens
                     // in a new tab like every other outbound link on the site.
                     {...(social.href.startsWith("http")
