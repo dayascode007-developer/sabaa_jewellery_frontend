@@ -33,17 +33,13 @@ function Stepper({ item }) {
 
   const updateQty = (newQty) => {
     const productId = item.product_id || item.id;
-    console.log(`📊 Quantity Update - Product ID: ${productId}, New Quantity: ${newQty}`);
 
     if (newQty <= 0) {
-      console.log(`🗑️ Removing item ${productId} from cart`);
       dispatch(removeFromCart(productId));
     } else {
       setLoading(true);
-      console.log(`⬆️ Updating quantity for ${productId} to ${newQty}`);
       dispatch(updateCartQuantity({ productId, quantity: newQty }));
       setLoading(false);
-      console.log(`✅ Quantity updated successfully`);
     }
   };
 
@@ -194,10 +190,7 @@ export default function Cart() {
   const [clearedCart, setClearedCart] = useState(false);
 
   useEffect(() => {
-    console.log("🛒 Cart Component Mounted - Fetching cart items from API");
-    dispatch(fetchCart()).then(() => {
-      console.log("✅ Cart items loaded:", items.length);
-    });
+    dispatch(fetchCart());
   }, [dispatch]);
 
   // Tracked as the pieces that are NOT ticked, so anything added to the cart

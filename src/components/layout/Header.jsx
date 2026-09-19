@@ -120,11 +120,7 @@ export default function Header() {
 
   // Monitor auth state for display
   useEffect(() => {
-    console.log("👤 Header Display:", {
-      isLoggedIn,
-      token: !!token,
-      customer: customer?.name || "N/A",
-    });
+    // Auth state updated
   }, [isLoggedIn, token, customer]);
 
   return (

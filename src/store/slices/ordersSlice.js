@@ -46,8 +46,13 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.list = action.payload;
-        if (action.payload && Array.isArray(action.payload)) {
+        // API returns { data, pagination } structure
+        if (action.payload && action.payload.data) {
+          state.list = action.payload.data;
+          if (action.payload.pagination) {
+            state.pagination = action.payload.pagination;
+          }
+        } else if (Array.isArray(action.payload)) {
           state.list = action.payload;
         }
       })

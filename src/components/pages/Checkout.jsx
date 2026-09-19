@@ -222,6 +222,8 @@ export default function Checkout() {
 
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [showLoadingState, setShowLoadingState] = useState(false); // Minimum loader display time
+  const [paymentSuccessful, setPaymentSuccessful] = useState(false); // Prevent Payment screen flash after Razorpay success
 
   // Dynamic shipping rates state
   const [dynamicShippingCost, setDynamicShippingCost] = useState(null);
@@ -265,13 +267,11 @@ export default function Checkout() {
   // Fetch shipping rates based on payment method (no pincode needed)
   useEffect(() => {
     setShippingRatesLoading(true);
-    console.log(`📦 Fetching shipping rate for payment method: ${paymentMethod || "cod"}`);
 
     const method = paymentMethod === "cod" ? "cod" : "prepaid";
     // Use any pincode or dummy pincode since rates are fixed
     fetchShippingRatesApi("560001", 0.5, method)
       .then((data) => {
-        console.log("✅ Shipping rate fetched:", data);
 
         // Use the rate from Shiprocket
         const shippingCost = data.rate || (method === "cod" ? 100 : 60);
@@ -286,7 +286,6 @@ export default function Checkout() {
         }
       })
       .catch((error) => {
-        console.error("❌ Failed to fetch shipping rates:", error.message);
         // Fallback: ₹100 for COD, ₹60 for Prepaid
         const fallbackRate = method === "cod" ? 100 : 60;
         setDynamicShippingCost(fallbackRate);
@@ -300,7 +299,6 @@ export default function Checkout() {
   // Auto-scroll to Order Summary when payment method is selected
   useEffect(() => {
     if (paymentMethod && orderSummaryRef.current) {
-      console.log(`📜 Auto-scrolling to Order Summary`);
       setTimeout(() => {
         orderSummaryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
@@ -345,9 +343,7 @@ export default function Checkout() {
       },
       theme: { color: MAROON },
       modal: {
-        ondismiss: () => {
-          console.log("Razorpay modal closed");
-        },
+        ondismiss: () => {},
       },
       redirect: false,
     };
@@ -361,7 +357,7 @@ export default function Checkout() {
       // Only trigger failure handler if payment processing hasn't already succeeded
       rzp.on("payment.failed", (error) => {
         if (!isProcessingPayment) {
-          console.error("Razorpay payment failed:", error);
+          setPaymentSuccessful(false); // Reset if payment fails
           razorpayOpenedRef.current = false; // Allow retry
           dispatch(clearPayment());
         }
@@ -369,7 +365,6 @@ export default function Checkout() {
 
       rzp.open();
     } catch (error) {
-      console.error("Razorpay initialization error:", error);
       razorpayOpenedRef.current = false; // Allow retry
       // If Razorpay fails, fallback to COD message
       alert("Online payment unavailable. Please use Cash on Delivery instead.");
@@ -380,14 +375,11 @@ export default function Checkout() {
   const handlePaymentSuccess = (response) => {
     // Guard: prevent processing the same payment twice
     if (isProcessingPayment) {
-      console.warn("Payment already being processed, ignoring duplicate callback");
       return;
     }
 
-    console.log("Payment success response received:", {
-      paymentId: response.razorpay_payment_id,
-      orderId: response.razorpay_order_id,
-    });
+    // Mark payment as successful to prevent Payment Method screen from flashing
+    setPaymentSuccessful(true);
 
     // Store payment details for later use in order creation
     paymentDetailsRef.current = {
@@ -420,7 +412,6 @@ export default function Checkout() {
         body { overflow: auto !important; }
       `;
       document.head.appendChild(style);
-      console.log("✅ Razorpay hiding CSS injected");
     };
 
     injectHidingCSS();
@@ -436,8 +427,6 @@ export default function Checkout() {
 
   // Handle payment verification and order creation
   useEffect(() => {
-    console.log("🔍 Payment verification check:", { paymentVerified, hasRazorpayOrder: !!razorpayOrder, paymentLoading, hasCreatedOrder: !!createdOrder });
-
     if (paymentVerified && razorpayOrder && !paymentLoading && !createdOrder) {
       // Recalculate order summary with fresh values
       const itemsTotal = items.reduce((t, i) => t + i.price * i.quantity, 0);
@@ -466,17 +455,13 @@ export default function Checkout() {
         }),
       };
 
-      console.log("✅ Creating order with payload:", orderPayload);
       dispatch(createOrder(orderPayload));
     }
   }, [paymentVerified, razorpayOrder, paymentLoading, createdOrder, items, shippingConfig, appliedCoupon, paymentMethod, selectedAddressId, dynamicShippingCost, dispatch]);
 
   // Handle order created (Online payment)
   useEffect(() => {
-    console.log("🔍 Online payment order check:", { createdOrder: !!createdOrder, paymentVerified, paymentMethod, shouldProcess: createdOrder && paymentVerified && paymentMethod !== "cod" });
-
     if (createdOrder && paymentVerified && paymentMethod !== "cod") {
-      console.log("✅ Online payment order created, moving to step 2");
       if (appliedCoupon) {
         dispatch(
           applyCoupon({
@@ -489,21 +474,36 @@ export default function Checkout() {
 
       dispatch(clearCart());
       setPaymentMethod(null);
-      setIsProcessingPayment(false);
-      setStep(2);
+      setPaymentSuccessful(false); // Reset payment success state for next order
+
+      // Show loader for minimum 1.5 seconds, then show confirmation
+      console.log("⏱️ Starting loader - 1.5 second display");
+      setShowLoadingState(true);
+      setStep(2); // Change step FIRST so loader renders while showLoadingState is true
+      setTimeout(() => {
+        console.log("✅ Loader complete - showing order confirmation");
+        setShowLoadingState(false);
+        setIsProcessingPayment(false);
+      }, 1500);
     }
   }, [createdOrder, paymentVerified, paymentMethod, appliedCoupon, dispatch]);
 
   // Handle order created (COD payment)
   useEffect(() => {
-    console.log("🔍 COD payment order check:", { createdOrder: !!createdOrder, paymentVerified, paymentMethod, shouldProcess: createdOrder && paymentVerified && paymentMethod === "cod" });
-
     if (createdOrder && paymentVerified && paymentMethod === "cod") {
-      console.log("✅ COD payment order created, moving to step 2");
       dispatch(clearCart());
       setPaymentMethod(null);
-      setIsProcessingPayment(false);
-      setStep(2);
+      setPaymentSuccessful(false); // Reset payment success state for next order
+
+      // Show loader for minimum 1.5 seconds, then show confirmation
+      console.log("⏱️ Starting loader - 1.5 second display");
+      setShowLoadingState(true);
+      setStep(2); // Change step FIRST so loader renders while showLoadingState is true
+      setTimeout(() => {
+        console.log("✅ Loader complete - showing order confirmation");
+        setShowLoadingState(false);
+        setIsProcessingPayment(false);
+      }, 1500);
     }
   }, [createdOrder, paymentVerified, paymentMethod, dispatch]);
 
@@ -545,7 +545,7 @@ export default function Checkout() {
         }
       }
     } catch (error) {
-      console.error("Failed to save address:", error);
+      // Address save failed silently
     } finally {
       setSavingAddress(false);
     }
@@ -836,7 +836,7 @@ export default function Checkout() {
           ) : null}
 
           {/* ---------------------------------------------------- 2. payment */}
-          {step === 1 ? (
+          {step === 1 && !paymentSuccessful ? (
             <Card title="Payment Method">
               <fieldset className="space-y-2.5">
                 <legend className="sr-only">Choose payment method</legend>
@@ -854,10 +854,7 @@ export default function Checkout() {
                       name="payment-method"
                       value={m.id}
                       checked={paymentMethod === m.id}
-                      onChange={() => {
-                        setPaymentMethod(m.id);
-                        console.log(`💳 Payment method selected: ${m.id}`);
-                      }}
+                      onChange={() => setPaymentMethod(m.id)}
                       className="mt-1 h-4 w-4 accent-[#7B1E2B]"
                     />
                     <div className="flex min-w-0 flex-1 items-start gap-3">
@@ -909,10 +906,68 @@ export default function Checkout() {
             </Card>
           ) : null}
 
+          {/* Show loader while payment is processing after Razorpay success */}
+          {step === 1 && paymentSuccessful ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative w-16 h-16">
+                  <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+                  <div
+                    className="absolute inset-0 rounded-full border-4 border-transparent"
+                    style={{
+                      borderTopColor: MAROON,
+                      animation: 'spin 1s linear infinite',
+                    }}
+                  ></div>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-900 font-medium">Processing your payment</p>
+                  <p className="text-gray-600 text-sm mt-1">Verifying with bank...</p>
+                </div>
+              </div>
+              <style>{`
+                @keyframes spin {
+                  from { transform: rotate(0deg); }
+                  to { transform: rotate(360deg); }
+                }
+              `}</style>
+            </div>
+          ) : null}
+
           {/* ---------------------------------------------------- 3. confirm */}
           {step === 2 ? (
             <>
-              {createdOrder ? (
+              {(() => {
+                console.log("🔄 Loader State:", { showLoadingState, createdOrder: !!createdOrder });
+                return null;
+              })()}
+              {showLoadingState ? (
+                // Show loader for minimum 1.5 seconds after order creation
+                <div className="flex items-center justify-center py-20">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="relative w-16 h-16">
+                      <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+                      <div
+                        className="absolute inset-0 rounded-full border-4 border-transparent"
+                        style={{
+                          borderTopColor: MAROON,
+                          animation: 'spin 1s linear infinite',
+                        }}
+                      ></div>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-900 font-medium">Processing your order</p>
+                      <p className="text-gray-600 text-sm mt-1">Please wait...</p>
+                    </div>
+                  </div>
+                  <style>{`
+                    @keyframes spin {
+                      from { transform: rotate(0deg); }
+                      to { transform: rotate(360deg); }
+                    }
+                  `}</style>
+                </div>
+              ) : createdOrder ? (
                 <OrderConfirmation />
               ) : (
                 <>

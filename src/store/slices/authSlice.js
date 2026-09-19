@@ -139,15 +139,12 @@ export const initializeAuth = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = getStoredToken();
-      console.log("🔄 initializeAuth called - Token:", !!token);
 
       if (!token) {
-        console.log("⚠️ No token found");
         return null;
       }
 
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/customer/profile`;
-      console.log("📡 Fetching customer profile from:", apiUrl);
 
       const response = await fetch(apiUrl, {
         headers: {
@@ -156,18 +153,14 @@ export const initializeAuth = createAsyncThunk(
         },
       });
 
-      console.log("📥 Profile response status:", response.status);
-
       if (!response.ok) {
         saveToken(null);
         throw new Error(`Token validation failed - status ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("👤 Customer profile fetched:", data);
       return { token, customer: data.data || data };
     } catch (error) {
-      console.error("❌ initializeAuth failed:", error.message);
       saveToken(null);
       return rejectWithValue(error.message);
     }
@@ -195,7 +188,7 @@ const saveToken = (token) => {
       localStorage.removeItem("authToken");
     }
   } catch (error) {
-    console.warn("Failed to save token:", error);
+    // Silently fail token save
   }
 };
 
@@ -205,7 +198,6 @@ const getStoredToken = () => {
   try {
     return localStorage.getItem("authToken");
   } catch (error) {
-    console.warn("Failed to get stored token:", error);
     return null;
   }
 };
@@ -275,12 +267,10 @@ const authSlice = createSlice({
           localStorage.removeItem("customerId");
         }
         saveToken(action.payload.token);
-        console.log("✅ Signup successful - Token & Customer set");
       })
       .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.error("❌ Signup failed:", action.payload);
       });
 
     // Login
@@ -323,7 +313,6 @@ const authSlice = createSlice({
       })
       .addCase(verifyLoginOtp.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("🔑 verifyLoginOtp API Response:", action.payload);
         state.token = action.payload.token;
         // Ensure customer data is present (fallback to empty object to trigger header rerender)
         state.customer = action.payload.customer || { id: "temp" };
@@ -332,15 +321,10 @@ const authSlice = createSlice({
           localStorage.removeItem("customerId");
         }
         saveToken(action.payload.token);
-        console.log("✅ Login successful - Redux State Updated:", {
-          token: !!state.token,
-          customer: state.customer,
-        });
       })
       .addCase(verifyLoginOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.error("❌ Login failed:", action.payload);
       });
 
     // Google Send OTP
@@ -386,42 +370,30 @@ const authSlice = createSlice({
           localStorage.removeItem("customerId");
         }
         saveToken(action.payload.token);
-        console.log("✅ Google login successful - Token & Customer set");
       })
       .addCase(googleVerifyOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.error("❌ Google login failed:", action.payload);
       });
 
     // Initialize Auth (validate token & fetch profile)
     builder
       .addCase(initializeAuth.pending, (state) => {
         state.loading = true;
-        console.log("⏳ initializeAuth pending...");
       })
       .addCase(initializeAuth.fulfilled, (state, action) => {
         state.loading = false;
         state.initialized = true;
-        console.log("✅ initializeAuth fulfilled:", {
-          payload: action.payload,
-          customer: action.payload?.customer,
-        });
         if (action.payload) {
           state.token = action.payload.token;
           state.customer = action.payload.customer;
         }
-        console.log("📋 Auth state after init:", {
-          token: !!state.token,
-          customer: state.customer,
-        });
       })
       .addCase(initializeAuth.rejected, (state) => {
         state.loading = false;
         state.initialized = true;
         state.token = null;
         state.customer = null;
-        console.log("❌ initializeAuth rejected - auth cleared");
       });
 
     // Logout

@@ -20,43 +20,27 @@ export default function AuthInitializer({ children }) {
   useEffect(() => {
     if (!settingsFetchedRef.current) {
       settingsFetchedRef.current = true;
-      dispatch(fetchSettings()).catch((err) => {
-        console.error("⚠️ Failed to fetch settings:", err);
+      dispatch(fetchSettings()).catch(() => {
+        // Settings fetch failed silently
       });
     }
   }, [dispatch]);
 
   useEffect(() => {
-    console.log("🔐 AuthInitializer - State Check:", {
-      token: !!token,
-      customer_name: customer?.name,
-      customer_id: customer?.id,
-      initialized,
-      initializingRef: initializingRef.current,
-    });
-
     // Initialize auth on app load (validate stored token)
     if (!initialized && !initializingRef.current) {
-      console.log("📡 Initializing auth from localStorage...");
       initializingRef.current = true;
       dispatch(initializeAuth()).finally(() => {
-        console.log("✅ initializeAuth completed");
         initializingRef.current = false;
       });
     }
 
     // If token exists but no customer, fetch customer profile
     if (token && (!customer || customer.id === "temp") && !initializingRef.current) {
-      console.log("🔄 Customer missing/temp - Fetching customer profile...", {
-        customer: customer,
-        customerIsTemp: customer?.id === "temp",
-      });
       initializingRef.current = true;
-      dispatch(initializeAuth()).then((result) => {
-        console.log("✅ Customer profile fetched:", result.payload);
+      dispatch(initializeAuth()).then(() => {
         initializingRef.current = false;
-      }).catch((err) => {
-        console.error("❌ Failed to fetch customer:", err);
+      }).catch(() => {
         initializingRef.current = false;
       });
     }
@@ -65,11 +49,8 @@ export default function AuthInitializer({ children }) {
   // ✅ SYNC CART AFTER LOGIN - Fetch user's cart immediately after authentication
   useEffect(() => {
     if (token && customer && customer.id !== "temp" && !cartFetchedRef.current) {
-      console.log("🛒 User authenticated - Syncing cart state...");
       cartFetchedRef.current = true;
-      dispatch(fetchCart()).then(() => {
-        console.log("✅ Cart synced successfully");
-      });
+      dispatch(fetchCart());
     }
   }, [token, customer, dispatch]);
 
@@ -78,7 +59,6 @@ export default function AuthInitializer({ children }) {
     if (!token || !customer || customer.id === "temp") {
       // User logged out or auth not ready
       if (cartFetchedRef.current) {
-        console.log("🗑️ Clearing cart on logout...");
         dispatch(clearCartLocal());
         cartFetchedRef.current = false;
       }
@@ -89,7 +69,6 @@ export default function AuthInitializer({ children }) {
   // Fetch wishlist and addresses when user is authenticated
   useEffect(() => {
     if (token && customer && customer.id !== "temp") {
-      console.log("❤️ Fetching wishlist and addresses...");
       dispatch(fetchWishlist());
       dispatch(fetchAddresses());
     }

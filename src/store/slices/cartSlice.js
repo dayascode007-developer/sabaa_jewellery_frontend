@@ -18,10 +18,8 @@ export const addToCart = createAsyncThunk(
   async (cartItem, { rejectWithValue }) => {
     try {
       const response = await addToCartApi(cartItem);
-      console.log("✅ addToCart response:", response);
       return response.data || cartItem;
     } catch (error) {
-      console.error("❌ addToCart error:", error.message);
       return rejectWithValue(error.message);
     }
   }
