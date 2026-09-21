@@ -7,6 +7,7 @@ import { downloadOrderInvoice } from "@/utils/downloadInvoice";
 import { fetchOrders } from "@/store/slices/ordersSlice";
 import { OrderHistoryShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import ReviewModal from "@/components/reviews/ReviewModal";
+import OrderDetailsModal from "./OrderDetailsModal";
 import { openReviewModal, selectIsModalOpen, closeReviewModal } from "@/store/slices/reviewsSlice";
 
 const MAROON = "#430121";
@@ -17,6 +18,8 @@ export default function OrderHistory({ onTrackOrder }) {
   const { list: orders, loading, error, pagination } = useSelector((state) => state.orders);
   const isModalOpen = useSelector(selectIsModalOpen);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     const offset = (currentPage - 1) * PAGE_SIZE;
@@ -29,6 +32,16 @@ export default function OrderHistory({ onTrackOrder }) {
       const firstItem = order.items[0];
       dispatch(openReviewModal({ product: firstItem, orderId: order.id }));
     }
+  };
+
+  const handleViewDetails = (order) => {
+    setSelectedOrder(order);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedOrder(null);
   };
 
   const handleModalClose = () => {
@@ -284,7 +297,9 @@ export default function OrderHistory({ onTrackOrder }) {
               </button>
 
               {/* View or Edit Order - Secondary Button */}
-              <button className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer"
+              <button
+                onClick={() => handleViewDetails(order)}
+                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer"
                 style={{
                   borderColor: MAROON,
                   color: MAROON,
@@ -341,6 +356,13 @@ export default function OrderHistory({ onTrackOrder }) {
           </a>
         </div>
       )}
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        isOpen={isDetailsModalOpen}
+        order={selectedOrder}
+        onClose={handleCloseDetailsModal}
+      />
 
       {/* Review Modal */}
       <ReviewModal isOpen={isModalOpen} onSuccess={handleModalClose} />
