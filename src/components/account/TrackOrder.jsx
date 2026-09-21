@@ -29,12 +29,20 @@ const ORDER_STATUSES = [
   { label: "Delivered", icon: MdHome },
 ];
 
-export default function TrackOrder({ trackingData, loading = false }) {
+export default function TrackOrder({ trackingData, loading = false, error = null }) {
   const [showInstructions, setShowInstructions] = useState(false);
   const [instructions, setInstructions] = useState("Leave at door");
 
   if (loading) {
     return <TrackOrderShimmer />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600">Error: {error}</p>
+      </div>
+    );
   }
 
   if (!trackingData) {
@@ -45,12 +53,38 @@ export default function TrackOrder({ trackingData, loading = false }) {
     );
   }
 
-  const { purchase_id, status_label, timeline = [], shipment = {}, address = {}, items = [], total_amount, estimated_delivery } = trackingData;
+  // Use existing endpoint data structure with Shiprocket integration
+  const { purchase_id, status_label, timeline = [], shipment = {}, address = {}, items = [], total_amount, estimated_delivery, shiprocket_tracking } = trackingData;
 
-  // Keep only 4 main statuses, filter out intermediate ones
+  // Merge Shiprocket real-time events with admin timeline
+  let mergedTimeline = [...timeline];
+  if (shiprocket_tracking?.tracking_data && Array.isArray(shiprocket_tracking.tracking_data)) {
+    shiprocket_tracking.tracking_data.forEach((event) => {
+      // Add Shiprocket events to timeline if not already present
+      if (!mergedTimeline.some(t => t.timestamp === event.date)) {
+        mergedTimeline.push({
+          status: event.status.toLowerCase().replace(/ /g, '_'),
+          label: event.status,
+          completed: true,
+          timestamp: event.date,
+          location: event.location,
+          description: event.description,
+          source: 'shiprocket',
+        });
+      }
+    });
+    // Sort by timestamp descending (newest first)
+    mergedTimeline = mergedTimeline.sort((a, b) => {
+      if (!a.timestamp) return 1;
+      if (!b.timestamp) return -1;
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+  }
+
+  // Keep only 4 main statuses for progress bar, but show all events in mobile timeline
   const mainStatuses = ["pending", "shipped", "out_for_delivery", "delivered"];
 
-  const filteredTimeline = timeline
+  const filteredTimeline = mergedTimeline
     .filter((step) => mainStatuses.includes(step.status))
     .map((step) => ({
       ...step,
@@ -62,6 +96,18 @@ export default function TrackOrder({ trackingData, loading = false }) {
   const currentStep = filteredTimeline.find((s) => s.current);
   const currentIndex = filteredTimeline.findIndex((s) => s.current);
   const progressPercent = filteredTimeline.length > 0 ? ((currentIndex + 1) / filteredTimeline.length) * 100 : 25;
+
+  const getDisplayLabel = (status) => {
+    const map = {
+      pending: "Order Placed",
+      confirmed: "Order Confirmed",
+      shipped: "Shipped",
+      out_for_delivery: "Out for Delivery",
+      delivered: "Delivered",
+      cancelled: "Cancelled",
+    };
+    return map[status?.toLowerCase()] || status || "Order Placed";
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -83,7 +129,7 @@ export default function TrackOrder({ trackingData, loading = false }) {
             className="text-xl md:text-2xl font-bold mb-6 md:mb-8"
             style={{ color: MAROON }}
           >
-            {currentStep?.label || status_label || "Order Placed"}
+            {currentStep?.label || getDisplayLabel(status_label) || "Order Placed"}
           </h2>
 
           {/* Timeline */}
@@ -115,7 +161,7 @@ export default function TrackOrder({ trackingData, loading = false }) {
               </div>
 
               {/* Status Steps */}
-              {timeline.map((step, index) => {
+              {mergedTimeline.map((step, index) => {
                 const Icon = ORDER_STATUSES[index]?.icon || MdCheckCircle;
                 const isCompleted = step.completed;
                 const isCurrent = step.current;
@@ -191,12 +237,13 @@ export default function TrackOrder({ trackingData, loading = false }) {
                 />
               </svg>
 
-              {/* Status items */}
+              {/* Status items - show all events including Shiprocket */}
               <div className="space-y-6">
-                {timeline.map((step, index) => {
-                  const Icon = ORDER_STATUSES[index]?.icon || MdCheckCircle;
+                {mergedTimeline.map((step, index) => {
+                  const Icon = ORDER_STATUSES[mainStatuses.indexOf(step.status)]?.icon || MdCheckCircle;
                   const isCompleted = step.completed;
                   const isCurrent = step.current;
+                  const isShiprocket = step.source === 'shiprocket';
 
                   return (
                     <div
@@ -218,22 +265,37 @@ export default function TrackOrder({ trackingData, loading = false }) {
                         <Icon className="text-lg" />
                       </div>
                       <div className="flex-1">
-                        <p
-                          className={`text-sm font-semibold ${
-                            isCompleted || isCurrent
-                              ? "text-gray-900"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {step.label}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p
+                            className={`text-sm font-semibold ${
+                              isCompleted || isCurrent
+                                ? "text-gray-900"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {step.label}
+                          </p>
+                          {isShiprocket && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              Shiprocket
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-gray-500 mt-1">
-                          {isCompleted
+                          {step.timestamp
+                            ? new Date(step.timestamp).toLocaleString()
+                            : isCompleted
                             ? "Completed"
                             : isCurrent
                             ? "In progress"
                             : "Pending"}
                         </p>
+                        {step.location && (
+                          <p className="text-xs text-gray-600 mt-1">{step.location}</p>
+                        )}
+                        {step.description && (
+                          <p className="text-xs text-gray-600 mt-1">{step.description}</p>
+                        )}
                       </div>
                     </div>
                   );

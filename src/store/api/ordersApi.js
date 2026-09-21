@@ -78,7 +78,11 @@ export const getOrdersApi = async (limit = 10, offset = 0) => {
   }
 
   const data = await response.json();
-  return data.data;
+  // Return both data and pagination metadata
+  return {
+    data: data.data,
+    pagination: data.pagination,
+  };
 };
 
 export const getOrderItemsApi = async (orderId) => {

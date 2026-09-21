@@ -9,13 +9,13 @@ import { PiNotepad, PiShoppingCartLight } from "react-icons/pi";
 import { AiOutlineLogout } from "react-icons/ai";
 import { MdArrowBack } from "react-icons/md";
 import { logout, initializeAuth } from "@/store/slices/authSlice";
+import { fetchOrderTracking, selectTracking, selectTrackingLoading, selectTrackingError } from "@/store/slices/trackingSlice";
 import PersonalInformation from "./PersonalInformation";
 import Wishlist from "./Wishlist";
 import OrderHistory from "./OrderHistory";
 import TrackOrder from "./TrackOrder";
 import LogoutConfirmModal from "./LogoutConfirmModal";
 import Footer from "@/components/layout/Footer";
-import { getOrderTrackingApi } from "@/store/api/ordersApi";
 
 const MAROON = "#430121";
 
@@ -39,10 +39,11 @@ const logoutItem = {
 export default function AccountDashboard() {
   const [activeSection, setActiveSection] = useState("personal");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [trackedOrder, setTrackedOrder] = useState(null);
-  const [trackingLoading, setTrackingLoading] = useState(false);
-  const [trackingError, setTrackingError] = useState(null);
+  const [showTracking, setShowTracking] = useState(false);
   const { token } = useSelector((state) => state.auth);
+  const trackingData = useSelector(selectTracking);
+  const trackingLoading = useSelector(selectTrackingLoading);
+  const trackingError = useSelector(selectTrackingError);
   const dispatch = useDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -75,18 +76,9 @@ export default function AccountDashboard() {
     setShowLogoutModal(true);
   };
 
-  const handleTrackOrder = async (order) => {
-    try {
-      setTrackingLoading(true);
-      setTrackingError(null);
-      const trackingData = await getOrderTrackingApi(order.id);
-      setTrackedOrder(trackingData);
-    } catch (error) {
-      setTrackingError(error.message);
-      console.error("Failed to fetch tracking data:", error);
-    } finally {
-      setTrackingLoading(false);
-    }
+  const handleTrackOrder = (order) => {
+    dispatch(fetchOrderTracking(order.id));
+    setShowTracking(true);
   };
 
   return (
@@ -233,17 +225,17 @@ export default function AccountDashboard() {
 
               {activeSection === "wishlist" && <Wishlist />}
 
-              {activeSection === "orders" && trackedOrder ? (
+              {activeSection === "orders" && showTracking ? (
                 <div>
                   <button
-                    onClick={() => setTrackedOrder(null)}
+                    onClick={() => setShowTracking(false)}
                     className="mb-4 px-4 py-2 text-sm font-medium rounded transition-opacity hover:opacity-70 cursor-pointer flex items-center gap-2"
                     style={{ color: MAROON, borderColor: MAROON, border: "2px solid" }}
                   >
                     <MdArrowBack className="text-base" />
                     Back to Orders
                   </button>
-                  <TrackOrder trackingData={trackedOrder} loading={trackingLoading} />
+                  <TrackOrder trackingData={trackingData} loading={trackingLoading} error={trackingError} />
                 </div>
               ) : activeSection === "orders" ? (
                 <OrderHistory onTrackOrder={handleTrackOrder} />

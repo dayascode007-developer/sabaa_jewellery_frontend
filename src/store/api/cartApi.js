@@ -80,14 +80,11 @@ export const getCartApi = async () => {
 
   const data = await response.json();
 
-  console.log("📦 GET Cart API Response:", data);
-
   if (!response.ok) {
     throw new Error(data.message || "Failed to fetch cart");
   }
 
   const items = (data.data?.items || []).map(transformCartItem);
-  console.log(`✅ Cart fetched: ${items.length} items`, items);
   return items;
 };
 
@@ -106,22 +103,17 @@ export const updateCartQuantityApi = async (productId, quantity) => {
 
   const data = await response.json();
 
-  console.log(`📊 Update Quantity Response:`, data);
-
   if (!response.ok) {
     throw new Error(data.message || "Failed to update quantity");
   }
 
   const item = data.data ? transformCartItem(data.data) : null;
-  console.log(`✅ Quantity updated successfully`);
   return item;
 };
 
 export const removeFromCartApi = async (productId) => {
   const token = getToken();
   if (!token) throw new Error("Authentication required");
-
-  console.log(`🗑️ Removing product ${productId} from cart`);
 
   const response = await fetch(`${API_URL}/api/customer/cart/${productId}`, {
     method: "DELETE",
@@ -134,19 +126,15 @@ export const removeFromCartApi = async (productId) => {
   const data = await response.json();
 
   if (!response.ok) {
-    console.error(`❌ Failed to remove from cart:`, data.message);
     throw new Error(data.message || "Failed to remove from cart");
   }
 
-  console.log(`✅ Item removed successfully`);
   return data;
 };
 
 export const clearCartApi = async () => {
   const token = getToken();
   if (!token) throw new Error("Authentication required");
-
-  console.log(`🧹 Clearing entire cart`);
 
   const response = await fetch(`${API_URL}/api/customer/cart`, {
     method: "DELETE",
@@ -159,10 +147,8 @@ export const clearCartApi = async () => {
   const data = await response.json();
 
   if (!response.ok) {
-    console.error(`❌ Failed to clear cart:`, data.message);
     throw new Error(data.message || "Failed to clear cart");
   }
 
-  console.log(`✅ Cart cleared successfully`);
   return data;
 };

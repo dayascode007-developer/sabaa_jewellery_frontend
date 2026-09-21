@@ -25,8 +25,6 @@ export default function OrderConfirmation() {
   const [loadingItems, setLoadingItems] = useState(false);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
 
-  console.log("🔍 OrderConfirmation createdOrder data:", createdOrder);
-
   // Fetch order items from database
   useEffect(() => {
     if (createdOrder?.orderId) {
@@ -35,8 +33,7 @@ export default function OrderConfirmation() {
         .then((items) => {
           setOrderItems(items || []);
         })
-        .catch((error) => {
-          console.error("Error fetching order items:", error);
+        .catch(() => {
           setOrderItems([]);
         })
         .finally(() => {

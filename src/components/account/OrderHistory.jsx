@@ -1,24 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { MdLocalShipping, MdStarBorder, MdDownload } from "react-icons/md";
+import { MdLocalShipping, MdStarBorder, MdDownload, MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { downloadOrderInvoice } from "@/utils/downloadInvoice";
 import { fetchOrders } from "@/store/slices/ordersSlice";
 import { OrderHistoryShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import ReviewModal from "@/components/reviews/ReviewModal";
+import OrderDetailsModal from "./OrderDetailsModal";
 import { openReviewModal, selectIsModalOpen, closeReviewModal } from "@/store/slices/reviewsSlice";
 
 const MAROON = "#430121";
+const PAGE_SIZE = 10;
 
 export default function OrderHistory({ onTrackOrder }) {
   const dispatch = useDispatch();
-  const { list: orders, loading, error } = useSelector((state) => state.orders);
+  const { list: orders, loading, error, pagination } = useSelector((state) => state.orders);
   const isModalOpen = useSelector(selectIsModalOpen);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchOrders());
-  }, [dispatch]);
+    const offset = (currentPage - 1) * PAGE_SIZE;
+    dispatch(fetchOrders({ limit: PAGE_SIZE, offset }));
+  }, [dispatch, currentPage]);
 
   const handleWriteReview = (order) => {
     // Open modal for first item if multiple items, or single item
@@ -26,6 +32,16 @@ export default function OrderHistory({ onTrackOrder }) {
       const firstItem = order.items[0];
       dispatch(openReviewModal({ product: firstItem, orderId: order.id }));
     }
+  };
+
+  const handleViewDetails = (order) => {
+    setSelectedOrder(order);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedOrder(null);
   };
 
   const handleModalClose = () => {
@@ -79,6 +95,44 @@ export default function OrderHistory({ onTrackOrder }) {
 
   return (
     <div className="space-y-6">
+      {/* Pagination Controls - Top Right (Responsive) */}
+      {orders && orders.length > 0 && (
+        <div className="flex items-center justify-end gap-2 md:gap-4 mb-6 md:mb-8 pb-3 md:pb-4 border-b border-gray-200 overflow-x-auto">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1 md:py-2 rounded-lg border-2 font-semibold text-xs md:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-70 whitespace-nowrap flex-shrink-0"
+            style={{
+              borderColor: currentPage === 1 ? '#ccc' : MAROON,
+              color: currentPage === 1 ? '#999' : MAROON,
+            }}
+          >
+            <MdChevronLeft className="text-xs md:text-base" /> Previous
+          </button>
+
+          <div className="flex items-center gap-1 md:gap-2 whitespace-nowrap">
+            <span className="text-xs md:text-sm text-gray-600">
+              Page <strong>{currentPage}</strong>/{pagination?.total ? Math.ceil(pagination.total / PAGE_SIZE) : '?'}
+            </span>
+            <span className="text-xs text-gray-500">
+              {pagination ? `(${pagination.count}/${pagination.total})` : ''}
+            </span>
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={pagination && !pagination.hasMore}
+            className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1 md:py-2 rounded-lg border-2 font-semibold text-xs md:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-70 whitespace-nowrap flex-shrink-0"
+            style={{
+              borderColor: (pagination && !pagination.hasMore) ? '#ccc' : MAROON,
+              color: (pagination && !pagination.hasMore) ? '#999' : MAROON,
+            }}
+          >
+            Next <MdChevronRight className="text-xs md:text-base" />
+          </button>
+        </div>
+      )}
+
       {orders && orders.length > 0 ? (
         orders.map((order) => (
           <div
@@ -243,7 +297,9 @@ export default function OrderHistory({ onTrackOrder }) {
               </button>
 
               {/* View or Edit Order - Secondary Button */}
-              <button className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer"
+              <button
+                onClick={() => handleViewDetails(order)}
+                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer"
                 style={{
                   borderColor: MAROON,
                   color: MAROON,
@@ -300,6 +356,13 @@ export default function OrderHistory({ onTrackOrder }) {
           </a>
         </div>
       )}
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        isOpen={isDetailsModalOpen}
+        order={selectedOrder}
+        onClose={handleCloseDetailsModal}
+      />
 
       {/* Review Modal */}
       <ReviewModal isOpen={isModalOpen} onSuccess={handleModalClose} />
