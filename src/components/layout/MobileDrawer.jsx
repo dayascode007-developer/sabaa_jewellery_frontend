@@ -347,11 +347,22 @@ export default function MobileDrawer({ open, onClose }) {
               {navItems.map((item) => {
               const isExpanded = expandedId === item.id;
               // Flatten the mega-menu columns into one list for the drawer.
+              // A column with a heading is a sub-main plus its children. A
+              // column without one holds a sub-main that has no children
+              // (Initial Rings, Raasi Rings…) — the same level, so it is styled
+              // like a heading too, while keeping its own link.
               const links = item.menu
-                ? item.menu.columns.flatMap((c) =>
+                ? [
+                    // Sub-mains that have children come first, then the ones
+                    // that stand alone — otherwise a childless sub-main lands
+                    // between a heading and its own subcategories and reads as
+                    // if it belonged to it.
+                    ...item.menu.columns.filter((c) => c.heading),
+                    ...item.menu.columns.filter((c) => !c.heading),
+                  ].flatMap((c) =>
                     c.heading
                       ? [{ label: c.heading, href: "#", isHeading: true }, ...c.items]
-                      : c.items,
+                      : c.items.map((link) => ({ ...link, isHeading: true })),
                   )
                 : null;
 
@@ -397,10 +408,12 @@ export default function MobileDrawer({ open, onClose }) {
                               <Link
                                 href={link.href}
                                 onClick={onClose}
-                                className={`block px-3 py-2 text-[14px] ${
+                                // Sub-mains sit a size up from their children,
+                                // so the two levels read apart at a glance.
+                                className={`block px-3 py-2 ${
                                   link.isHeading
-                                    ? "font-semibold text-[#7B1E2B]"
-                                    : "text-[#5A4636]"
+                                    ? "text-[16px] font-semibold text-[#7B1E2B]"
+                                    : "text-[14px] text-[#5A4636]"
                                 }`}
                               >
                                 {link.label}
