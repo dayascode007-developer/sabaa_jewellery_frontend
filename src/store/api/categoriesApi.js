@@ -15,6 +15,9 @@ export const fetchCategoriesFromAPI = async () => {
   return data || [];
 };
 
+// Keep first 6 categories in navbar, rest go to "More" menu
+const NAVBAR_CATEGORY_COUNT = 6;
+
 // Build navbar items from API categories, merging with static NAV_ITEMS for icons/features
 export const mergeWithNavItems = (apiCategories, staticNavItems) => {
   // Keep "All Jewellery" (first item) and "More" (last item) static
@@ -26,8 +29,12 @@ export const mergeWithNavItems = (apiCategories, staticNavItems) => {
     href: `/category/${toSlug(node.name)}`,
   });
 
-  // Build dynamic items from API categories
-  const dynamicItems = apiCategories.map((apiCategory) => {
+  // Split categories: first N go to navbar, rest go to "More"
+  const navbarCategories = apiCategories.slice(0, NAVBAR_CATEGORY_COUNT);
+  const moreCategories = apiCategories.slice(NAVBAR_CATEGORY_COUNT);
+
+  // Build dynamic items from navbar categories only
+  const dynamicItems = navbarCategories.map((apiCategory) => {
     // Find static nav item for this category (for icons, images, features)
     const staticItem = staticNavItems.find(
       (item) => item.label.toLowerCase() === apiCategory.name.toLowerCase()
@@ -71,11 +78,77 @@ export const mergeWithNavItems = (apiCategories, staticNavItems) => {
     };
   });
 
-  // Combine: All Jewellery + Dynamic API categories + More
+  // Build More menu: dynamic categories with category headers, then static items
+  const moreItem = more ? {
+    ...more,
+    ...(moreCategories.length > 0 && more.menu && {
+      menu: {
+        ...more.menu,
+        columns: [
+          // Dynamic categories: show all 3 levels
+          ...moreCategories.flatMap((cat) => {
+            const subMains = cat.sub_main_categories || [];
+            const legacySubs = cat.subcategories || [];
+            const columns = [];
+
+            // Add category as heading with submains (only those without children)
+            if (subMains.length > 0) {
+              // Separate submains: those with children and those without
+              const subMainsWithoutChildren = subMains.filter(
+                (sub) => !sub.subcategories || sub.subcategories.length === 0
+              );
+              const subMainsWithChildren = subMains.filter(
+                (sub) => sub.subcategories && sub.subcategories.length > 0
+              );
+
+              // Add category with submains that have no children
+              if (subMainsWithoutChildren.length > 0) {
+                columns.push({
+                  heading: cat.name,
+                  items: subMainsWithoutChildren.map(toLink),
+                });
+              }
+
+              // Add each submain that has children as its own section
+              subMainsWithChildren.forEach((subMain) => {
+                columns.push({
+                  heading: subMain.name,
+                  items: subMain.subcategories.map(toLink),
+                });
+              });
+
+              // If all submains have children, still show the category heading
+              if (subMainsWithoutChildren.length === 0 && subMainsWithChildren.length > 0) {
+                columns.unshift({
+                  heading: cat.name,
+                  items: [],
+                });
+              }
+            } else if (legacySubs.length > 0) {
+              // Older payloads with legacy subcategories
+              columns.push({
+                heading: cat.name,
+                items: legacySubs.map(toLink),
+              });
+            } else {
+              // Flat category with no children
+              columns.push({ items: [toLink(cat)] });
+            }
+
+            return columns;
+          }),
+          // Static menu items (About Us, Blogs, etc.)
+          ...(more.menu.columns || []),
+        ],
+      },
+    }),
+  } : null;
+
+  // Combine: All Jewellery + Dynamic navbar categories + More (with additional categories)
   return [
     ...(allJewellery ? [allJewellery] : []),
     ...dynamicItems,
-    ...(more ? [more] : []),
+    ...(moreItem ? [moreItem] : []),
   ];
 };
 

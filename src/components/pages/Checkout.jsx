@@ -8,7 +8,7 @@ import OrderConfirmation from "./OrderConfirmation";
 import { selectCartItems, clearCart } from "@/store/slices/cartSlice";
 import { selectShippingConfig } from "@/store/slices/settingsSlice";
 import { calculateOrderSummary } from "@/utils/orderCalculations";
-import { fetchShippingRatesApi } from "@/store/api/settingsApi";
+import { fetchShippingRatesApi, validatePincodeApi } from "@/store/api/settingsApi";
 import {
   selectAddressesList,
   selectSelectedAddressId,
@@ -132,11 +132,12 @@ function Card({ title, children }) {
   );
 }
 
-function Field({ label, name, value, onChange, type = "text", maxLength, inputMode, className = "" }) {
+function Field({ label, name, value, onChange, type = "text", maxLength, inputMode, className = "", required = false }) {
   return (
     <div className={className}>
       <label htmlFor={name} className="mb-1 block text-[12px] text-neutral-600">
         {label}
+        {required && <span className="text-red-600 ml-1">*</span>}
       </label>
       <input
         id={name}
@@ -218,6 +219,7 @@ export default function Checkout() {
   const [address, setAddress] = useState(EMPTY_ADDRESS);
   const [addressType, setAddressType] = useState("home");
   const [savingAddress, setSavingAddress] = useState(false);
+  const [addressError, setAddressError] = useState(null);
   const [showCODModal, setShowCODModal] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState(null);
@@ -510,6 +512,20 @@ export default function Checkout() {
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null;
 
   const saveAddress = async () => {
+    setAddressError(null);
+
+    // Validate pincode with Shiprocket
+    try {
+      const validation = await validatePincodeApi(address.pincode);
+      if (!validation.valid) {
+        setAddressError("please enter valid pincode");
+        return;
+      }
+    } catch (error) {
+      setAddressError("please enter valid pincode");
+      return;
+    }
+
     setSavingAddress(true);
     try {
       const addressData = {
@@ -567,7 +583,8 @@ export default function Checkout() {
     setAddingAddress(true);
   };
 
-  const setField = (e) =>
+  const setField = (e) => {
+    setAddressError(null);
     setAddress((a) => ({
       ...a,
       // Digits only in the two numeric fields, so a stray letter cannot reach
@@ -577,6 +594,7 @@ export default function Checkout() {
           ? e.target.value.replace(/\D/g, "")
           : e.target.value,
     }));
+  };
 
   const itemCount = items.reduce((n, i) => n + i.quantity, 0);
   const itemsTotal = items.reduce((t, i) => t + i.price * i.quantity, 0);
@@ -776,7 +794,7 @@ export default function Checkout() {
           {step === 0 && addingAddress ? (
             <Card title={editingAddressId ? "Edit Address" : "Add New Address"}>
               <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-                <Field label="Full name" name="name" value={address.name} onChange={setField} />
+                <Field label="Full name" name="name" value={address.name} onChange={setField} required />
                 <Field
                   label="Mobile number"
                   name="mobile"
@@ -784,6 +802,7 @@ export default function Checkout() {
                   onChange={setField}
                   inputMode="numeric"
                   maxLength={10}
+                  required
                 />
                 <Field
                   label="Pincode"
@@ -792,14 +811,16 @@ export default function Checkout() {
                   onChange={setField}
                   inputMode="numeric"
                   maxLength={6}
+                  required
                 />
-                <Field label="Town / City" name="city" value={address.city} onChange={setField} />
+                <Field label="Town / City" name="city" value={address.city} onChange={setField} required />
                 <Field
                   label="Flat, house no., building"
                   name="house"
                   value={address.house}
                   onChange={setField}
                   className="sm:col-span-2"
+                  required
                 />
                 <Field
                   label="Area, street, village"
@@ -807,13 +828,17 @@ export default function Checkout() {
                   value={address.area}
                   onChange={setField}
                   className="sm:col-span-2"
+                  required
                 />
                 <Field label="Landmark (optional)" name="landmark" value={address.landmark} onChange={setField} />
-                <Field label="State" name="state" value={address.state} onChange={setField} />
+                <Field label="State" name="state" value={address.state} onChange={setField} required />
               </div>
 
               <fieldset className="mt-4">
-                <legend className="mb-2 text-[12px] text-neutral-600">Address type</legend>
+                <legend className="mb-2 text-[12px] text-neutral-600">
+                  Address type
+                  <span className="text-red-600 ml-1">*</span>
+                </legend>
                 <div className="flex gap-2.5">
                   {["home", "work"].map((t) => (
                     <button
@@ -832,6 +857,12 @@ export default function Checkout() {
                   ))}
                 </div>
               </fieldset>
+
+              {addressError && (
+                <div className="mt-4 rounded-md bg-red-50 border border-red-200 p-3">
+                  <p className="text-[14px] text-red-700">{addressError}</p>
+                </div>
+              )}
             </Card>
           ) : null}
 

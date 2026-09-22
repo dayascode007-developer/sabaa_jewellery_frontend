@@ -336,13 +336,13 @@ export default function TrackOrder({ trackingData, loading = false, error = null
                     </p>
                   </div>
                 )}
-                {shipment.tracking_url && (
+                {(shipment.tracking_url || shiprocket_tracking?.tracking_data?.track_url) && (
                   <a
-                    href={shipment.tracking_url}
+                    href={shipment.tracking_url || shiprocket_tracking?.tracking_data?.track_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
-                    style={{ color: MAROON }}
+                    className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70 border border-blue-500 rounded px-3 py-2"
+                    style={{ color: "#2563eb" }}
                   >
                     <MdOpenInNew className="text-base" />
                     Track on courier website

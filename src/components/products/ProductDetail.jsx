@@ -797,7 +797,7 @@ export default function ProductDetail({ product }) {
           </h1>
 
           <div className="mt-2">
-            <Stars rating={product.rating} />
+            <Stars rating={5} />
           </div>
 
           <div className="mt-3 flex flex-wrap items-baseline gap-2">
@@ -846,7 +846,7 @@ export default function ProductDetail({ product }) {
                   className="text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
-                  Ring Size
+                  Ring Size <span className="text-red-600 ml-1">*</span>
                 </label>
                 <RingSizeGuide />
               </div>
@@ -873,7 +873,7 @@ export default function ProductDetail({ product }) {
                 className="block text-[14px] font-bold"
                 style={{ color: MAROON }}
               >
-                Upload Your Photo
+                Upload Your Photo <span className="text-red-600 ml-1">*</span>
               </label>
               <input
                 id="customer-photo"
@@ -898,7 +898,7 @@ export default function ProductDetail({ product }) {
                 className="block text-[14px] font-bold"
                 style={{ color: MAROON }}
               >
-                Enamel Color
+                Enamel Color <span className="text-red-600 ml-1">*</span>
               </label>
               <select
                 id="color"
@@ -926,7 +926,7 @@ export default function ProductDetail({ product }) {
                   className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
-                  Ring Name
+                  Ring Name <span className="text-red-600 ml-1">*</span>
                 </label>
                 <input
                   id="ring-name"
@@ -948,7 +948,7 @@ export default function ProductDetail({ product }) {
                   className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
-                  Font Style
+                  Font Style <span className="text-red-600 ml-1">*</span>
                 </label>
                 <FontDropdown
                   value={fontId}
@@ -962,7 +962,7 @@ export default function ProductDetail({ product }) {
                   className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
-                  Symbol Selections
+                  Symbol Selections <span className="text-red-600 ml-1">*</span>
                 </p>
                 {/* Scroll wheel rather than a dropdown — spin it up or down and
                   whichever row lands in the bar is the choice. */}
@@ -981,7 +981,7 @@ export default function ProductDetail({ product }) {
                     className="text-[14px] font-bold"
                     style={{ color: MAROON }}
                   >
-                    Symbol Direction
+                    Symbol Direction <span className="text-red-600 ml-1">*</span>
                   </legend>
                   <div className="mt-1.5 flex items-center gap-5">
                     {product.symbol_direction?.map((dir) => (

@@ -26,6 +26,7 @@ import earringsMenuImage from "@/assets/jewels/earings.jpg";
 // No lifestyle shot for bracelets yet, so the panel uses the product
 // photography. Swap this import when a model image arrives.
 import braceletMenuImage from "@/assets/products/kaapu/panchaloga-kaapu-kada-silver-impon-sabaa-jewel.webp";
+import moreMenuImage from "@/assets/jewels/wedding-rings-engagement-rings-wedding-rings.jpg";
 
 // 3D slider slides. Prefixed `style*` because widget/earings.webp collides by
 // name with jewels/earings.webp, which is a different file.
@@ -74,6 +75,7 @@ import navRings from "@/assets/svg_nav_icon/Rings.svg";
 import navImpon from "@/assets/svg_nav_icon/Impon Chains.svg";
 import navPendant from "@/assets/svg_nav_icon/pandant.svg";
 import navEarrings from "@/assets/svg_nav_icon/Ear Ring.svg";
+import navAnklet from "@/assets/svg_nav_icon/anklet_Icon.svg";
 import navMore from "@/assets/svg_nav_icon/More.svg";
 
 // Nav items. An item with a `menu` opens a mega panel; without one it is a
@@ -215,7 +217,32 @@ export const NAV_ITEMS = [
       },
     },
   },
-  { id: "more", label: "More", href: "#", icon: navMore },
+  {
+    id: "anklet",
+    label: "Anklet",
+    href: "/category/all-anklet",
+    icon: navAnklet,
+  },
+  {
+    id: "more",
+    label: "More",
+    href: "#",
+    menu: {
+      columns: [
+        {
+          items: [
+            { label: "About Us", href: "/about" },
+            { label: "Blogs", href: "/blogs" },
+            { label: "Jewel Polish & Care", href: "#" },
+          ],
+        },
+      ],
+      feature: {
+        caption: "Explore more about our craftsmanship and jewel care",
+        image: moreMenuImage,
+      },
+    },
+  },
 ];
 
 // Each tile opens its own listing page. The slug is the id, and the matching

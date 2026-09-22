@@ -106,9 +106,13 @@ export const fetchProductsByMainAndSubCategory = createAsyncThunk(
         subMainCategoryId,
         subCategoryId
       );
-      const products = data.flatMap((category) =>
-        (category.products || []).map((product) => mapApiProduct(product, category))
-      );
+      const products = data.flatMap((category) => {
+        // Extract products from nested subcategories structure
+        const subcats = category.subcategories || [];
+        return subcats.flatMap((subcat) =>
+          (subcat.products || []).map((product) => mapApiProduct(product, category))
+        );
+      });
       return { mainCategoryId, subMainCategoryId, subCategoryId, products };
     } catch (error) {
       return rejectWithValue(error.message);

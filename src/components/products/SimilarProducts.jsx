@@ -47,7 +47,9 @@ export default function SimilarProducts({ product }) {
         }
 
         const data = await response.json();
-        const allProducts = data.data?.[0]?.products || [];
+        // Extract products from nested subcategories structure
+        const category = data.data?.[0];
+        const allProducts = category?.subcategories?.flatMap((sub) => sub.products || []) || [];
 
         const filtered = allProducts
           .filter((p) => p.id !== product.id)

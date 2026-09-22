@@ -44,3 +44,22 @@ export const fetchShippingRatesApi = async (toPincode, weight = 0.5, paymentMeth
 
   return data.data;
 };
+
+// Validate pincode against Shiprocket serviceability
+export const validatePincodeApi = async (pincode) => {
+  if (!pincode) {
+    return { valid: false, message: "Pincode is required" };
+  }
+
+  const params = new URLSearchParams({ pincode });
+
+  const response = await fetch(`${API_URL}/api/settings/validate-pincode?${params}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await response.json();
+  return data;
+};

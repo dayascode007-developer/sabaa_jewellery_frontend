@@ -7,8 +7,15 @@ import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
 import { NAV_ITEMS } from "@/constants/homeData";
 import { getProductsBySlug } from "@/constants/productData";
-import { fetchCategories, selectNavItems, selectCategoriesLoading } from "@/store/slices/categoriesSlice";
+import {
+  fetchCategories,
+  selectNavItems,
+  selectRawCategories,
+  selectCategoriesLoading,
+} from "@/store/slices/categoriesSlice";
 import { NavbarShimmer } from "@/components/shimmer-loader/Shimmer-loader";
+import CascadingMoreMenu from "@/components/layout/CascadingMoreMenu";
+import moreIcon from "@/assets/svg_nav_icon/More.svg";
 
 // Each dropdown's "View All" lands on the aggregate page for that parent, and
 // the three thumbnails beside it are the first products from the same set.
@@ -82,10 +89,9 @@ const GLYPHS = {
   ),
   more: (
     <>
-      <rect x="4" y="4" width="7" height="7" rx="1" />
-      <rect x="13" y="4" width="7" height="7" rx="1" />
-      <rect x="4" y="13" width="7" height="7" rx="1" />
-      <rect x="13" y="13" width="7" height="7" rx="1" />
+      <circle cx="6" cy="12" r="1.3" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.3" fill="currentColor" />
+      <circle cx="18" cy="12" r="1.3" fill="currentColor" />
     </>
   ),
 };
@@ -116,7 +122,8 @@ function NavIcon({ item }) {
   if (item.icon) {
     // The optimiser refuses SVG unless dangerouslyAllowSVG is set, so vector
     // sources are served as-is instead.
-    const isSvg = typeof item.icon?.src === "string" && item.icon.src.endsWith(".svg");
+    const isSvg =
+      typeof item.icon?.src === "string" && item.icon.src.endsWith(".svg");
     return (
       <Image
         src={item.icon}
@@ -209,7 +216,9 @@ function ItemMark({ kind }) {
 
 function MegaPanel({ menu, kind, onNavigate }) {
   const allSlug = VIEW_ALL_SLUG[kind];
-  const viewAllHref = allSlug ? `/category/${allSlug}` : menu.promo?.href ?? "#";
+  const viewAllHref = allSlug
+    ? `/category/${allSlug}`
+    : menu.promo?.href ?? "#";
   const samples = allSlug ? getProductsBySlug(allSlug).slice(0, 3) : [];
 
   // A column carrying a heading becomes one expandable row at the end of the
@@ -374,7 +383,13 @@ function MegaPanel({ menu, kind, onNavigate }) {
                     key={p.id}
                     className="relative h-[68px] w-[68px] overflow-hidden rounded-md ring-1 ring-black/5"
                   >
-                    <Image src={p.image} alt="" fill sizes="68px" className="object-cover" />
+                    <Image
+                      src={p.image}
+                      alt=""
+                      fill
+                      sizes="68px"
+                      className="object-cover"
+                    />
                   </span>
                 ))}
               </span>
@@ -414,18 +429,22 @@ function MegaPanel({ menu, kind, onNavigate }) {
                 <div className="h-full w-full bg-gradient-to-br from-[#EDE3D3] via-[#E3D5BE] to-[#D8C6A8]" />
               )}
             </div>
-            <p className="mt-2 text-[12px] leading-snug text-neutral-700">
-              {menu.feature.caption}
-            </p>
-            <Link
-              href={menu.feature.href}
-              onClick={onNavigate}
-              className="mt-1 inline-flex items-center gap-1 text-[12px] underline"
-              style={{ color: MAROON }}
-            >
-              {menu.feature.cta}
-              <span aria-hidden="true">&#8599;</span>
-            </Link>
+            {menu.feature.caption && (
+              <p className="mt-2 text-[12px] leading-snug text-neutral-700">
+                {menu.feature.caption}
+              </p>
+            )}
+            {menu.feature.href && menu.feature.cta && (
+              <Link
+                href={menu.feature.href}
+                onClick={onNavigate}
+                className="mt-1 inline-flex items-center gap-1 text-[12px] underline"
+                style={{ color: MAROON }}
+              >
+                {menu.feature.cta}
+                <span aria-hidden="true">&#8599;</span>
+              </Link>
+            )}
           </div>
         ) : null}
       </div>
@@ -433,9 +452,12 @@ function MegaPanel({ menu, kind, onNavigate }) {
   );
 }
 
+const NAVBAR_CATEGORY_COUNT = 6; // Keep first 6 in navbar
+
 export default function CategoryNav() {
   const dispatch = useDispatch();
   const navItemsFromRedux = useSelector(selectNavItems);
+  const rawCategories = useSelector(selectRawCategories);
   const loading = useSelector(selectCategoriesLoading);
   const [openId, setOpenId] = useState(null);
   const navRef = useRef(null);
@@ -447,6 +469,16 @@ export default function CategoryNav() {
 
   // Use Redux nav items if available, fallback to static
   const navItems = navItemsFromRedux.length > 0 ? navItemsFromRedux : NAV_ITEMS;
+
+  // Get "More" categories (7th+ from API)
+  const moreCategories = rawCategories.slice(NAVBAR_CATEGORY_COUNT);
+
+  // Static items for "More" menu (About Us, Blogs, etc.)
+  const moreStaticItems = [
+    { label: "About Us", href: "/about" },
+    { label: "Blogs", href: "/blogs" },
+    { label: "Jewel Polish & Care", href: "#" },
+  ];
 
   const close = useCallback(() => setOpenId(null), []);
 
@@ -489,17 +521,45 @@ export default function CategoryNav() {
     >
       <ul className="mx-auto flex max-w-[1400px] items-center gap-5 overflow-x-auto px-4 py-2 sm:gap-8 sm:px-6 lg:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {navItems.map((item) => {
+          // Use cascading menu for "More"
+          if (item.id === "more") {
+            return (
+              <li
+                key={item.id}
+                className="shrink-0"
+                onMouseEnter={() => setOpenId("more")}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenId(openId ? null : "more")}
+                  aria-expanded={openId === "more"}
+                  aria-haspopup="true"
+                  className={`${NAV_LINK} ${
+                    openId === "more"
+                      ? "text-[#7B1E2B]"
+                      : "text-neutral-700 hover:text-[#7B1E2B]"
+                  }`}
+                >
+                  <Image
+                    src={moreIcon}
+                    alt=""
+                    width={35}
+                    height={35}
+                    className="h-[35px] w-[35px]"
+                    style={{ color: "#7B1E2B" }}
+                  />
+                  More
+                </button>
+              </li>
+            );
+          }
+
           const isOpen = openId === item.id;
           const current = isCurrent(item);
           return (
             <li
               key={item.id}
               className="shrink-0"
-              // Hover opens on pointer devices; the button handles taps.
-              // An item without a dropdown must CLOSE the open one rather than
-              // ignore the hover — `item.menu && …` did nothing for All
-              // Jewellery, Bracelet and More, so whichever panel was already
-              // open stayed on screen while the cursor sat over them.
               onMouseEnter={() => setOpenId(item.menu ? item.id : null)}
             >
               {item.menu ? (
@@ -524,7 +584,9 @@ export default function CategoryNav() {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className={`h-3 w-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    className={`h-3 w-3 transition-transform ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
                     aria-hidden="true"
                   >
                     <path d="m6 9 6 6 6-6" />
@@ -549,7 +611,25 @@ export default function CategoryNav() {
         })}
       </ul>
 
-      {openMenu ? <MegaPanel menu={openMenu} kind={openId} onNavigate={close} /> : null}
+      {openMenu && openId !== "more" ? (
+        <MegaPanel menu={openMenu} kind={openId} onNavigate={close} />
+      ) : null}
+
+      {openId === "more" ? (
+        <div
+          className="absolute left-0 right-0 top-full z-40"
+          onMouseLeave={() => setOpenId(null)}
+        >
+          <CascadingMoreMenu
+            isOpen={true}
+            moreCategories={moreCategories}
+            staticItems={moreStaticItems}
+            onClose={() => setOpenId(null)}
+            featureImage={openMenu?.feature?.image}
+            featureCaption={openMenu?.feature?.caption}
+          />
+        </div>
+      ) : null}
     </nav>
   );
 }

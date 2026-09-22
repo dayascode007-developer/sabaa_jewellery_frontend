@@ -44,7 +44,21 @@ const toSlug = (name) =>
 const buildCategoryMap = (categories) => {
   const map = {};
   categories.forEach((category) => {
-    map[`all-${toSlug(category.name)}`] = {
+    const catSlug = toSlug(category.name);
+    const hasSubMain = (category.sub_main_categories || []).length > 0;
+    const hasLegacySubs = (category.subcategories || []).length > 0;
+
+    // For flat categories (no sub_main or legacy subcategories), map both slug variants
+    if (!hasSubMain && !hasLegacySubs) {
+      map[catSlug] = {
+        mainId: category.id,
+        subId: null,
+        label: category.name,
+      };
+    }
+
+    // Always create the "all-" variant for consistency
+    map[`all-${catSlug}`] = {
       mainId: category.id,
       subId: null,
       label: category.name,

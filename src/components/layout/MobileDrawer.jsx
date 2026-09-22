@@ -17,6 +17,15 @@ import Image from "next/image";
 import drawerTopArt from "@/assets/side_bar/image2.webp"; // gold chain with the heart
 import drawerBottomArt from "@/assets/side_bar/side bar image.webp"; // ring, flowers, wave
 
+// Nav icons for drawer
+import navAllJewellery from "@/assets/svg_nav_icon/All Jewellery.svg";
+import navRings from "@/assets/svg_nav_icon/Rings.svg";
+import navImpon from "@/assets/svg_nav_icon/Impon Chains.svg";
+import navPendant from "@/assets/svg_nav_icon/pandant.svg";
+import navEarrings from "@/assets/svg_nav_icon/Ear Ring.svg";
+import navAnklet from "@/assets/svg_nav_icon/anklet_Icon.svg";
+import navMore from "@/assets/svg_nav_icon/More.svg";
+
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
 
@@ -27,9 +36,18 @@ const ICON_GOLD = "#A9792B";
 const INK = "#3B2A1E"; // row labels
 const RULE = "#E9DAC3"; // the thin divider between rows
 
-// Line-art glyphs, one per nav id, drawn in the gold of the reference. The
-// nav bar's own SVG files are dark maroon and cannot be recoloured as <img>,
-// and there is no bracelet file at all — so the drawer has its own set.
+// Map icon IDs to imported SVG files
+const DRAWER_ICONS_MAP = {
+  all: navAllJewellery,
+  rings: navRings,
+  impon: navImpon,
+  pendant: navPendant,
+  earrings: navEarrings,
+  anklet: navAnklet,
+  more: navMore,
+};
+
+// Fallback line-art glyphs for categories not in the set above
 const DRAWER_ICONS = {
   // Solitaire — the diamond sits proud of the band.
   all: (
@@ -86,6 +104,13 @@ const DRAWER_ICONS = {
       <path d="M17 6.7c-2 2.8-3 4.8-3 6.6a3 3 0 0 0 6 0c0-1.8-1-3.8-3-6.6Z" />
     </>
   ),
+  anklet: (
+    <>
+      <circle cx="12" cy="13" r="7" />
+      <circle cx="9" cy="13" r="1" />
+      <circle cx="15" cy="13" r="1" />
+    </>
+  ),
   more: (
     <>
       <circle cx="6" cy="12" r="1.3" fill="currentColor" />
@@ -100,6 +125,27 @@ const DRAWER_ICONS = {
 const DRAWER_ICON_FALLBACK = <path d="M12 4 18 10 12 20 6 10Z" />;
 
 function DrawerBadge({ id }) {
+  const svgIcon = DRAWER_ICONS_MAP[id];
+
+  if (svgIcon) {
+    return (
+      <span
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+        style={{ backgroundColor: BADGE }}
+      >
+        <Image
+          src={svgIcon}
+          alt=""
+          width={24}
+          height={24}
+          className="h-6 w-6"
+          style={{ color: ICON_GOLD }}
+        />
+      </span>
+    );
+  }
+
+  // Fallback to inline SVG for unknown icons
   return (
     <span
       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
