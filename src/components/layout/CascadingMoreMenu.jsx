@@ -41,7 +41,7 @@ export default function CascadingMoreMenu({ moreCategories = [], staticItems = [
             <div className="flex">
             {/* Level 1: Main Categories */}
             {moreCategories.length > 0 && (
-              <div className="w-56 border-r border-neutral-200 py-3 pr-4">
+              <div className="w-56 flex-shrink-0 border-r border-neutral-200 py-3 pr-4">
                 {moreCategories.map((cat) => (
                   <button
                     key={cat.id}
@@ -54,7 +54,7 @@ export default function CascadingMoreMenu({ moreCategories = [], staticItems = [
                         window.location.href = `/category/${toSlug(cat.name)}`;
                       }
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-between transition-colors ${
+                    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start transition-colors ${
                       level1Selected === cat.id
                         ? "bg-neutral-50 text-[#7B1E2B] font-medium"
                         : "text-neutral-700 hover:bg-neutral-50"
@@ -72,9 +72,9 @@ export default function CascadingMoreMenu({ moreCategories = [], staticItems = [
                     >
                       <path d="M12 4 18 10 12 20 6 10Z" />
                     </svg>
-                    <span>{cat.name}</span>
+                    <span className="flex-1">{cat.name}</span>
                     {cat.sub_main_categories && cat.sub_main_categories.length > 0 && (
-                      <span className="text-xs">›</span>
+                      <span className="text-xs ml-auto">›</span>
                     )}
                   </button>
                 ))}
@@ -83,7 +83,7 @@ export default function CascadingMoreMenu({ moreCategories = [], staticItems = [
 
             {/* Level 2: Sub Main Categories */}
             {level2Data.length > 0 && (
-              <div className="w-56 border-r border-neutral-200 py-3 px-4">
+              <div className="w-56 flex-shrink-0 border-r border-neutral-200 py-3 px-4">
                 {level2Data.map((subMain) => (
                   <button
                     key={subMain.id}
@@ -110,7 +110,7 @@ export default function CascadingMoreMenu({ moreCategories = [], staticItems = [
 
             {/* Level 3: Subcategories */}
             {level3Data.length > 0 && (
-              <div className="w-56 py-3 px-4">
+              <div className="w-56 flex-shrink-0 py-3 px-4">
                 {level3Data.map((sub) => (
                   <Link
                     key={sub.id}

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
+import { TfiHandPointRight } from "react-icons/tfi";
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import {
   addToWishlist,
@@ -23,6 +24,7 @@ import qualityBadge from "@/assets/batch/Sabaa Quality Batch.png";
 import ReviewsSection from "./ReviewsSection";
 import CustomerLove from "../pages/home/CustomerLove";
 import CustomerUnboxing from "../pages/home/CustomerUnboxing";
+import CancellationPolicyModal from "@/components/modals/CancellationPolicyModal";
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
@@ -616,10 +618,16 @@ export default function ProductDetail({ product }) {
 
   // Engraving options. Only rings carry them — a chain has no "ring name".
   const [ringName, setRingName] = useState("");
-  const [fontId, setFontId] = useState(FONT_STYLES[0].id);
+  const [fontId, setFontId] = useState("");
   const [symbolId, setSymbolId] = useState(SYMBOLS[0].id);
   const [symbolSide, setSymbolSide] = useState("left");
   const [colorId, setColorId] = useState(product.colors?.[0]?.id ?? "");
+
+  // Validation error states
+  const [sizeError, setSizeError] = useState("");
+  const [ringNameError, setRingNameError] = useState("");
+  const [photoError, setPhotoError] = useState("");
+  const [fontError, setFontError] = useState("");
 
   const dispatch = useDispatch();
 
@@ -628,6 +636,7 @@ export default function ProductDetail({ product }) {
   const [wishlistSuccess, setWishlistSuccess] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null); // "addToCart" or "wishlist"
+  const [showCancellationPolicy, setShowCancellationPolicy] = useState(false);
   // Portalled to <body>, which does not exist during the server render.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -660,10 +669,45 @@ export default function ProductDetail({ product }) {
   // Everything the workshop needs to make this exact piece travels with the
   // line, not just the product id — otherwise the engraving is lost at checkout.
   const onAddToCart = async () => {
+    setSizeError("");
+    setRingNameError("");
+    setPhotoError("");
+    setFontError("");
+    let hasErrors = false;
+
     // Check if user is logged in
     if (!token) {
       setPendingAction("addToCart");
       setAuthOpen(true);
+      return;
+    }
+
+    // Validation: Ring size required
+    if (product.sizes && product.sizes.length > 0 && !size) {
+      setSizeError("Please select a ring size");
+      hasErrors = true;
+    }
+
+    // Validation: Engraving name required if customisable
+    if (product.isCustomisable && !ringName?.trim()) {
+      setRingNameError("Please enter a name for engraving");
+      hasErrors = true;
+    }
+
+    // Validation: Font style required if customisable
+    if (product.isCustomisable && !fontId) {
+      setFontError("Please select a font style");
+      hasErrors = true;
+    }
+
+    // Validation: Photo required for Real Photo Ring
+    if (isRealPhotoRing && !customerPhoto) {
+      setPhotoError("Please upload a photo for this custom ring");
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -712,8 +756,8 @@ export default function ProductDetail({ product }) {
 
   return (
     <div className="bg-[#FFF8F0]">
-      <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-12">
-        <div className="sm:sticky sm:top-4 sm:h-fit lg:sticky lg:top-4 lg:h-fit">
+      <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 md:gap-6 lg:grid-cols-2 lg:gap-12">
+        <div className="sm:sticky sm:top-4 sm:h-fit md:sticky md:top-4 md:h-fit lg:sticky lg:top-4 lg:h-fit">
           <Gallery product={product} />
 
           {/* Preview of the engraving — only where there is engraving to preview. */}
@@ -788,11 +832,18 @@ export default function ProductDetail({ product }) {
           </div>
 
           <p className="mt-3 text-[11px]">
-            <span className="font-bold" style={{ color: MAROON }}>Product Code :</span>{" "}
-            <span className="font-semibold" style={{ color: "#C9A227" }}>{product.code}</span>
+            <span className="font-bold" style={{ color: MAROON }}>
+              Product Code :
+            </span>{" "}
+            <span className="font-semibold" style={{ color: "#C9A227" }}>
+              {product.code}
+            </span>
           </p>
 
-          <h1 className="mt-1 font-[family-name:var(--font-category)] text-[22px] leading-snug font-bold sm:text-[28px] lg:text-[36px]" style={{ color: MAROON }}>
+          <h1
+            className="mt-1 font-[family-name:var(--font-category)] text-[22px] leading-snug font-bold sm:text-[28px] lg:text-[36px]"
+            style={{ color: MAROON }}
+          >
             {product.title}
           </h1>
 
@@ -853,15 +904,25 @@ export default function ProductDetail({ product }) {
               <select
                 id="ring-size"
                 value={size}
-                onChange={(e) => setSize(e.target.value)}
-                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
+                onChange={(e) => {
+                  setSize(e.target.value);
+                  setSizeError("");
+                }}
+                className={`mt-1.5 w-full rounded border px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500 bg-white ${
+                  sizeError ? "border-red-500" : "border-neutral-300"
+                }`}
               >
-                {product.sizes?.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
+                {product.sizes
+                  ?.sort((a, b) => Number(a) - Number(b))
+                  .map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
               </select>
+              {sizeError && (
+                <p className="mt-1.5 text-sm text-red-600">{sizeError}</p>
+              )}
             </div>
           ) : null}
 
@@ -879,12 +940,21 @@ export default function ProductDetail({ product }) {
                 id="customer-photo"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
-                onChange={(e) => setCustomerPhoto(e.target.files?.[0] || null)}
-                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
+                onChange={(e) => {
+                  setCustomerPhoto(e.target.files?.[0] || null);
+                  setPhotoError("");
+                }}
+                className={`mt-1.5 w-full rounded border bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500 ${
+                  photoError ? "border-red-500" : "border-neutral-300"
+                }`}
               />
-              {customerPhoto && (
+              {photoError && (
+                <p className="mt-1.5 text-sm text-red-600">{photoError}</p>
+              )}
+              {!photoError && customerPhoto && (
                 <p className="mt-1 text-[12px] text-green-600">
-                  ✓ {customerPhoto.name} ({(customerPhoto.size / 1024 / 1024).toFixed(2)} MB)
+                  ✓ {customerPhoto.name} (
+                  {(customerPhoto.size / 1024 / 1024).toFixed(2)} MB)
                 </p>
               )}
             </div>
@@ -933,13 +1003,23 @@ export default function ProductDetail({ product }) {
                   type="text"
                   value={ringName}
                   maxLength={NAME_MAX_LENGTH}
-                  onChange={(e) => setRingName(e.target.value)}
+                  onChange={(e) => {
+                    setRingName(e.target.value);
+                    setRingNameError("");
+                  }}
                   placeholder="Name to engrave"
-                  className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
+                  className={`mt-1.5 w-full rounded border bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500 ${
+                    ringNameError ? "border-red-500" : "border-neutral-300"
+                  }`}
                 />
-                <p className="mt-1 text-right text-[10px] text-neutral-500">
-                  {ringName.length}/{NAME_MAX_LENGTH}
-                </p>
+                {ringNameError && (
+                  <p className="mt-1.5 text-sm text-red-600">{ringNameError}</p>
+                )}
+                {!ringNameError && (
+                  <p className="mt-1 text-right text-[10px] text-neutral-500">
+                    {ringName.length}/{NAME_MAX_LENGTH}
+                  </p>
+                )}
               </div>
 
               <div className="mt-3">
@@ -952,9 +1032,15 @@ export default function ProductDetail({ product }) {
                 </label>
                 <FontDropdown
                   value={fontId}
-                  onChange={setFontId}
+                  onChange={(newFontId) => {
+                    setFontId(newFontId);
+                    setFontError("");
+                  }}
                   options={product.fonts || []}
                 />
+                {fontError && (
+                  <p className="mt-1.5 text-sm text-red-600">{fontError}</p>
+                )}
               </div>
 
               <div className="mt-3">
@@ -981,7 +1067,8 @@ export default function ProductDetail({ product }) {
                     className="text-[14px] font-bold"
                     style={{ color: MAROON }}
                   >
-                    Symbol Direction <span className="text-red-600 ml-1">*</span>
+                    Symbol Direction{" "}
+                    <span className="text-red-600 ml-1">*</span>
                   </legend>
                   <div className="mt-1.5 flex items-center gap-5">
                     {product.symbol_direction?.map((dir) => (
@@ -1130,9 +1217,18 @@ export default function ProductDetail({ product }) {
 
               <button
                 type="button"
+                onClick={() => setShowCancellationPolicy(true)}
+                className="mt-4 w-full text-center text-[12px] text-blue-600 hover:text-blue-700 underline transition-colors py-2 flex items-center justify-center gap-1"
+              >
+                <TfiHandPointRight size={14} />
+                Please read our Cancellation Policy
+              </button>
+
+              <button
+                type="button"
                 onClick={onAddToCart}
                 disabled={inCart}
-                className={`mt-6 rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity inline-flex items-center gap-2 ${
+                className={`mt-4 w-full rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity flex items-center justify-center gap-2 ${
                   inCart
                     ? "cursor-default opacity-75"
                     : "hover:opacity-90 cursor-pointer"
@@ -1273,11 +1369,14 @@ export default function ProductDetail({ product }) {
 
       {/* Auth modal for login/signup */}
       {mounted ? (
-        <AuthModal
-          open={authOpen}
-          onClose={() => setAuthOpen(false)}
-        />
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       ) : null}
+
+      {/* Cancellation Policy Modal */}
+      <CancellationPolicyModal
+        isOpen={showCancellationPolicy}
+        onClose={() => setShowCancellationPolicy(false)}
+      />
     </div>
   );
 }
