@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import sabaaLogo from "@/assets/logo/High Quality Sabaa Logo.webp";
+import captchaIcon from "@/assets/svg_nav_icon/recaptcha-icon 1.svg";
 import OtpStep from "@/components/common/OtpStep";
 
 const MAROON = "#7B1E2B";
@@ -55,6 +56,9 @@ export default function Login({
   const [identifier, setIdentifier] = useState("");
   const [touched, setTouched] = useState(false);
   const [notRobot, setNotRobot] = useState(false);
+  // Spins the captcha mark for a moment after ticking, the way a real widget
+  // shows it is working before it settles.
+  const [checking, setChecking] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
   const [sent, setSent] = useState(false);
@@ -238,17 +242,29 @@ export default function Login({
                     id="not-robot"
                     type="checkbox"
                     checked={notRobot}
-                    onChange={(e) => setNotRobot(e.target.checked)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setNotRobot(checked);
+                      setChecking(checked);
+                      // Long enough to read as "checking", short enough not to
+                      // hold up someone who wants to log in.
+                      if (checked) setTimeout(() => setChecking(false), 1200);
+                    }}
                     className="h-6 w-6 shrink-0 accent-[#7B1E2B]"
                   />
                   <label htmlFor="not-robot" className="text-[14px] text-neutral-700">
                     I&apos;m not a robot
                   </label>
-                  <span className="ml-auto text-right text-[9px] leading-tight text-neutral-400">
-                    Bot check
-                    <br />
-                    placeholder
-                  </span>
+                  <Image
+                    src={captchaIcon}
+                    alt=""
+                    aria-hidden="true"
+                    width={32}
+                    height={32}
+                    className={`ml-auto h-8 w-8 shrink-0 object-contain ${
+                      checking ? "animate-spin" : ""
+                    }`}
+                  />
                 </div>
 
                 {serverError ? (
