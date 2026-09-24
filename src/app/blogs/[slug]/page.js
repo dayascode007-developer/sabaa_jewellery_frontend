@@ -15,7 +15,7 @@ export const dynamicParams = true;
 async function fetchBlogById(id) {
   try {
     const response = await fetch(`${API_URL}/api/blogs/${id}`, {
-      next: { revalidate: 3600 },
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -23,8 +23,6 @@ async function fetchBlogById(id) {
     }
 
     const data = await response.json();
-    console.log("Raw API response - content length:", data.data?.content?.length);
-    console.log("Raw API response - content items:", data.data?.content?.map(c => ({ id: c.id, heading: c.heading, hasImage: !!c.image })));
     return data.data;
   } catch (error) {
     console.error("Failed to fetch blog:", error);
@@ -53,9 +51,6 @@ export default async function BlogDetailPage({ params }) {
   // An unknown slug is a 404, not an empty article page.
   if (!blog) notFound();
 
-  console.log("API blog.content length:", blog.content?.length);
-  console.log("API blog.content:", blog.content);
-
   // Transform API blog data to match BlogDetail component format
   const post = {
     id: blog.id,
@@ -72,9 +67,6 @@ export default async function BlogDetailPage({ params }) {
       image: section.image,
     })),
   };
-
-  console.log("Transformed post.content length:", post.content?.length);
-  console.log("Transformed post.content:", post.content);
 
   return (
     <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">

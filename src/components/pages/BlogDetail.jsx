@@ -15,16 +15,7 @@ function ContentSection({ section, index }) {
   const hasText = section.text?.trim();
   const hasImage = section.image;
 
-  console.log(`Section ${index}:`, {
-    heading: section.heading,
-    hasText: !!hasText,
-    hasImage: !!hasImage,
-    text: section.text ? `${section.text.substring(0, 50)}...` : "empty",
-    image: section.image ? section.image.substring(0, 50) + "..." : "empty",
-  });
-
   if (!hasText && !hasImage) {
-    console.log(`Section ${index}: Skipping (no text, no image)`);
     return null;
   }
 
@@ -72,8 +63,6 @@ function ContentSection({ section, index }) {
 }
 
 export default function BlogDetail({ post }) {
-  const related = getRelatedPosts(post);
-
   return (
     <main>
       <article>

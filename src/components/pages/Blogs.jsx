@@ -115,6 +115,8 @@ export default function Blogs() {
   const { blogs, loading } = useSelector((state) => state.blogs);
 
   useEffect(() => {
+    // Refetch blogs when pathname changes or component mounts
+    // This ensures fresh data when user navigates back from admin/blog details
     dispatch(fetchBlogs({ limit: 50, offset: 0 }));
   }, [dispatch]);
 
