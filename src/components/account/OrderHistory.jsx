@@ -348,7 +348,7 @@ export default function OrderHistory({ onTrackOrder }) {
             Start shopping to see your orders here
           </p>
           <a
-            href="/category"
+            href="/"
             className="inline-block px-6 md:px-8 py-2.5 md:py-3 rounded-3xl font-semibold text-white transition-all hover:opacity-90"
             style={{ backgroundColor: MAROON }}
           >

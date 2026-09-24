@@ -6,11 +6,9 @@ import {
   POLICY_UPDATED,
   POLICY_FAQS,
   POLICY_BLOCKS,
-  COOKIE_POLICY,
 } from "@/constants/policyData";
 
 const MAROON = "#7B1E2B";
-const GOLD = "#C9A227";
 
 // The same ornament lockup the home and About sections use.
 function SectionHead({ eyebrow, title, children }) {
@@ -54,31 +52,166 @@ function SectionHead({ eyebrow, title, children }) {
 // Numbered clause list — the same shape for every policy, so the page reads
 // consistently from top to bottom.
 function ClauseList({ blocks }) {
+  const parseBodyContent = (body) => {
+    const lines = body.split("\n");
+    const elements = [];
+    let currentParagraph = [];
+    let currentBulletList = [];
+    let currentNumberedList = [];
+    let currentStepList = [];
+
+    const flushParagraph = () => {
+      if (currentParagraph.length > 0) {
+        elements.push({
+          type: "paragraph",
+          content: currentParagraph.join(" "),
+        });
+        currentParagraph = [];
+      }
+    };
+
+    const flushBulletList = () => {
+      if (currentBulletList.length > 0) {
+        elements.push({
+          type: "bulletList",
+          items: currentBulletList,
+        });
+        currentBulletList = [];
+      }
+    };
+
+    const flushNumberedList = () => {
+      if (currentNumberedList.length > 0) {
+        elements.push({
+          type: "numberedList",
+          items: currentNumberedList,
+        });
+        currentNumberedList = [];
+      }
+    };
+
+    const flushStepList = () => {
+      if (currentStepList.length > 0) {
+        elements.push({
+          type: "stepList",
+          items: currentStepList,
+        });
+        currentStepList = [];
+      }
+    };
+
+    lines.forEach((line) => {
+      const trimmedLine = line.trim();
+
+      if (trimmedLine.startsWith("•")) {
+        flushParagraph();
+        flushNumberedList();
+        flushStepList();
+        currentBulletList.push(trimmedLine.substring(1).trim());
+      } else if (/^\d+\./.test(trimmedLine)) {
+        flushParagraph();
+        flushBulletList();
+        flushStepList();
+        currentNumberedList.push(trimmedLine.replace(/^\d+\.\s*/, ""));
+      } else if (/^Step\s+\d+:/.test(trimmedLine)) {
+        flushParagraph();
+        flushBulletList();
+        flushNumberedList();
+        currentStepList.push(trimmedLine);
+      } else if (trimmedLine === "") {
+        flushParagraph();
+        flushBulletList();
+        flushNumberedList();
+        flushStepList();
+      } else {
+        flushBulletList();
+        flushNumberedList();
+        flushStepList();
+        currentParagraph.push(trimmedLine);
+      }
+    });
+
+    flushParagraph();
+    flushBulletList();
+    flushNumberedList();
+    flushStepList();
+
+    return elements;
+  };
+
   return (
     <ol className="mx-auto mt-8 max-w-[900px] space-y-4">
-      {blocks.map((block, i) => (
-        <li
-          key={block.id}
-          className="rounded-lg border border-[#EFDCD4] bg-white p-5"
-        >
-          <h3 className="flex items-baseline gap-3">
-            <span
-              className="shrink-0 font-[family-name:var(--font-heading)] text-[20px] leading-none"
-              style={{ color: "#EBD8C8" }}
-              aria-hidden="true"
-            >
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <span
-              className="font-[family-name:var(--font-heading)] text-[20px] leading-snug sm:text-[24px]"
-              style={{ color: MAROON }}
-            >
-              {block.title}
-            </span>
-          </h3>
-          <p className="mt-1.5 text-[16px] leading-relaxed text-neutral-600">{block.body}</p>
-        </li>
-      ))}
+      {blocks.map((block, blockIndex) => {
+        const parsedContent = parseBodyContent(block.body);
+
+        return (
+          <li
+            key={block.id}
+            className="rounded-lg border border-[#EFDCD4] bg-white p-5"
+          >
+            <h3 className="flex items-baseline gap-3">
+              <span
+                className="shrink-0 font-[family-name:var(--font-heading)] text-[20px] leading-none"
+                style={{ color: "#EBD8C8" }}
+                aria-hidden="true"
+              >
+                {String(blockIndex + 1).padStart(2, "0")}
+              </span>
+              <span
+                className="font-[family-name:var(--font-heading)] text-[20px] leading-snug sm:text-[24px]"
+                style={{ color: MAROON }}
+              >
+                {block.title}
+              </span>
+            </h3>
+
+            <div className="mt-1.5 space-y-3 text-[16px] leading-relaxed text-neutral-600">
+              {parsedContent.map((element, idx) => {
+                const renderContent = (text) => {
+                  const parts = text.split(/(\*\*[^*]+\*\*)/);
+                  return parts.map((part, i) => {
+                    if (part.startsWith("**") && part.endsWith("**")) {
+                      return <strong key={i}>{part.slice(2, -2)}</strong>;
+                    }
+                    return part;
+                  });
+                };
+
+                if (element.type === "paragraph") {
+                  return (
+                    <p key={idx}>{renderContent(element.content)}</p>
+                  );
+                } else if (element.type === "bulletList") {
+                  return (
+                    <ul key={idx} className="list-disc list-inside space-y-1 pl-2">
+                      {element.items.map((item, itemIdx) => (
+                        <li key={itemIdx}>{renderContent(item)}</li>
+                      ))}
+                    </ul>
+                  );
+                } else if (element.type === "numberedList") {
+                  return (
+                    <ol key={idx} className="list-decimal list-inside space-y-1 pl-2">
+                      {element.items.map((item, itemIdx) => (
+                        <li key={itemIdx}>{renderContent(item)}</li>
+                      ))}
+                    </ol>
+                  );
+                } else if (element.type === "stepList") {
+                  return (
+                    <div key={idx} className="space-y-1">
+                      {element.items.map((item, itemIdx) => (
+                        <p key={itemIdx} className="font-medium">{renderContent(item)}</p>
+                      ))}
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -144,39 +277,6 @@ export default function Policy() {
           </div>
         </section>
       ))}
-
-      {/* 8 — Cookie Policy, shared with the About page */}
-      <section id="cookies" className="scroll-mt-28 bg-[#FDF8F3] pt-12 pb-14">
-        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
-          <SectionHead eyebrow="How this site remembers you" title="Cookie Policy">
-            {COOKIE_POLICY.intro}
-          </SectionHead>
-
-          <ClauseList blocks={COOKIE_POLICY.blocks} />
-
-          <p className="mx-auto mt-8 max-w-[900px] rounded-lg border border-[#EFDCD4] bg-white p-5 text-[16px] leading-relaxed text-neutral-600">
-            Something here unclear, or not matching what you were told? Write to{" "}
-            <a
-              href="mailto:sabaajewelarts@gmail.com"
-              className="font-medium underline decoration-[#C9A227] underline-offset-4"
-              style={{ color: MAROON }}
-            >
-              sabaajewelarts@gmail.com
-            </a>{" "}
-            or message us on{" "}
-            <a
-              href="https://wa.me/917871900140"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium underline decoration-[#C9A227] underline-offset-4"
-              style={{ color: MAROON }}
-            >
-              WhatsApp
-            </a>
-            , and a person will answer you.
-          </p>
-        </div>
-      </section>
     </main>
   );
 }
