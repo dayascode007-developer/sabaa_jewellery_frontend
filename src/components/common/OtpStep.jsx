@@ -23,7 +23,7 @@ export default function OtpStep({
   onVerified,
   onResend,
   onBack,
-  backLabel = "Use a different email or number",
+  backLabel = "Use a different number",
 }) {
   const [digits, setDigits] = useState(Array(LENGTH).fill(""));
   const [error, setError] = useState("");

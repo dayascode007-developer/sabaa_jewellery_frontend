@@ -11,15 +11,10 @@ import OtpStep from "@/components/common/OtpStep";
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
 
-// One field accepts either form, so work out which was given before validating.
+// Only accepts phone numbers - 10 digits
 function readIdentifier(raw) {
   const value = raw.trim();
   if (!value) return { kind: "empty" };
-
-  if (value.includes("@")) {
-    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
-    return { kind: "email", ok, value: value.toLowerCase() };
-  }
 
   // Indian mobile: 10 digits starting 6-9, with an optional +91 or 0.
   const digits = value.replace(/\D/g, "").replace(/^(91|0)/, "");
@@ -83,12 +78,10 @@ export default function Login({
   const parsed = readIdentifier(identifier);
   const error =
     parsed.kind === "empty"
-      ? "Please enter your email address or mobile number"
+      ? "Please enter your mobile number"
       : parsed.ok
         ? ""
-        : parsed.kind === "email"
-          ? "That does not look like an email address"
-          : "Enter a 10-digit mobile number";
+        : "Enter a 10-digit mobile number";
 
   const canSubmit = !error && notRobot && !submitting;
 
@@ -194,20 +187,20 @@ export default function Login({
                 Login to Sabaa
               </h1>
               <p className="mx-auto mt-2 max-w-[340px] text-center text-[15px] leading-relaxed text-neutral-600">
-                Login with your email address or mobile number to get the coupons
+                Login with your mobile number to get the coupons
                 associated with your account.
               </p>
 
               <form onSubmit={handleSubmit} noValidate className="mt-6">
                 <label htmlFor="identifier" className="sr-only">
-                  Email address or phone number
+                  Phone number
                 </label>
                 <input
                   id="identifier"
                   name="identifier"
                   type="text"
                   autoComplete="username"
-                  placeholder="Email address or Phone Number*"
+                  placeholder="Phone Number*"
                   value={identifier}
                   onChange={(e) => {
                     const v = e.target.value;
