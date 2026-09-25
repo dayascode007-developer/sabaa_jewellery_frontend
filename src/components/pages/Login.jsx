@@ -204,9 +204,9 @@ export default function Login({
                   value={identifier}
                   onChange={(e) => {
                     const v = e.target.value;
-                    // Digits only means they are typing a number, so cap it at
-                    // 10. An email is left alone — it needs the length.
-                    setIdentifier(/^\d*$/.test(v) ? v.slice(0, 10) : v);
+                    // Only digits (0-9), no special characters, max 10
+                    const digitsOnly = v.replace(/\D/g, "").slice(0, 10);
+                    setIdentifier(digitsOnly);
                     setServerError("");
                   }}
                   onBlur={() => setTouched(true)}

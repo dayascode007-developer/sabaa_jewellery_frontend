@@ -95,9 +95,12 @@ export default function SignUp({
   const setField = (name) => (e) => {
     let value = e.target.value;
 
-    // Name field: capitalize first letter
-    if (name === "name" && value.length > 0) {
-      value = value.charAt(0).toUpperCase() + value.slice(1);
+    // Name field: only letters and spaces, capitalize first letter
+    if (name === "name") {
+      value = value.replace(/[^a-zA-Z\s]/g, "");
+      if (value.length > 0) {
+        value = value.charAt(0).toUpperCase() + value.slice(1);
+      }
     }
 
     // Mobile field: only allow digits
