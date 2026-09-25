@@ -1,7 +1,7 @@
 // All About-page copy lives here so the page itself stays layout-only and the
 // text can be edited (or swapped for API data) without touching components.
 
-import aboutImage from "@/assets/logo/aboutPageImage.webp";
+import aboutImage from "@/assets/batch/image.png";
 
 export { aboutImage };
 
@@ -9,42 +9,35 @@ export { aboutImage };
 // nav at the top of the page.
 export const ABOUT_SECTIONS = [
   { id: "about-sabaa", label: "About Sabaa" },
-  { id: "our-story", label: "Our Story" },
-  { id: "what-is-panchaloga", label: "What is Panchaloga?" },
-  { id: "panchaloga-benefits", label: "Benefits of Panchaloga Jewellery" },
-  { id: "panchaloga-composition", label: "Panchaloga Composition" },
   { id: "manufacturing", label: "Manufacturing Process" },
   { id: "faqs", label: "Help & FAQs" },
-  { id: "cookies", label: "Cookie Policy" },
   { id: "contact", label: "Contact Us" },
 ];
 
 // Paragraphs are arrays of segments so the emphasis from the reference survives.
 // `strong` = bold, `accent` = the muted gold-brown highlight, plain string = body.
 export const ABOUT_PARAGRAPHS = [
+  [{ strong: "A Genuine Jewellery Brand from Tamil Nadu, Rooted in Tradition" }],
   [
-    "The Journey of Sabaa started with the launch of Panchalogam rings engraved with customer names and symbols in ",
-    { strong: "1980" },
-    ". But, it soon grew into silver rings customized for customers. The term Sabaa was established by ",
-    { strong: "Mr. Venkatesan" },
-    ", son of ",
-    { strong: "Mr. Rathina Sabapathy" },
-    " — the brand name Sabaa follows the father of the proprietor. The initial workshop was set up in Cuddalore, Tamilnadu, registered as ",
-    { accent: "Nakshath International" },
-    " with GST 33BHPPV7845F1ZQ.",
+    { strong: "SABAA" },
+    " is a genuine jewellery brand specialising in ",
+    { accent: "Panchaloga and Silver jewellery" },
+    ", proudly based in Cuddalore, Tamil Nadu. Over the years, we have grown into one of India's leading customised ring jewellery brands, earning the trust of thousands of customers and becoming a preferred choice for meaningful gifting.",
   ],
   [
-    "We help you choose different kinds of customized rings in panchalogam and silver jewellery, and you can engrave or carve or ",
-    { strong: "sculpt your loved one's name or face on it" },
-    " and it will last forever. We are also specialized in ",
-    { strong: "custom engraved rings" },
-    " and you can engrave name, fingerprint, barcode, ",
-    { accent: "your voice wave form" },
-    " or anything you want to ",
-    { accent: "engrave on your gold ring" },
-    ". It will be the best gift you can come up with, as it is personalized and speaks volumes about your loved one's personality. No matter what the occasion is and who the lucky person is, these ",
-    { accent: "personalized gifts" },
-    " will top the list of their favorites.",
+    "At SABAA, we believe jewellery is more than an accessory. It is a symbol of ",
+    { strong: "faith, love, identity, tradition, and personal memories" },
+    ".",
+  ],
+  [
+    "Our journey continues to shine as we bring together the convenience of online shopping with the warmth and personal experience of an in-store jewellery experience through our growing ",
+    { accent: "omnichannel approach" },
+    ".",
+  ],
+  [
+    "We specialise in ",
+    { strong: "customised engraved rings" },
+    ", combining advanced customisation techniques with the expertise of skilled artisans. Every design is created with precision and care, while preserving the traditional handmade touch and craftsmanship that makes Indian jewellery truly special.",
   ],
 ];
 

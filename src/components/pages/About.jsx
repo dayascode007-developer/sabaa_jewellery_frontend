@@ -661,13 +661,8 @@ export default function About() {
       </nav>
 
       <AboutSabaa />
-      <OurStory />
-      <WhatIsPanchaloga />
-      <PanchalogaBenefits />
-      <PanchalogaComposition />
       <ManufacturingProcess />
       <HelpFaqs />
-      <CookiePolicy />
       <ContactUs />
     </main>
   );
