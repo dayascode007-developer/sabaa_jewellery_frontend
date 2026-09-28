@@ -181,7 +181,7 @@ export default function ReviewModal({ isOpen, onSuccess }) {
                   }
                 }}
                 placeholder="e.g., John Doe"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-black focus:outline-none focus:border-gray-400"
                 maxLength="255"
               />
             </div>
@@ -233,7 +233,7 @@ export default function ReviewModal({ isOpen, onSuccess }) {
                   }
                 }}
                 placeholder="e.g., Beautiful ring"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-black focus:outline-none focus:border-gray-400"
                 maxLength="255"
               />
             </div>
@@ -255,7 +255,7 @@ export default function ReviewModal({ isOpen, onSuccess }) {
                   }
                 }}
                 placeholder="Share your experience with this product..."
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:border-gray-400"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-black resize-none focus:outline-none focus:border-gray-400"
                 rows="4"
                 maxLength="500"
               />
