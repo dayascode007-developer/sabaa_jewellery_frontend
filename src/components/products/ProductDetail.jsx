@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
 import { TfiHandPointRight } from "react-icons/tfi";
+import { FaWhatsapp } from "react-icons/fa";
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import {
   addToWishlist,
@@ -611,7 +612,7 @@ export default function ProductDetail({ product }) {
   // Detect if this is a "Real Photo Ring" product
   const isRealPhotoRing = product.is_photo_ring === true;
 
-  const [size, setSize] = useState(product.sizes?.[2] ?? "");
+  const [size, setSize] = useState("");
   const [qty, setQty] = useState(1);
   const [giftWrap, setGiftWrap] = useState(false);
   const [customerPhoto, setCustomerPhoto] = useState(null);
@@ -619,12 +620,13 @@ export default function ProductDetail({ product }) {
   // Engraving options. Only rings carry them — a chain has no "ring name".
   const [ringName, setRingName] = useState("");
   const [fontId, setFontId] = useState("");
-  const [symbolId, setSymbolId] = useState(SYMBOLS[0].id);
+  const [symbolId, setSymbolId] = useState("");
   const [symbolSide, setSymbolSide] = useState("left");
-  const [colorId, setColorId] = useState(product.colors?.[0]?.id ?? "");
+  const [colorId, setColorId] = useState("");
 
   // Validation error states
   const [sizeError, setSizeError] = useState("");
+  const [colorError, setColorError] = useState("");
   const [ringNameError, setRingNameError] = useState("");
   const [photoError, setPhotoError] = useState("");
   const [fontError, setFontError] = useState("");
@@ -685,6 +687,12 @@ export default function ProductDetail({ product }) {
     // Validation: Ring size required
     if (product.sizes && product.sizes.length > 0 && !size) {
       setSizeError("Please select a ring size");
+      hasErrors = true;
+    }
+
+    // Validation: Enamel color required
+    if (product.colors && product.colors.length > 0 && !colorId) {
+      setColorError("Please select an enamel color");
       hasErrors = true;
     }
 
@@ -912,6 +920,7 @@ export default function ProductDetail({ product }) {
                   sizeError ? "border-red-500" : "border-neutral-300"
                 }`}
               >
+                <option value="">Select a ring size</option>
                 {product.sizes
                   ?.sort((a, b) => Number(a) - Number(b))
                   .map((s) => (
@@ -973,15 +982,24 @@ export default function ProductDetail({ product }) {
               <select
                 id="color"
                 value={colorId}
-                onChange={(e) => setColorId(e.target.value)}
-                className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
+                onChange={(e) => {
+                  setColorId(e.target.value);
+                  setColorError("");
+                }}
+                className={`mt-1.5 w-full rounded border bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500 ${
+                  colorError ? "border-red-500" : "border-neutral-300"
+                }`}
               >
+                <option value="">Select a color</option>
                 {product.colors.map((color) => (
                   <option key={color.id} value={color.id}>
                     {color.name}
                   </option>
                 ))}
               </select>
+              {colorError && (
+                <p className="mt-1.5 text-sm text-red-600">{colorError}</p>
+              )}
             </div>
           ) : null}
 
@@ -1055,13 +1073,13 @@ export default function ProductDetail({ product }) {
                 <SymbolWheel
                   value={symbolId}
                   onChange={setSymbolId}
-                  symbols={product.symbols}
+                  symbols={[{ id: "", name: "None" }, ...(product.symbols || [])]}
                 />
               </div>
 
               {/* Which side of the name the symbol sits on. Hidden while no
                 symbol is chosen — there is nothing to place. */}
-              {symbolId !== "none" ? (
+              {symbolId ? (
                 <fieldset className="mt-3">
                   <legend
                     className="text-[14px] font-bold"
@@ -1101,29 +1119,20 @@ export default function ProductDetail({ product }) {
 
           {/* WhatsApp assist + Add to cart */}
           <div className="mt-5 flex flex-wrap items-start gap-4">
-            <div className="rounded border border-[#BFE9CC] bg-[#EAF9EF] p-3">
-              <p
-                className="flex items-center gap-1.5 text-[12px] font-medium"
-                style={{ color: "#128C4A" }}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-3.5 w-3.5"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M12 2.8a9.1 9.1 0 0 0-7.8 13.8L2.9 21.3l4.9-1.3A9.1 9.1 0 1 0 12 2.8Z" />
-                </svg>
-                Whatsapp
-              </p>
-              <p className="mt-1 text-[11px] leading-tight text-neutral-600">
-                Get Whatsapp Assistance -<br />
-                Chat with us
+            <div className="rounded-3xl p-4 w-56" style={{ backgroundColor: "#E8FECE" }}>
+              <div className="flex items-center gap-2 mb-2">
+                <FaWhatsapp className="h-5 w-5" style={{ color: "#5F7037" }} />
+                <p className="text-base font-semibold" style={{ color: "#5F7037" }}>
+                  WhatsApp
+                </p>
+              </div>
+              <p className="text-[13px] leading-tight mb-3" style={{ color: "#5F7037" }}>
+                Get WhatsApp Assistance - Chat with us
               </p>
               <button
                 type="button"
-                className="mt-2 rounded px-3 py-1.5 text-[11px] font-medium text-white transition-opacity hover:opacity-90"
-                style={{ backgroundColor: WHATSAPP }}
+                className="rounded-2xl px-5 py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 w-full"
+                style={{ backgroundColor: "#5F7037" }}
               >
                 Chat with Us
               </button>
