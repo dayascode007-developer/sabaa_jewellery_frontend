@@ -15,11 +15,11 @@ export const COMPANY_INFO = {
     "Semmandalam,cuddalore,",
     "Tamilnadu 607002",
   ],
-  mobileLabel: "Mobile : 7871900140",
+  mobileLabel: "Mobile : 7871900355",
   email: "sabaajewelarts@gmail.com",
-  phone: "+91 7871900140",
+  phone: "+91 7871900355",
   // Digits only, country code included — wa.me rejects spaces and the leading +.
-  whatsapp: "917871900140",
+  whatsapp: "917871900355",
   // The embed shown in the footer.
   mapEmbedUrl:
     "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d62496.2804578447!2d79.75563!3d11.763816!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a549982c54b46c9%3A0x721b8ba7ed2dd42a!2sSaba%20jewel%20arts%2C%20engraving%20and%20enamel%20works!5e0!3m2!1sen!2sus!4v1787746524728!5m2!1sen!2sus",

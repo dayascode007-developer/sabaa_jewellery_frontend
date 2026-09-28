@@ -2,7 +2,7 @@ import { CARE_GUIDE } from "@/constants/productData";
 
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
-const WHATSAPP_NUMBER = "917871900140";
+const WHATSAPP_NUMBER = "917871900355";
 
 const ICONS = {
   drop: <path d="M12 3.5c3.2 3.6 5.2 6.3 5.2 8.9a5.2 5.2 0 0 1-10.4 0c0-2.6 2-5.3 5.2-8.9Z" />,

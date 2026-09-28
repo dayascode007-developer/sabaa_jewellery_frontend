@@ -244,7 +244,7 @@ const PRODUCT_DETAIL = {
     {
       id: "contact",
       title: "Our Address & Contact",
-      body: "Sabaa Jewel Arts, 54 Gandhinagar, Vilvanagar, Semmandalam, Cuddalore, Tamilnadu 607002. Mobile: 7871900140.",
+      body: "Sabaa Jewel Arts, 54 Gandhinagar, Vilvanagar, Semmandalam, Cuddalore, Tamilnadu 607002. Mobile: 7871900355.",
     },
   ],
   description:

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
 // Digits only, country code included — wa.me rejects spaces and the leading +.
-const WHATSAPP_NUMBER = "917871900140";
+const WHATSAPP_NUMBER = "917871900355";
 
 // Scattered across the pill. Delays are staggered left-to-right so the stars
 // light up in sequence as the shine band passes over them, then in reverse on

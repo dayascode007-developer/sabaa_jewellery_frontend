@@ -6,7 +6,7 @@ import sizeGuide from "@/assets/logo/Ring Size Guide.webp";
 
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
-const WHATSAPP_NUMBER = "917871900140";
+const WHATSAPP_NUMBER = "917871900355";
 
 // The chart artwork already carries the size table and the "measure the inner
 // diameter" illustration, so none of that is repeated below it — only the parts

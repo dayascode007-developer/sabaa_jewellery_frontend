@@ -90,7 +90,7 @@ export const POLICY_FAQS = [
   {
     id: "return-customized",
     q: "Can I return or exchange a customized Panchaloga ring?",
-    a: "There is no return or exchange accepted unless there is any damage on the delivered product. For support contact **sabajewelarts@gmail.com** or WhatsApp: **7871900140**.",
+    a: "There is no return or exchange accepted unless there is any damage on the delivered product. For support contact **sabajewelarts@gmail.com** or WhatsApp: **7871900355**.",
   },
   {
     id: "unique-ring",
@@ -130,12 +130,12 @@ export const POLICY_FAQS = [
   {
     id: "wrong-details",
     q: "What happens if I enter the wrong name or engraving details?",
-    a: "Please carefully verify all customization details before placing your order. Once production has started, changes may not be possible. For support contact **sabajewelarts@gmail.com** or WhatsApp: **7871900140**.",
+    a: "Please carefully verify all customization details before placing your order. Once production has started, changes may not be possible. For support contact **sabajewelarts@gmail.com** or WhatsApp: **7871900355**.",
   },
   {
     id: "contact-customization",
     q: "How can I contact SABAA regarding a customized ring?",
-    a: "For questions about customization, sizing, design, or an existing order, contact SABAA customer support through our website. For support contact **sabajewelarts@gmail.com** or WhatsApp: **7871900140**. Our team will assist you with the available customization options.",
+    a: "For questions about customization, sizing, design, or an existing order, contact SABAA customer support through our website. For support contact **sabajewelarts@gmail.com** or WhatsApp: **7871900355**. Our team will assist you with the available customization options.",
   },
 ];
 
@@ -255,7 +255,7 @@ export const POLICY_BLOCKS = [
       {
         id: "contact-shipping",
         title: "Contact Us",
-        body: "If you have any questions regarding your shipment or delivery, please contact SABAA customer support.\nSABAA\n• 📧 Email: **sabajewelarts@gmail.com**\n• 📞 WhatsApp: **7871900140**\n• Website: www.sabaa.in\n• Business Address: SABAA, 54 Gandhinagar, Vilvanagar, Semmandalam, Cuddalore 607001\nWhen contacting us regarding an order, please provide your Order ID so that our team can assist you more quickly.",
+        body: "If you have any questions regarding your shipment or delivery, please contact SABAA customer support.\nSABAA\n• 📧 Email: **sabajewelarts@gmail.com**\n• 📞 WhatsApp: **7871900355**\n• Website: www.sabaa.in\n• Business Address: SABAA, 54 Gandhinagar, Vilvanagar, Semmandalam, Cuddalore 607001\nWhen contacting us regarding an order, please provide your Order ID so that our team can assist you more quickly.",
       },
       {
         id: "changes-shipping",
@@ -289,7 +289,7 @@ export const POLICY_BLOCKS = [
       {
         id: "report",
         title: "How to Report a Damaged or Incorrect Item",
-        body: "If you receive a damaged or incorrect item:\nStep 1: Record a clear, continuous unboxing video while opening the package.\nStep 2: Do not discard the original packaging.\nStep 3: Contact us on WhatsApp at **7871900140**.\nStep 4: Share the unboxing video along with your Order ID and a brief description of the issue.\nStep 5: Our team will review the information and verify the issue.\nIf the claim is approved after verification, SABAA may arrange an exchange or another appropriate resolution, depending on the nature of the issue and product availability.",
+        body: "If you receive a damaged or incorrect item:\nStep 1: Record a clear, continuous unboxing video while opening the package.\nStep 2: Do not discard the original packaging.\nStep 3: Contact us on WhatsApp at **7871900355**.\nStep 4: Share the unboxing video along with your Order ID and a brief description of the issue.\nStep 5: Our team will review the information and verify the issue.\nIf the claim is approved after verification, SABAA may arrange an exchange or another appropriate resolution, depending on the nature of the issue and product availability.",
       },
       {
         id: "video",
@@ -334,7 +334,7 @@ export const POLICY_BLOCKS = [
       {
         id: "contact",
         title: "Contact Us",
-        body: "For assistance regarding a damaged or incorrect item, please contact us:\n• 📞 WhatsApp: **7871900140**\n• 📧 Email: **sabajewelarts@gmail.com**\nWhen contacting us, please include your Order ID and the required unboxing video so that our team can review your request.",
+        body: "For assistance regarding a damaged or incorrect item, please contact us:\n• 📞 WhatsApp: **7871900355**\n• 📧 Email: **sabajewelarts@gmail.com**\nWhen contacting us, please include your Order ID and the required unboxing video so that our team can review your request.",
       },
       {
         id: "changes",
@@ -383,7 +383,7 @@ export const POLICY_BLOCKS = [
       {
         id: "request-cancellation",
         title: "How to Request Cancellation",
-        body: "To request cancellation, please contact SABAA as soon as possible through:\n• 📞 WhatsApp: **7871900140**\n• 📧 Email: **sabajewelarts@gmail.com**\nPlease provide:\n• Order ID.\n• Customer name.\n• Registered mobile number.\n• Reason for cancellation, if applicable.\nOur team will verify the order status and confirm whether the cancellation request can be processed.",
+        body: "To request cancellation, please contact SABAA as soon as possible through:\n• 📞 WhatsApp: **7871900355**\n• 📧 Email: **sabajewelarts@gmail.com**\nPlease provide:\n• Order ID.\n• Customer name.\n• Registered mobile number.\n• Reason for cancellation, if applicable.\nOur team will verify the order status and confirm whether the cancellation request can be processed.",
       },
       {
         id: "no-refund-advance",
@@ -408,7 +408,7 @@ export const POLICY_BLOCKS = [
       {
         id: "contact-cancellation",
         title: "Contact Us",
-        body: "For cancellation requests or assistance regarding your order, please contact us:\nSABAA\n• 📞 WhatsApp: **7871900140**\n• 📧 Email: **sabajewelarts@gmail.com**\nPlease keep your **Order ID** ready when contacting our customer support team.",
+        body: "For cancellation requests or assistance regarding your order, please contact us:\nSABAA\n• 📞 WhatsApp: **7871900355**\n• 📧 Email: **sabajewelarts@gmail.com**\nPlease keep your **Order ID** ready when contacting our customer support team.",
       },
       {
         id: "changes-cancellation",
@@ -497,7 +497,7 @@ export const POLICY_BLOCKS = [
       {
         id: "contact-refund",
         title: "Contact Us",
-        body: "If you have any questions regarding our Refund Policy or your order, please contact SABAA:\n• 📞 WhatsApp: **7871900140**\n• 📧 Email: **sabajewelarts@gmail.com**\nWhen contacting us regarding an order, please provide your **Order ID** so our team can assist you efficiently.",
+        body: "If you have any questions regarding our Refund Policy or your order, please contact SABAA:\n• 📞 WhatsApp: **7871900355**\n• 📧 Email: **sabajewelarts@gmail.com**\nWhen contacting us regarding an order, please provide your **Order ID** so our team can assist you efficiently.",
       },
       {
         id: "changes-refund",
@@ -581,7 +581,7 @@ export const POLICY_BLOCKS = [
       {
         id: "contact-warranty",
         title: "Contact Us for Warranty Claims",
-        body: "For warranty assistance, please contact SABAA with your **Order ID**.\n• 📞 WhatsApp: **7871900140**\n• 📧 Email: **sabajewelarts@gmail.com**\nOur customer support team will review your request and guide you through the warranty process.",
+        body: "For warranty assistance, please contact SABAA with your **Order ID**.\n• 📞 WhatsApp: **7871900355**\n• 📧 Email: **sabajewelarts@gmail.com**\nOur customer support team will review your request and guide you through the warranty process.",
       },
       {
         id: "changes-warranty",
@@ -799,7 +799,7 @@ export const POLICY_BLOCKS = [
       {
         id: "contact-terms",
         title: "Contact Us",
-        body: "If you have any questions regarding these Terms & Conditions, your order, or our policies, please contact SABAA.\nSABAA\n• 📞 WhatsApp: **7871900140**\n• 📧 Email: **sabajewelarts@gmail.com**\nWhen contacting us about an order, please provide your **Order ID** so our team can assist you efficiently.",
+        body: "If you have any questions regarding these Terms & Conditions, your order, or our policies, please contact SABAA.\nSABAA\n• 📞 WhatsApp: **7871900355**\n• 📧 Email: **sabajewelarts@gmail.com**\nWhen contacting us about an order, please provide your **Order ID** so our team can assist you efficiently.",
       },
     ],
   },
@@ -913,7 +913,7 @@ export const POLICY_BLOCKS = [
       {
         id: "contact-cookie",
         title: "Contact Us",
-        body: "If you have questions, concerns, or requests regarding this Cookie Policy or our use of cookies, please contact us:\nSABAA\n• 📧 Email: **sabajewelarts@gmail.com**\n• 📞 WhatsApp: **7871900140**\nFor privacy-related requests, please mention **Cookie Policy / Privacy Request** in the subject line of your communication.",
+        body: "If you have questions, concerns, or requests regarding this Cookie Policy or our use of cookies, please contact us:\nSABAA\n• 📧 Email: **sabajewelarts@gmail.com**\n• 📞 WhatsApp: **7871900355**\nFor privacy-related requests, please mention **Cookie Policy / Privacy Request** in the subject line of your communication.",
       },
     ],
   },

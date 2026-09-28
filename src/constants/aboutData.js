@@ -2,13 +2,24 @@
 // text can be edited (or swapped for API data) without touching components.
 
 import aboutImage from "@/assets/batch/image.png";
+// The goldsmith at the bench, shown beside the story of the name.
+import craftsmanImage from "@/assets/about_image/image1.png";
+// The founder's portrait, shown in "Founder with a vision".
+import founderImage from "@/assets/about_image/image2.png";
+// The workshop team, shown in "Inhouse design and manufacturing".
+import teamImage from "@/assets/about_image/image.png";
 
-export { aboutImage };
+export { aboutImage, craftsmanImage, founderImage, teamImage };
 
 // The six sections, in order. `id` doubles as the anchor target for the chip
 // nav at the top of the page.
 export const ABOUT_SECTIONS = [
   { id: "about-sabaa", label: "About Sabaa" },
+  { id: "your-story", label: "Jewellery That Tells Your Story" },
+  { id: "name-meaning", label: "What does the name Sabaa mean?" },
+  { id: "our-legacy", label: "Our Legacy. Your Story." },
+  { id: "founder", label: "Founder with a vision" },
+  { id: "inhouse", label: "Inhouse design and manufacturing" },
   { id: "manufacturing", label: "Manufacturing Process" },
   { id: "faqs", label: "Help & FAQs" },
   { id: "contact", label: "Contact Us" },
@@ -38,6 +49,142 @@ export const ABOUT_PARAGRAPHS = [
     "We specialise in ",
     { strong: "customised engraved rings" },
     ", combining advanced customisation techniques with the expertise of skilled artisans. Every design is created with precision and care, while preserving the traditional handmade touch and craftsmanship that makes Indian jewellery truly special.",
+  ],
+];
+
+// Sits between "About Sabaa" and "Manufacturing Process".
+export const STORY_PARAGRAPHS = [
+  [
+    "Every SABAA creation is thoughtfully designed for people who believe that jewellery should have a ",
+    { strong: "deeper meaning" },
+    ".",
+  ],
+  [
+    "From sacred symbols and spiritual motifs to ",
+    { accent: "personalised names, photographs, messages" },
+    ", and unique designs, every piece is created to represent something special in your life.",
+  ],
+  [
+    "Whether it celebrates ",
+    { strong: "faith, love, family, memories, identity, or heritage" },
+    ", we strive to create jewellery that becomes a meaningful part of your journey.",
+  ],
+  [
+    "Because the most beautiful jewellery is the jewellery that ",
+    { accent: "tells your story" },
+    ".",
+  ],
+];
+
+// Sits between "Jewellery That Tells Your Story" and "Manufacturing Process".
+export const NAME_STORY_PARAGRAPHS = [
+  [
+    "The name ",
+    { strong: "SABAA" },
+    " is inspired by the name of ",
+    { strong: "Late Mr. R. Rathina Sabapathy" },
+    ", the father of our founder, ",
+    { strong: "Mr. Venkatesan" },
+    ".",
+  ],
+  [
+    "Our story began in ",
+    { strong: "1988" },
+    ", when Mr. Rathina Sabapathy, an accomplished goldsmith, specialised in engraving ",
+    { strong: "intricate, traditional, and highly detailed designs on gold rings" },
+    ". His dedication to craftsmanship and his mastery of traditional engraving became the foundation of the family's jewellery journey.",
+  ],
+  [
+    "Inspired by his father's knowledge and craftsmanship, ",
+    { strong: "Mr. Venkatesan carried this legacy forward" },
+    " and began developing similar intricate customisation techniques for ",
+    { strong: "Panchaloga Impon metal rings" },
+    ", bringing traditional craftsmanship into a more accessible and personalised form of jewellery.",
+  ],
+  [
+    "After the passing of Mr. Rathina Sabapathy in ",
+    { strong: "2019" },
+    ", the brand ",
+    { strong: "SABAA was born" },
+    " as a tribute to his legacy.",
+  ],
+  [
+    "Today, SABAA is more than just a name. ",
+    { strong: "It represents a family legacy, craftsmanship, authenticity, and the timeless beauty of Indian tradition." },
+  ],
+  [
+    "We continue to ",
+    { accent: "honour the values passed down through generations" },
+    " while embracing modern technology, innovative designs, and personalised jewellery experiences.",
+  ],
+];
+
+// Sits below "What does the name Sabaa mean?".
+export const LEGACY_INTRO = [
+  "At SABAA, our vision is to preserve the beauty of traditional Indian craftsmanship while making ",
+  { strong: "personalised jewellery accessible to everyone" },
+  ".",
+];
+
+// Shown as four linked pillars, in the order of the original line:
+// Traditional Craftsmanship + Modern Technology + Personalisation + Spirituality
+export const LEGACY_PILLARS = [
+  "Traditional Craftsmanship",
+  "Modern Technology",
+  "Personalisation",
+  "Spirituality",
+];
+
+export const LEGACY_OUTRO = [
+  "to create jewellery that is not only beautiful to wear, but also ",
+  { strong: "meaningful to own" },
+  ". Every SABAA piece carries a little bit of our heritage—and becomes a part of yours.",
+];
+
+export const LEGACY_TAGLINE = "SABAA – Wear Your Story. Celebrate Your Heritage.";
+
+// Sits below "Our Legacy. Your Story.".
+export const FOUNDER = {
+  name: "Venkatesan Rathinasabapathy",
+  role: "Founder, SABAA",
+  credentials: [
+    "B.E. – Electronics & Communication Engineering (ECE)",
+    "10+ Years of Experience in Jewellery Manufacturing",
+  ],
+};
+
+export const FOUNDER_PARAGRAPHS = [
+  [
+    "Venkatesan, Founder and CEO of SABAA, is a graduate of ",
+    { accent: "Krishnasamy Engineering College, Cuddalore" },
+    ", affiliated with Anna University.",
+  ],
+  [
+    "Driven by a vision to make traditional jewellery more accessible and affordable amid the rising price of gold, he founded SABAA as a ",
+    { strong: "clutter-breaking Panchaloga jewellery brand" },
+    ". Under his leadership, SABAA has grown into a recognized name in the gold imitation jewellery industry, with a strong focus on design, quality, customer experience, and innovation.",
+  ],
+  [
+    "With a customer-first approach and a commitment to building a seamless omnichannel presence, Venkatesan has played a pivotal role in shaping SABAA into a trusted and well-respected jewellery brand.",
+  ],
+  [
+    "Looking ahead, SABAA is expanding its horizons beyond imitation jewellery, with plans to enter the ",
+    { strong: "gold and lab-grown diamond segments" },
+    ", further strengthening its vision of becoming a diverse and innovative jewellery brand.",
+  ],
+];
+
+// Sits below "Founder with a vision".
+export const INHOUSE_PARAGRAPHS = [
+  [
+    "We have a passionate and dedicated team working behind the scenes to build SABAA into a ",
+    { strong: "global Panchaloga jewellery brand" },
+    ". Our team brings together some of the finest craftsmen in the country, skilled in the age-old techniques of Indian jewellery making, along with a creative design team trained at some of the leading design institutes in India.",
+  ],
+  [
+    "Together, their craftsmanship, creativity, and expertise enable us to create jewellery that blends ",
+    { accent: "traditional artistry with contemporary design" },
+    ".",
   ],
 ];
 
@@ -297,8 +444,8 @@ export const COOKIE_POLICY = {
 
 // Digits only, country code included — wa.me rejects spaces and the leading +.
 export const CONTACT = {
-  whatsapp: "917871900140",
-  phoneDisplay: "+91 78719 00140",
+  whatsapp: "917871900355",
+  phoneDisplay: "+91 78719 00355",
   email: "sabaajewelarts@gmail.com",
   offices: [
     {

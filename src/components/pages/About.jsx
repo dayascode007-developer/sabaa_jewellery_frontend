@@ -4,6 +4,18 @@ import {
   aboutImage,
   ABOUT_SECTIONS,
   ABOUT_PARAGRAPHS,
+  STORY_PARAGRAPHS,
+  NAME_STORY_PARAGRAPHS,
+  LEGACY_INTRO,
+  LEGACY_PILLARS,
+  LEGACY_OUTRO,
+  LEGACY_TAGLINE,
+  FOUNDER,
+  FOUNDER_PARAGRAPHS,
+  INHOUSE_PARAGRAPHS,
+  craftsmanImage,
+  founderImage,
+  teamImage,
   FOUNDER_QUOTE,
   STORY_MILESTONES,
   PANCHALOGA_INTRO,
@@ -195,7 +207,214 @@ function AboutSabaa() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  2 — Our Story                                                      */
+/*  2 — Jewellery That Tells Your Story                                */
+/* ------------------------------------------------------------------ */
+
+function YourStory() {
+  return (
+    <section id="your-story" className="scroll-mt-28 bg-white py-12">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
+        <SectionHead eyebrow="Made to mean something" title="Jewellery That Tells Your Story" />
+
+        <div className="mx-auto mt-8 max-w-[860px]">
+          {STORY_PARAGRAPHS.map((segments, i) => (
+            <p
+              key={i}
+              className={`text-[16px] leading-relaxed text-neutral-700 ${i > 0 ? "mt-4" : ""}`}
+            >
+              <RichText segments={segments} />
+            </p>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  3 — What does the name Sabaa mean?                                 */
+/* ------------------------------------------------------------------ */
+
+function NameMeaning() {
+  return (
+    <section id="name-meaning" className="scroll-mt-28 bg-[#FDF0F2] py-12">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
+        <SectionHead eyebrow="A father's name" title="What does the name Sabaa mean?" />
+
+        {/* Text beside the goldsmith at his bench, as in the reference: the
+            photo sits right on desktop and drops below the text on mobile. */}
+        <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_minmax(0,380px)] lg:gap-12">
+          <div>
+            {NAME_STORY_PARAGRAPHS.map((segments, i) => (
+              <p
+                key={i}
+                className={`text-[16px] leading-relaxed text-neutral-700 ${i > 0 ? "mt-4" : ""}`}
+              >
+                <RichText segments={segments} />
+              </p>
+            ))}
+          </div>
+
+          <div className="overflow-hidden rounded-lg bg-white p-2 shadow-sm ring-1 ring-[#EFDCD4]">
+            <Image
+              src={craftsmanImage}
+              alt="A Sabaa goldsmith shaping a ring at the bench with a blow torch, in the traditional workshop"
+              sizes="(max-width: 1024px) 92vw, 380px"
+              className="h-auto w-full rounded"
+              placeholder="blur"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  4 — Our Legacy. Your Story.                                        */
+/* ------------------------------------------------------------------ */
+
+function OurLegacy() {
+  return (
+    <section id="our-legacy" className="scroll-mt-28 bg-white py-12">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
+        <SectionHead eyebrow="Our vision" title="Our Legacy. Your Story." />
+
+        <div className="mx-auto mt-8 max-w-[860px]">
+          <p className="text-[16px] leading-relaxed text-neutral-700">
+            <RichText segments={LEGACY_INTRO} />
+          </p>
+
+          <p className="mt-6 text-[15px] font-medium text-neutral-600">We bring together:</p>
+
+          {/* The four pillars, joined by "+" as in the original line. They wrap
+              on narrow screens instead of running off the side. */}
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-3">
+            {LEGACY_PILLARS.map((pillar, i) => (
+              <span key={pillar} className="flex items-center gap-3">
+                {i > 0 ? (
+                  <span className="text-[18px]" style={{ color: GOLD }} aria-hidden="true">
+                    +
+                  </span>
+                ) : null}
+                <span
+                  className="rounded-full border px-4 py-2 text-[14px] font-medium"
+                  style={{ borderColor: "#EFDCD4", color: MAROON, backgroundColor: "#FDF0F2" }}
+                >
+                  {pillar}
+                </span>
+              </span>
+            ))}
+          </div>
+
+          <p className="mt-6 text-[16px] leading-relaxed text-neutral-700">
+            <RichText segments={LEGACY_OUTRO} />
+          </p>
+
+          <p
+            className="mt-8 font-[family-name:var(--font-heading)] text-[20px] leading-snug sm:text-[24px]"
+            style={{ color: MAROON }}
+          >
+            {LEGACY_TAGLINE}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  5 — Founder with a vision                                          */
+/* ------------------------------------------------------------------ */
+
+function FounderSection() {
+  return (
+    <section id="founder" className="scroll-mt-28 bg-[#FDF0F2] py-12">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
+        <SectionHead eyebrow="Leadership" title="Founder with a vision" />
+
+        {/* Portrait left, name and credentials right — as in the reference.
+            On a phone the portrait sits above the text. */}
+        <div className="mt-8 grid grid-cols-1 items-start gap-8 sm:grid-cols-[minmax(0,260px)_1fr] sm:gap-10">
+          <div className="overflow-hidden rounded-lg bg-white p-2 shadow-sm ring-1 ring-[#EFDCD4]">
+            <Image
+              src={founderImage}
+              alt={`${FOUNDER.name}, ${FOUNDER.role}`}
+              sizes="(max-width: 640px) 70vw, 260px"
+              className="h-auto w-full rounded"
+              placeholder="blur"
+            />
+          </div>
+
+          <div>
+            <h3
+              className="font-[family-name:var(--font-heading)] text-[22px] leading-tight sm:text-[26px]"
+              style={{ color: MAROON }}
+            >
+              {FOUNDER.name}
+            </h3>
+            <p className="mt-1 text-[15px] font-medium text-neutral-600">{FOUNDER.role}</p>
+
+            <div className="mt-4 border-l-2 pl-4" style={{ borderColor: GOLD }}>
+              {FOUNDER.credentials.map((line) => (
+                <p key={line} className="text-[15px] font-semibold text-neutral-800">
+                  {line}
+                </p>
+              ))}
+            </div>
+
+            {FOUNDER_PARAGRAPHS.map((segments, i) => (
+              <p key={i} className="mt-4 text-[16px] leading-relaxed text-neutral-700">
+                <RichText segments={segments} />
+              </p>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  6 — Inhouse design and manufacturing                               */
+/* ------------------------------------------------------------------ */
+
+function InhouseTeam() {
+  return (
+    <section id="inhouse" className="scroll-mt-28 bg-white py-12">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
+        <SectionHead eyebrow="Our team" title="Inhouse design and manufacturing" />
+
+        {/* Text left, the workshop photo right, as in the reference. */}
+        <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_minmax(0,380px)] lg:gap-12">
+          <div>
+            {INHOUSE_PARAGRAPHS.map((segments, i) => (
+              <p
+                key={i}
+                className={`text-[16px] leading-relaxed text-neutral-700 ${i > 0 ? "mt-4" : ""}`}
+              >
+                <RichText segments={segments} />
+              </p>
+            ))}
+          </div>
+
+          <div className="overflow-hidden rounded-lg bg-white p-2 shadow-sm ring-1 ring-[#EFDCD4]">
+            <Image
+              src={teamImage}
+              alt="Sabaa craftsmen at the workbench, finishing rings by hand in the in-house workshop"
+              sizes="(max-width: 1024px) 92vw, 380px"
+              className="h-auto w-full rounded"
+              placeholder="blur"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Our Story (not rendered)                                           */
 /* ------------------------------------------------------------------ */
 
 function OurStory() {
@@ -661,6 +880,11 @@ export default function About() {
       </nav>
 
       <AboutSabaa />
+      <YourStory />
+      <NameMeaning />
+      <OurLegacy />
+      <FounderSection />
+      <InhouseTeam />
       <ManufacturingProcess />
       <HelpFaqs />
       <ContactUs />

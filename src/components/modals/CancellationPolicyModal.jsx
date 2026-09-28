@@ -184,7 +184,7 @@ export default function CancellationPolicyModal({ isOpen, onClose }) {
               </p>
               <ul className="text-sm space-y-1 ml-2">
                 <li>
-                  📞 <strong>WhatsApp:</strong> 7871900140
+                  📞 <strong>WhatsApp:</strong> 7871900355
                 </li>
                 <li>
                   📧 <strong>Email:</strong> sabajewelarts@gmail.com
@@ -305,7 +305,7 @@ export default function CancellationPolicyModal({ isOpen, onClose }) {
                   <strong>SABAA</strong>
                 </p>
                 <p className="text-sm">
-                  📞 <strong>WhatsApp:</strong> 7871900140
+                  📞 <strong>WhatsApp:</strong> 7871900355
                 </p>
                 <p className="text-sm">
                   📧 <strong>Email:</strong> sabajewelarts@gmail.com
