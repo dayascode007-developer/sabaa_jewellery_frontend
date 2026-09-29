@@ -27,6 +27,7 @@ import CustomerLove from "../pages/home/CustomerLove";
 import CustomerUnboxing from "../pages/home/CustomerUnboxing";
 import CancellationPolicyModal from "@/components/modals/CancellationPolicyModal";
 import RingStylePreview from "@/components/products/RingStylePreview";
+import TryOnButton from "@/components/products/TryOnOverlay";
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
@@ -1075,6 +1076,15 @@ export default function ProductDetail({ product }) {
                 </div>
               ) : null}
             </>
+          ) : null}
+
+          {/* See it on yourself before deciding, so it sits with the buying
+              choice rather than below the fold with the specifications.
+              Renders nothing at all unless this product has a try-on model. */}
+          {product.ar_model_id ? (
+            <div className="mt-5">
+              <TryOnButton modelId={product.ar_model_id} title={product.title} />
+            </div>
           ) : null}
 
           {/* WhatsApp assist + Add to cart */}

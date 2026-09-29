@@ -52,6 +52,9 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
   limit_purchases: apiProduct.limit_purchases || false,
   maxQty: apiProduct.limit_purchases ? 10 : 99,
   is_photo_ring: apiProduct.is_photo_ring || false,
+  // The try-on model this piece is previewed as, or null for the many that
+  // have none.
+  ar_model_id: apiProduct.ar_model_id || null,
   rating: 4,
   bestseller: true,
   sections: [],
