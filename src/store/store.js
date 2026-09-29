@@ -15,6 +15,7 @@ import ordersReducer from "./slices/ordersSlice";
 import reviewsReducer from "./slices/reviewsSlice";
 import productReviewsReducer from "./slices/productReviewsSlice";
 import trackingReducer from "./slices/trackingSlice";
+import searchReducer from "./slices/searchSlice";
 
 // A new store is created per request so server-rendered pages never share state
 // between users. Register additional slice reducers here as you add them.
@@ -37,5 +38,6 @@ export const makeStore = () =>
       reviews: reviewsReducer,
       productReviews: productReviewsReducer,
       tracking: trackingReducer,
+      search: searchReducer,
     },
   });

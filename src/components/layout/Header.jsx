@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { selectCartCount } from "@/store/slices/cartSlice";
 import { selectWishlistCount } from "@/store/slices/wishlistSlice";
+import { searchProducts, setSearchQuery, clearSearch } from "@/store/slices/searchSlice";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +13,7 @@ import { BiUserCircle } from "react-icons/bi";
 import { BiSolidUserCircle } from "react-icons/bi";
 
 import AuthModal from "@/components/common/AuthModal";
+import SearchDropdown from "@/components/common/SearchDropdown";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
 
@@ -98,8 +100,14 @@ function Logo() {
 }
 
 export default function Header() {
+  const dispatch = useDispatch();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+  const searchTimeoutRef = useRef(null);
+  const searchContainerRef = useRef(null);
+
   const actions = [
     { key: "heart", icon: ICONS.heart, label: "Wishlist" },
     { key: "user", icon: ICONS.user, label: "Account" },
@@ -122,6 +130,71 @@ export default function Header() {
   useEffect(() => {
     // Auth state updated
   }, [isLoggedIn, token, customer]);
+
+  // Handle search input with debounce
+  const handleSearchInput = useCallback(
+    (value) => {
+      setSearchInputValue(value);
+      setIsSearchDropdownOpen(true);
+
+      dispatch(setSearchQuery(value));
+
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      if (value.trim()) {
+        searchTimeoutRef.current = setTimeout(() => {
+          dispatch(searchProducts(value));
+        }, 300);
+      } else {
+        // Clear search results when input is empty
+        dispatch(clearSearch());
+      }
+    },
+    [dispatch]
+  );
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchInputValue.trim()) {
+      router.push(
+        `/category/all-jewellery?search=${encodeURIComponent(searchInputValue)}`
+      );
+      setIsSearchDropdownOpen(false);
+    }
+  };
+
+  const handleSearchFocus = () => {
+    setIsSearchDropdownOpen(true);
+  };
+
+  const handleSearchBlur = () => {
+    setTimeout(() => {
+      setIsSearchDropdownOpen(false);
+    }, 200);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInputValue("");
+    dispatch(clearSearch());
+    setIsSearchDropdownOpen(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target)
+      ) {
+        setIsSearchDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="w-full bg-white">
@@ -159,18 +232,28 @@ export default function Header() {
         <Logo />
 
         {/* Search — full width on its own row until md, then inline */}
-        <div className="order-last w-full min-w-0 md:order-none md:mx-auto md:max-w-2xl">
+        <div
+          className="order-last w-full min-w-0 md:order-none md:mx-auto md:max-w-2xl relative"
+          ref={searchContainerRef}
+        >
           {/* Flat hairline pill, no drop shadow — in the reference the bar sits
               on the page rather than floating above it. */}
-          <div className="flex items-center gap-2.5 rounded-full border border-neutral-200 bg-white px-4 py-2 focus-within:border-[#7B1E2B]/40">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex items-center gap-2.5 rounded-full border border-neutral-200 bg-white px-4 py-2 focus-within:border-[#7B1E2B]/40"
+          >
             <span className="shrink-0" style={{ color: MAROON }}>
               <Icon path={ICONS.search} className="h-[18px] w-[18px]" />
             </span>
             <input
               type="text"
-              placeholder="Search for gold necklace"
+              placeholder="Search for diamond jewellery"
               aria-label="Search"
-              className="min-w-0 flex-1 bg-transparent text-[13px] text-neutral-700 outline-none placeholder:text-neutral-400 sm:text-sm"
+              value={searchInputValue}
+              onChange={(e) => handleSearchInput(e.target.value)}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              className="min-w-0 flex-1 bg-transparent text-[13px] text-black outline-none placeholder:text-neutral-400 sm:text-sm"
             />
             {/* Maroon rather than grey — in the reference these read as the
                 shop's own controls, not as disabled placeholders. */}
@@ -193,7 +276,17 @@ export default function Header() {
                 <Icon path={ICONS.mic} className="h-[18px] w-[18px]" />
               </button>
             </span>
-          </div>
+          </form>
+
+          {/* Search Dropdown */}
+          <SearchDropdown
+            isOpen={isSearchDropdownOpen}
+            onCategoryClick={() => {
+              setSearchInputValue("");
+              dispatch(clearSearch());
+              setIsSearchDropdownOpen(false);
+            }}
+          />
         </div>
 
         {/* Actions */}
