@@ -13,6 +13,7 @@ const lanAddresses = Object.values(os.networkInterfaces())
 const nextConfig = {
   allowedDevOrigins: [...new Set(lanAddresses)],
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

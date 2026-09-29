@@ -450,5 +450,4 @@ authSlice.caseReducers.clearAuth = (state) => {
 };
 
 export const { clearError, clearAuth } = authSlice.actions;
-export { initializeAuth, editProfile };
 export default authSlice.reducer;

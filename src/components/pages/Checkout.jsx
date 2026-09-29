@@ -245,26 +245,32 @@ export default function Checkout() {
   const paymentLoading = useSelector(selectPaymentLoading);
   const razorpayError = useSelector(selectRazorpayError);
 
+  const resetRazorpayState = useCallback(() => {
+    razorpayOpenedRef.current = false;
+    razorpayInstanceRef.current = null;
+  }, []);
+
   const handlePaymentMethodClick = useCallback(
     (methodId, amount = 0) => {
       if (methodId === "cod") {
         setShowCODModal(true);
       } else if (amount > 0) {
-        razorpayOpenedRef.current = false; // Reset so Razorpay can open again
+        resetRazorpayState();
         dispatch(clearPayment());
         dispatch(createRazorpayOrder(amount));
       }
     },
-    [dispatch]
+    [dispatch, resetRazorpayState]
   );
 
   const handleCODConfirm = useCallback(() => {
     setShowCODModal(false);
-    // Charge ₹120 advancement payment for COD
     setPaymentMethod("cod");
+    // Reset Razorpay state before creating new order (in case they came from a cancelled Online attempt)
+    resetRazorpayState();
     dispatch(clearPayment());
     dispatch(createRazorpayOrder(COD_ADVANCEMENT));
-  }, [dispatch]);
+  }, [dispatch, resetRazorpayState]);
 
   // Fetch shipping rates based on payment method (no pincode needed)
   useEffect(() => {
@@ -345,7 +351,11 @@ export default function Checkout() {
       },
       theme: { color: MAROON },
       modal: {
-        ondismiss: () => {},
+        ondismiss: () => {
+          // User dismissed Razorpay by clicking X or backing out
+          // Reset temporary Razorpay state to allow fresh attempts
+          resetRazorpayState();
+        },
       },
       redirect: false,
     };
@@ -360,14 +370,14 @@ export default function Checkout() {
       rzp.on("payment.failed", (error) => {
         if (!isProcessingPayment) {
           setPaymentSuccessful(false); // Reset if payment fails
-          razorpayOpenedRef.current = false; // Allow retry
+          resetRazorpayState();
           dispatch(clearPayment());
         }
       });
 
       rzp.open();
     } catch (error) {
-      razorpayOpenedRef.current = false; // Allow retry
+      resetRazorpayState();
       // If Razorpay fails, fallback to COD message
       alert("Online payment unavailable. Please use Cash on Delivery instead.");
       dispatch(clearPayment());

@@ -26,6 +26,8 @@ import ReviewsSection from "./ReviewsSection";
 import CustomerLove from "../pages/home/CustomerLove";
 import CustomerUnboxing from "../pages/home/CustomerUnboxing";
 import CancellationPolicyModal from "@/components/modals/CancellationPolicyModal";
+import RingStylePreview from "@/components/products/RingStylePreview";
+import TryOnButton from "@/components/products/TryOnOverlay";
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
@@ -545,69 +547,6 @@ function SymbolWheel({ value, onChange, symbols = [] }) {
   );
 }
 
-/**
- * Shows what the engraving will read, in the chosen face, with the symbol on
- * the chosen side. Sits under the gallery so the customer can watch it change
- * while filling the fields on the right.
- */
-function StylePreview({ name, fontId, symbolId, side }) {
-  const font = FONT_STYLES.find((f) => f.id === fontId) ?? FONT_STYLES[0];
-  const symbol = SYMBOLS.find((s) => s.id === symbolId) ?? SYMBOLS[0];
-  const text = name.trim();
-
-  return (
-    <div className="mt-5">
-      <p
-        className="text-center text-[13px] font-medium"
-        style={{ color: MAROON }}
-      >
-        Style Preview
-      </p>
-
-      {/* Graph paper, drawn with two repeating gradients rather than an image */}
-      <div
-        className="mt-2 flex min-h-[104px] items-center justify-center rounded-lg border border-[#EFDCD4] px-4 py-5"
-        style={{
-          backgroundColor: "#FFFDFB",
-          backgroundImage:
-            "repeating-linear-gradient(0deg, #F0E4DC 0 1px, transparent 1px 14px), repeating-linear-gradient(90deg, #F0E4DC 0 1px, transparent 1px 14px)",
-        }}
-      >
-        {text ? (
-          <p className="flex items-baseline gap-2 text-center break-all">
-            {symbol.glyph && side === "left" ? (
-              <span className="text-[22px] text-neutral-700">
-                {symbol.glyph}
-              </span>
-            ) : null}
-
-            <span
-              className="text-[30px] leading-tight sm:text-[36px]"
-              style={{ color: MAROON, fontFamily: `var(${font.cssVar})` }}
-            >
-              {text}
-            </span>
-
-            {symbol.glyph && side === "right" ? (
-              <span className="text-[22px] text-neutral-700">
-                {symbol.glyph}
-              </span>
-            ) : null}
-          </p>
-        ) : (
-          <p className="text-[13px] text-neutral-400">
-            Type a name to see it here
-          </p>
-        )}
-      </div>
-
-      <p className="mt-1.5 text-center text-[11px] text-neutral-500">
-        Indicative only — the finished engraving is cut by hand.
-      </p>
-    </div>
-  );
-}
-
 export default function ProductDetail({ product }) {
   // Detect if this is a "Real Photo Ring" product
   const isRealPhotoRing = product.is_photo_ring === true;
@@ -768,14 +707,20 @@ export default function ProductDetail({ product }) {
         <div className="sm:sticky sm:top-4 sm:h-fit md:sticky md:top-4 md:h-fit lg:sticky lg:top-4 lg:h-fit">
           <Gallery product={product} />
 
-          {/* Preview of the engraving — only where there is engraving to preview. */}
+          {/* Style Preview - updates with customer selections (hide on mobile, show on desktop) */}
           {product.isCustomisable ? (
-            <StylePreview
-              name={ringName}
-              fontId={fontId}
-              symbolId={symbolId}
-              side={symbolSide}
-            />
+            <div className="hidden md:block">
+              <RingStylePreview
+                ringName={ringName}
+                fontId={fontId}
+                symbolId={symbolId}
+                symbolSide={symbolSide}
+                colorId={colorId}
+                fonts={product.fonts}
+                symbols={product.symbols}
+                colors={product.colors}
+              />
+            </div>
           ) : null}
         </div>
 
@@ -1114,7 +1059,32 @@ export default function ProductDetail({ product }) {
                   </div>
                 </fieldset>
               ) : null}
+
+              {/* Style Preview - mobile only (show after Symbol Direction) */}
+              {product.isCustomisable ? (
+                <div className="block md:hidden mt-6">
+                  <RingStylePreview
+                    ringName={ringName}
+                    fontId={fontId}
+                    symbolId={symbolId}
+                    symbolSide={symbolSide}
+                    colorId={colorId}
+                    fonts={product.fonts}
+                    symbols={product.symbols}
+                    colors={product.colors}
+                  />
+                </div>
+              ) : null}
             </>
+          ) : null}
+
+          {/* See it on yourself before deciding, so it sits with the buying
+              choice rather than below the fold with the specifications.
+              Renders nothing at all unless this product has a try-on model. */}
+          {product.ar_model_id ? (
+            <div className="mt-5">
+              <TryOnButton modelId={product.ar_model_id} title={product.title} />
+            </div>
           ) : null}
 
           {/* WhatsApp assist + Add to cart */}
