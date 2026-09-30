@@ -20,7 +20,6 @@ import {
 } from "@/store/slices/productsSlice";
 import { ProductCardShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 
-const MAROON = "#7B1E2B";
 const ALL_SLUG = "all-jewellery";
 // Ten on first paint, then ten more each time the visitor reaches the bottom.
 // (Was 12 on the incoming branch — 10 is what the infinite scroll was asked for.)
@@ -96,9 +95,6 @@ const buildCategoryMap = (categories) => {
 export default function CategoryPage({ params: paramsPromise }) {
   const [slug, setSlug] = useState("");
   const [showShimmer, setShowShimmer] = useState(false);
-  // Test switch — forces the shimmer on screen so it can be checked without
-  // having to throttle the network. Remove the button when you are done with it.
-  const [testShimmer, setTestShimmer] = useState(false);
   const dispatch = useDispatch();
   const rawCategories = useSelector(selectRawCategories);
 
@@ -197,9 +193,8 @@ export default function CategoryPage({ params: paramsPromise }) {
   // A later page keeps the grid on screen while it fetches, so the full-page
   // shimmer would wipe out what the visitor is already reading. Only the first
   // load replaces the grid; later pages append shimmer cards to the end of it.
-  const isFirstLoad =
-    testShimmer || ((loading || showShimmer) && displayProducts.length === 0);
-  const isLoadingMore = (loading || testShimmer) && displayProducts.length > 0;
+  const isFirstLoad = (loading || showShimmer) && displayProducts.length === 0;
+  const isLoadingMore = loading && displayProducts.length > 0;
 
   // Infinite scroll. A sentinel sits below the last row; when it scrolls into
   // view the next page is requested. rootMargin starts the fetch 300px early so
@@ -232,19 +227,6 @@ export default function CategoryPage({ params: paramsPromise }) {
               ({resultCount} results)
             </span>
           </h1>
-
-          {/* Test switch for the shimmer. Delete this block when you no longer
-              need to look at the loading state on demand. */}
-          {isAll ? (
-            <button
-              type="button"
-              onClick={() => setTestShimmer((v) => !v)}
-              className="mt-3 rounded-full border px-4 py-1.5 text-[12px] transition-colors hover:bg-white"
-              style={{ borderColor: MAROON, color: MAROON }}
-            >
-              {testShimmer ? "Stop shimmer test" : "Test shimmer"}
-            </button>
-          ) : null}
 
           {isFirstLoad ? (
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

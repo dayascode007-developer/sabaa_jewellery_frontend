@@ -28,6 +28,7 @@ import CustomerUnboxing from "../pages/home/CustomerUnboxing";
 import CancellationPolicyModal from "@/components/modals/CancellationPolicyModal";
 import RingStylePreview from "@/components/products/RingStylePreview";
 import TryOnButton from "@/components/products/TryOnOverlay";
+import useStoreSettings from "@/hooks/useStoreSettings";
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
@@ -550,6 +551,13 @@ function SymbolWheel({ value, onChange, symbols = [] }) {
 export default function ProductDetail({ product }) {
   // Detect if this is a "Real Photo Ring" product
   const isRealPhotoRing = product.is_photo_ring === true;
+
+  // Same number the footer uses — the admin panel's contact number, with the
+  // constant as fallback. The message names the piece so the chat starts on it.
+  const { whatsapp } = useStoreSettings();
+  const whatsappHref = `https://wa.me/${whatsapp}?text=${encodeURIComponent(
+    `Hi, I would like to know more about "${product.title}".`
+  )}`;
 
   const [size, setSize] = useState("");
   const [qty, setQty] = useState(1);
@@ -1099,13 +1107,15 @@ export default function ProductDetail({ product }) {
               <p className="text-[13px] leading-tight mb-3" style={{ color: "#5F7037" }}>
                 Get WhatsApp Assistance - Chat with us
               </p>
-              <button
-                type="button"
-                className="rounded-2xl px-5 py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 w-full"
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-2xl px-5 py-2.5 text-center text-[13px] font-semibold text-white transition-opacity hover:opacity-90 w-full"
                 style={{ backgroundColor: "#5F7037" }}
               >
                 Chat with Us
-              </button>
+              </a>
             </div>
 
             {/* Quantity first, then Add to Cart — you choose how many before

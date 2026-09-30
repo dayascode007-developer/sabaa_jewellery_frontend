@@ -22,6 +22,9 @@ import moreIcon from "@/assets/svg_nav_icon/More.svg";
 const VIEW_ALL_SLUG = {
   rings: "all-rings",
   impon: "all-impon-chain",
+  // Nav ids from the API are the lowercased, hyphenated name, so "Impon Chain"
+  // arrives as "impon-chain" — "impon" alone only matches the static fallback.
+  "impon-chain": "all-impon-chain",
   // Singular, matching the API's own category names ("Pendant", "Bracelet") —
   // the plurals here resolved to nothing and View All opened an empty page.
   pendant: "all-pendant",

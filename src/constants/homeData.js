@@ -100,9 +100,9 @@ export const NAV_ITEMS = [
       columns: [
         {
           items: [
-            { label: "Name Engrave ring", href: "/category/name-engrave-ring" },
-            { label: "Astrology Raasi Rings", href: "/category/astrology-raasi-rings" },
-            { label: "Face & Photo Ring", href: "/category/face-photo-ring" },
+            { label: "Name Engrave ring", href: "/category/name-engrave-rings" },
+            { label: "Astrology Raasi Rings", href: "/category/raasi-rings" },
+            { label: "Face & Photo Ring", href: "/category/photo-rings" },
           ],
         },
         {
@@ -132,9 +132,9 @@ export const NAV_ITEMS = [
       columns: [
         {
           items: [
-            { label: "MensChain", href: "/category/mens-chain" },
-            { label: "FemaleChain", href: "/category/female-chain" },
-            { label: "Kidz Chain", href: "/category/kidz-chain" },
+            { label: "MensChain", href: "/category/menz-chain" },
+            { label: "FemaleChain", href: "/category/female-chains" },
+            { label: "Kidz Chain", href: "/category/kids-chains" },
           ],
         },
       ],
@@ -156,8 +156,9 @@ export const NAV_ITEMS = [
       columns: [
         {
           items: [
-            { label: "Hindu Pendants", href: "/category/hindu-pendants" },
-            { label: "Christian Pendants", href: "/category/christian-pendants" },
+            // Slugs follow the admin spellings ("Hindu Pendent", "Cristian Pendent").
+            { label: "Hindu Pendants", href: "/category/hindu-pendent" },
+            { label: "Christian Pendants", href: "/category/cristian-pendent" },
           ],
         },
       ],
@@ -181,7 +182,7 @@ export const NAV_ITEMS = [
         {
           items: [
             { label: "Mens Bracelet", href: "/category/mens-bracelet" },
-            { label: "Womens Bracelet", href: "/category/womens-bracelet" },
+            { label: "Womens Bracelet", href: "/category/female-bracelet" },
           ],
         },
       ],
@@ -253,14 +254,18 @@ export const CATEGORIES = [
   // subcategory names (name lowercased, spaces collapsed to hyphens) — the same
   // slugs the nav dropdown already uses. The tiles carried hand-written names
   // instead, so they opened a page with no cards on it.
-  { id: "engraving-rings", label: "Engraving Rings", image: engrave, href: "/category/name-engrave-ring" },
-  // "Face &" dropped — the tile now reads simply "Photo Rings". The id and the
-  // href are unchanged, so the link still resolves to the same category.
-  { id: "face-photo-rings", label: "Photo Rings", image: faceAndPhotoRing, href: "/category/face-photo-ring" },
-  { id: "symbol-rings", label: "Symbol Rings", image: symbolsRing, href: "/category/astrology-raasi-rings" },
-  { id: "mens-chain", label: "Mens Chain", image: mensChain, href: "/category/mens-chain" },
-  { id: "womens-chain", label: "Womens Chain", image: womensChain, href: "/category/female-chain" },
-  { id: "kids-chain", label: "Kids Chain", image: kids, href: "/category/kidz-chain" },
+  //
+  // These follow the sub-main names as the admin panel has them today ("Name
+  // Engrave Rings", "Photo Rings", "God Rings", "Menz Chain", "Female Chains",
+  // "Kids Chains"). Renaming one there changes its slug, so update it here too.
+  { id: "engraving-rings", label: "Engraving Rings", image: engrave, href: "/category/name-engrave-rings" },
+  // "Face &" dropped — the tile now reads simply "Photo Rings".
+  { id: "face-photo-rings", label: "Photo Rings", image: faceAndPhotoRing, href: "/category/photo-rings" },
+  // Opens the Raasi rings sub-main, not the God rings it pointed at before.
+  { id: "symbol-rings", label: "Symbol Rings", image: symbolsRing, href: "/category/raasi-rings" },
+  { id: "mens-chain", label: "Mens Chain", image: mensChain, href: "/category/menz-chain" },
+  { id: "womens-chain", label: "Womens Chain", image: womensChain, href: "/category/female-chains" },
+  { id: "kids-chain", label: "Kids Chain", image: kids, href: "/category/kids-chains" },
   // The whole Earrings category — Stud and Jimikki both — rather than one of them.
   { id: "earrings", label: "Earrings", image: earings, href: "/category/all-earrings" },
 ];
@@ -296,7 +301,7 @@ export const COLLECTIONS = [
     image: ringWidget,
     alt: "Initials — personalised signet rings",
     ratio: "1666/944",
-    href: "/category/name-engrave-ring",
+    href: "/category/initial-rings",
   },
   {
     id: "art-jewellery",
