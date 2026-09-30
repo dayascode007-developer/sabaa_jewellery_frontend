@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { MdLocalShipping, MdStarBorder, MdDownload, MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { downloadOrderInvoice } from "@/utils/downloadInvoice";
+import { getOrderApi } from "@/store/api/ordersApi";
 import { fetchOrders } from "@/store/slices/ordersSlice";
 import { OrderHistoryShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import ReviewModal from "@/components/reviews/ReviewModal";
@@ -20,19 +22,79 @@ export default function OrderHistory({ onTrackOrder }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  // The ?review= value already acted on, so the modal is not reopened when the
+  // orders list refetches. A ref, not state: nothing renders from it, and
+  // setting state here would cascade an extra render on every link open.
+  const deepLinkHandled = useRef(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const offset = (currentPage - 1) * PAGE_SIZE;
     dispatch(fetchOrders({ limit: PAGE_SIZE, offset }));
   }, [dispatch, currentPage]);
 
-  const handleWriteReview = (order) => {
-    // Open modal for first item if multiple items, or single item
-    if (order.items && order.items.length > 0) {
-      const firstItem = order.items[0];
-      dispatch(openReviewModal({ product: firstItem, orderId: order.id }));
-    }
+  // `item` is optional so the order-level button keeps its old behaviour of
+  // reviewing the first product; the per-product buttons pass their own item.
+  const handleWriteReview = (order, item) => {
+    const target = item || order.items?.[0];
+    if (!target) return;
+    dispatch(openReviewModal({ product: target, orderId: order.id }));
   };
+
+  // Deep link from the post-delivery feedback WhatsApp:
+  //   ?review=42      open order 42, review its first product
+  //   ?review=42-17   open order 42, review product 17
+  //
+  // The order is looked up in the loaded page first, then fetched by id —
+  // without the fetch, a link to anything older than the current 10 would
+  // silently do nothing. Runs once per link: deepLinkHandled guards re-entry
+  // when the orders list refreshes after the modal closes.
+  useEffect(() => {
+    const raw = searchParams.get("review");
+    if (!raw || deepLinkHandled.current === raw) return;
+
+    const [orderPart, productPart] = String(raw).split("-");
+    const orderId = Number(orderPart);
+    if (!Number.isInteger(orderId) || orderId <= 0) {
+      deepLinkHandled.current = raw;
+      return;
+    }
+
+    let cancelled = false;
+
+    const openFromLink = async () => {
+      let target = orders?.find((o) => o.id === orderId);
+
+      if (!target) {
+        try {
+          target = await getOrderApi(orderId);
+        } catch {
+          // Wrong id, or signed in as a different customer. Fall through and
+          // leave them on the orders tab rather than showing an error.
+          target = null;
+        }
+      }
+      if (cancelled) return;
+
+      deepLinkHandled.current = raw;
+
+      const items = target?.items || [];
+      if (items.length === 0) return;
+
+      const productId = Number(productPart);
+      const item =
+        (Number.isInteger(productId) && items.find((i) => i.product_id === productId)) ||
+        items[0];
+
+      if (item.has_reviewed) return;
+      dispatch(openReviewModal({ product: item, orderId: target.id }));
+    };
+
+    openFromLink();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, orders, dispatch]);
 
   const handleViewDetails = (order) => {
     setSelectedOrder(order);
@@ -277,6 +339,26 @@ export default function OrderHistory({ onTrackOrder }) {
                       <p className="text-xs text-gray-600 mt-1">
                         {formatRupees(item.sale_price)}
                       </p>
+
+                      {/* Per-product review, so an order with several rings can
+                          be reviewed item by item. Only offered once delivered —
+                          there is nothing to say about a ring that has not
+                          arrived. The order-level button below still exists and
+                          reviews the first product. */}
+                      {order.status === "delivered" && order.items.length > 1 ? (
+                        item.has_reviewed ? (
+                          <p className="mt-2 text-xs text-gray-400">Reviewed</p>
+                        ) : (
+                          <button
+                            onClick={() => handleWriteReview(order, item)}
+                            className="mt-2 inline-flex items-center gap-1 text-xs font-medium hover:opacity-70 cursor-pointer"
+                            style={{ color: MAROON }}
+                          >
+                            <MdStarBorder className="text-sm flex-shrink-0" />
+                            Write review
+                          </button>
+                        )
+                      ) : null}
                     </div>
                   </div>
                 ))
