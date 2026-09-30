@@ -24,12 +24,13 @@ const apiUrl =
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: { NEXT_PUBLIC_API_URL: apiUrl },
-  allowedDevOrigins: [...new Set(lanAddresses)],
+  allowedDevOrigins: [...new Set(lanAddresses), "*.loca.lt"],
   images: {
     // NOT unoptimized: HeroBanner builds its <picture> art direction from
     // getImageProps, asking for a 2400x900 desktop srcSet and a 736x736 mobile
     // one. With optimization off both collapse to the original file and the
     // banner renders cropped.
+    // unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
@@ -44,7 +45,19 @@ const nextConfig = {
         protocol: "http",
         hostname,
       })),
+      {
+        protocol: "http",
+        hostname: "192.168.29.163",
+      },
+      {
+        protocol: "https",
+        hostname: "*.loca.lt",
+      },
     ],
+  },
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
   },
 };
 
