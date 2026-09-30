@@ -176,9 +176,9 @@ function SearchDropdown({ isOpen, onCategoryClick }) {
               Category Suggestion
             </h3>
             <div className="flex flex-wrap gap-2">
-              {matchingCategories.map((cat) => (
+              {matchingCategories.map((cat, idx) => (
                 <button
-                  key={cat.id}
+                  key={`${cat.id}-${idx}`}
                   onClick={() => handleCategoryClick(cat.name)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-neutral-300 text-sm text-neutral-700 hover:border-[#7B1E2B] hover:text-[#7B1E2B] transition-colors"
                 >

@@ -11,9 +11,9 @@ const lanAddresses = Object.values(os.networkInterfaces())
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: [...new Set(lanAddresses)],
+  allowedDevOrigins: [...new Set(lanAddresses), "*.loca.lt"],
   images: {
-    unoptimized: true,
+    // unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
@@ -23,7 +23,15 @@ const nextConfig = {
         protocol: "http",
         hostname: "192.168.29.163",
       },
+      {
+        protocol: "https",
+        hostname: "*.loca.lt",
+      },
     ],
+  },
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
   },
 };
 

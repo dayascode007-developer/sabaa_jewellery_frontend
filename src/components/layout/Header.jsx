@@ -6,6 +6,7 @@ import { selectCartCount } from "@/store/slices/cartSlice";
 import { selectWishlistCount } from "@/store/slices/wishlistSlice";
 import { searchProducts, setSearchQuery, clearSearch } from "@/store/slices/searchSlice";
 import { useRouter } from "next/navigation";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import Image from "next/image";
 import Link from "next/link";
 import { IoMdLogIn } from "react-icons/io";
@@ -14,6 +15,7 @@ import { BiSolidUserCircle } from "react-icons/bi";
 
 import AuthModal from "@/components/common/AuthModal";
 import SearchDropdown from "@/components/common/SearchDropdown";
+import VoiceSearchModal from "@/components/common/VoiceSearchModal";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
 
@@ -100,6 +102,7 @@ function Logo() {
 }
 
 export default function Header() {
+  console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
   const dispatch = useDispatch();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -107,6 +110,27 @@ export default function Header() {
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const searchTimeoutRef = useRef(null);
   const searchContainerRef = useRef(null);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const { isListening, transcript, error, startListening, stopListening, clearRecognition } = useSpeechRecognition();
+
+  // Update search input when transcript changes
+  useEffect(() => {
+    if (transcript && transcript.trim()) {
+      setSearchInputValue(transcript);
+      handleSearchInput(transcript);
+      // Delay modal open to let searchResults update
+      setTimeout(() => {
+        setVoiceModalOpen(true);
+      }, 500);
+    }
+  }, [transcript]); // handleSearchInput is stable via useCallback
+
+  // Show modal when listening starts or error occurs
+  useEffect(() => {
+    if (isListening || error) {
+      setVoiceModalOpen(true);
+    }
+  }, [isListening, error]); // Always include both, even if error is empty
 
   const actions = [
     { key: "heart", icon: ICONS.heart, label: "Wishlist" },
@@ -118,6 +142,7 @@ export default function Header() {
   const cartCount = useSelector(selectCartCount);
   const wishlistCount = useSelector(selectWishlistCount);
   const { customer, token } = useSelector((state) => state.auth);
+  const searchResults = useSelector((state) => state.search.searchResults);
 
   const isLoggedIn = !!token && !!customer && customer.id !== "temp";
 
@@ -255,23 +280,15 @@ export default function Header() {
               onBlur={handleSearchBlur}
               className="min-w-0 flex-1 bg-transparent text-[13px] text-black outline-none placeholder:text-neutral-400 sm:text-sm"
             />
-            {/* Maroon rather than grey — in the reference these read as the
-                shop's own controls, not as disabled placeholders. */}
             <span
               className="flex shrink-0 items-center gap-3 sm:gap-3.5"
               style={{ color: MAROON }}
             >
               <button
                 type="button"
-                aria-label="Search by image"
-                className="transition-opacity hover:opacity-70"
-              >
-                <Icon path={ICONS.cameraPlus} className="h-[19px] w-[19px]" />
-              </button>
-              <button
-                type="button"
                 aria-label="Search by voice"
-                className="transition-opacity hover:opacity-70"
+                className={`transition-opacity ${isListening ? 'opacity-100' : 'hover:opacity-70'}`}
+                onClick={() => (isListening ? stopListening() : startListening())}
               >
                 <Icon path={ICONS.mic} className="h-[18px] w-[18px]" />
               </button>
@@ -405,6 +422,17 @@ export default function Header() {
 
       <MobileDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <VoiceSearchModal
+        isOpen={voiceModalOpen}
+        text={transcript}
+        error={error}
+        isListening={isListening}
+        hasResults={transcript && transcript.trim() && !error}
+        onClose={() => {
+          setVoiceModalOpen(false);
+          // Don't clear transcript - keep it in search input
+        }}
+      />
     </header>
   );
 }
