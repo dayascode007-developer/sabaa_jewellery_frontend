@@ -226,33 +226,13 @@ export default function ProductCard({ product }) {
 
         {/* Mobile: always show button. Desktop: show only on hover. */}
         <div className="mt-auto h-8 w-full overflow-hidden transition-[height] duration-300 ease-out sm:h-11 md:h-0 md:group-hover:h-11 md:group-focus-within:h-11">
-          <button
-            type="button"
-            onClick={onAddToCart}
-            disabled={inCart}
-            className={`relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded font-[family-name:var(--font-category)] text-[10px] font-medium text-white transition-opacity sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px] ${
-              inCart ? "cursor-default opacity-75" : "hover:opacity-90 cursor-pointer"
-            }`}
-            style={{ backgroundColor: inCart ? "#999" : MAROON }}
+          <Link
+            href={`/product/${product.id}`}
+            className="relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded font-[family-name:var(--font-category)] text-[10px] font-medium text-white transition-opacity hover:opacity-90 sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px]"
+            style={{ backgroundColor: MAROON }}
           >
-            {inCart ? (
-              <>
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
-                  <path d="M20 6L9 17l-5-5" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Added
-              </>
-            ) : (
-              <>
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
-                  <path d="M3 4h2.2l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.3a1.6 1.6 0 0 0 1.6-1.3L21 7.5H6" />
-                  <circle cx="9.5" cy="20" r="1.4" />
-                  <circle cx="17.5" cy="20" r="1.4" />
-                </svg>
-                Add To Cart
-              </>
-            )}
-          </button>
+            Click Here
+          </Link>
         </div>
       </div>
 
