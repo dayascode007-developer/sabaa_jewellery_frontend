@@ -94,17 +94,16 @@ export default function TryOnButton({ modelId, title }) {
 
   if (!modelId) return null;
 
-  const sideways = mode === "jimiki" ? "Move it in or out" : "Move it left or right";
+  const sideways =
+    mode === "jimiki" ? "Move it in or out" : "Move it left or right";
 
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 rounded-2xl border-2 px-5 py-2.5 text-[13px] font-semibold transition-colors hover:text-white"
+        className="inline-flex items-center gap-2 cursor-pointer rounded-2xl border-2 px-5 py-2.5 text-[13px] font-semibold transition-all  hover:text-white"
         style={{ borderColor: MAROON, color: MAROON }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = MAROON)}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
       >
         <MdOutlineCameraAlt className="h-5 w-5" />
         Try it on
@@ -164,7 +163,9 @@ export default function TryOnButton({ modelId, title }) {
                   <div className="flex items-center gap-2">
                     <Key glyph="←" />
                     <Key glyph="→" />
-                    <span className="text-[12px] text-white/75">{sideways}</span>
+                    <span className="text-[12px] text-white/75">
+                      {sideways}
+                    </span>
                   </div>
                   <p className="mt-3 text-[11px] leading-snug text-white/50">
                     Use the arrow keys on your keyboard.
