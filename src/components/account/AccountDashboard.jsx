@@ -9,7 +9,12 @@ import { PiNotepad, PiShoppingCartLight } from "react-icons/pi";
 import { AiOutlineLogout } from "react-icons/ai";
 import { MdArrowBack } from "react-icons/md";
 import { logout, initializeAuth } from "@/store/slices/authSlice";
-import { fetchOrderTracking, selectTracking, selectTrackingLoading, selectTrackingError } from "@/store/slices/trackingSlice";
+import {
+  fetchOrderTracking,
+  selectTracking,
+  selectTrackingLoading,
+  selectTrackingError,
+} from "@/store/slices/trackingSlice";
 import PersonalInformation from "./PersonalInformation";
 import Wishlist from "./Wishlist";
 import OrderHistory from "./OrderHistory";
@@ -21,7 +26,7 @@ const MAROON = "#430121";
 
 const CONTAINER_CLASS = "mx-auto max-w-[1400px] px-4 sm:px-6";
 
-// Tab navigation items (3 tabs - Overview removed)
+// Tab navigation items (3 tabs - Overview removeds)
 const tabItems = [
   { id: "personal", label: "Personal Information", icon: PiNotepad },
   { id: "wishlist", label: "Wishlist", icon: FaRegHeart },
@@ -230,12 +235,20 @@ export default function AccountDashboard() {
                   <button
                     onClick={() => setShowTracking(false)}
                     className="mb-4 px-4 py-2 text-sm font-medium rounded transition-opacity hover:opacity-70 cursor-pointer flex items-center gap-2"
-                    style={{ color: MAROON, borderColor: MAROON, border: "2px solid" }}
+                    style={{
+                      color: MAROON,
+                      borderColor: MAROON,
+                      border: "2px solid",
+                    }}
                   >
                     <MdArrowBack className="text-base" />
                     Back to Orders
                   </button>
-                  <TrackOrder trackingData={trackingData} loading={trackingLoading} error={trackingError} />
+                  <TrackOrder
+                    trackingData={trackingData}
+                    loading={trackingLoading}
+                    error={trackingError}
+                  />
                 </div>
               ) : activeSection === "orders" ? (
                 <OrderHistory onTrackOrder={handleTrackOrder} />
