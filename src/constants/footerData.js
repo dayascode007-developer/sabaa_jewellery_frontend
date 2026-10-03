@@ -35,4 +35,6 @@ export const LEGAL_LINKS = [
   { id: "disclaimer", label: "Disclaimer", href: "#" },
 ];
 
-export const COPYRIGHT = "© 2026 Nakshath International. All Rights Reserved.";
+const currentYear = new Date().getFullYear();
+
+export const COPYRIGHT = `© ${currentYear} Nakshath International. All Rights Reserved.`;

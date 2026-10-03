@@ -1,0 +1,63 @@
+{
+  "homepage": {
+    "title": "Sabaa Jewel Arts — Customized Panchaloga Jewellery",
+    "description": "Handcrafted, laser-engraved Panchaloga rings and chains, personalized for you. Crafted by tradition since 1984.",
+    "keywords": "panchaloga jewellery, customized rings, engraved chains, handmade jewelry, personalized jewellery",
+    "url": "https://sabaa.in",
+    "image": "https://sabaa.in/logo_hd.webp"
+  },
+  "rings": {
+    "title": "Rings | Sabaa Jewel Arts - Customized Panchaloga Jewellery",
+    "description": "Browse our collection of handcrafted rings. Personalized, laser-engraved panchaloga jewellery.",
+    "keywords": "rings, panchaloga rings, customized rings, engraved jewellery",
+    "url": "https://sabaa.in/category/all-rings"
+  },
+  "chains": {
+    "title": "Impon Chains | Sabaa Jewel Arts - Customized Panchaloga Jewellery",
+    "description": "Explore our collection of handcrafted impon chains. Personalized panchaloga jewellery.",
+    "keywords": "impon chain, panchaloga chain, customized chains, handmade chain",
+    "url": "https://sabaa.in/category/all-impon-chain"
+  },
+  "pendants": {
+    "title": "Pendants | Sabaa Jewel Arts - Customized Panchaloga Jewellery",
+    "description": "Discover our collection of handcrafted pendants. Personalized panchaloga jewellery.",
+    "keywords": "pendant, panchaloga pendant, customized pendant, handmade jewellery",
+    "url": "https://sabaa.in/category/all-pendant"
+  },
+  "earrings": {
+    "title": "Earrings | Sabaa Jewel Arts - Customized Panchaloga Jewellery",
+    "description": "Shop our collection of handcrafted earrings. Personalized panchaloga jewellery.",
+    "keywords": "earrings, panchaloga earrings, customized earrings, handmade jewellery",
+    "url": "https://sabaa.in/category/all-earrings"
+  },
+  "bracelets": {
+    "title": "Bracelets | Sabaa Jewel Arts - Customized Panchaloga Jewellery",
+    "description": "Browse our collection of handcrafted bracelets. Personalized panchaloga jewellery.",
+    "keywords": "bracelet, panchaloga bracelet, customized bracelet, handmade jewellery",
+    "url": "https://sabaa.in/category/all-bracelet"
+  },
+  "anklets": {
+    "title": "Anklets | Sabaa Jewel Arts - Customized Panchaloga Jewellery",
+    "description": "Explore our collection of handcrafted anklets. Personalized panchaloga jewellery.",
+    "keywords": "anklet, panchaloga anklet, customized anklet, handmade jewellery",
+    "url": "https://sabaa.in/category/all-anklet"
+  },
+  "about": {
+    "title": "About Sabaa Jewel Arts",
+    "description": "Learn about Sabaa Jewel Arts - crafting handmade panchaloga jewellery since 1984.",
+    "keywords": "about sabaa, handmade jewellery, panchaloga craft, customized jewellery",
+    "url": "https://sabaa.in/about"
+  },
+  "blogs": {
+    "title": "Blog | Sabaa Jewel Arts",
+    "description": "Read about jewellery care, customization tips, and insights from Sabaa Jewel Arts.",
+    "keywords": "jewellery blog, care guide, customization tips, panchaloga",
+    "url": "https://sabaa.in/blogs"
+  },
+  "policy": {
+    "title": "Policy | Sabaa Jewel Arts",
+    "description": "Read our return, cancellation, and shipping policies.",
+    "keywords": "policy, return policy, cancellation policy, shipping",
+    "url": "https://sabaa.in/policy"
+  }
+}

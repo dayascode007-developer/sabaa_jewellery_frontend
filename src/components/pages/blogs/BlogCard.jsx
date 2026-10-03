@@ -11,10 +11,20 @@ import { FiArrowRight } from "react-icons/fi";
 const MAROON = "#7B1E2B";
 const GOLD = "#C9A227";
 
+const titleToSlug = (title) => {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+};
+
 export default function BlogCard({ post, featured = false }) {
   const [showShare, setShowShare] = useState(false);
 
-  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/blogs/${post.slug}` : "";
+  const blogSlug = `${post.id}-${titleToSlug(post.title)}`;
+  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/blogs/${blogSlug}` : "";
   const shareTitle = post.title;
 
   const handleShare = (platform) => {
@@ -161,7 +171,7 @@ export default function BlogCard({ post, featured = false }) {
       {/* Stretched link — the whole card is the target, and the heading stays
           the accessible name. */}
       <Link
-        href={`/blogs/${post.slug}`}
+        href={`/blogs/${blogSlug}`}
         className="absolute inset-0"
         aria-label={post.title}
       />
