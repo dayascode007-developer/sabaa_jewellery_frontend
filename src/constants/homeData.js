@@ -38,11 +38,11 @@ import styleNeckless from "@/assets/widget/neckless.webp";
 import stylePendent from "@/assets/widget/pendent.webp";
 import stylePendent2 from "@/assets/widget/pendent2.webp";
 
-// Customer feedback photos. Only three supplied, so the fourth card keeps
-// its placeholder until an image for Aravind arrives.
+// Customer feedback photos, one per testimonial card.
 import testimonialPriya from "@/assets/testimonial_image/image.png";
 import testimonialKarthik from "@/assets/testimonial_image/image1.png";
 import testimonialManikandan from "@/assets/testimonial_image/image2.png";
+import testimonialAravind from "@/assets/testimonial_image/image3.png";
 
 import murugaRing from "@/assets/CustomizeRing/muruga ring (1).webp";
 import craftedRing from "@/assets/CustomizeRing/crafted with tradition ring (1).webp";
@@ -535,7 +535,8 @@ export const PHOTO_RING_FEATURES = [
 export const TESTIMONIALS = [
   {
     id: "priya",
-    quote: "Super beautiful ring! Loved the design and quality.",
+    quote:
+      "The ring looks even better in person. I really liked the simple design and the finishing is beautiful. Very happy with my purchase.",
     rating: 5,
     name: "Priya S.",
     city: "Coimbatore",
@@ -543,7 +544,8 @@ export const TESTIMONIALS = [
   },
   {
     id: "karthik",
-    quote: "Excellent finish and perfect fit. Truly satisfied!",
+    quote:
+      "I ordered these rings and honestly loved how neat the finishing was. The fit was perfect and the rings looked really elegant when worn.",
     rating: 5,
     name: "Karthik R.",
     city: "Madurai",
@@ -551,7 +553,8 @@ export const TESTIMONIALS = [
   },
   {
     id: "manikandan",
-    quote: "Fast delivery and amazing product. Highly recommended!",
+    quote:
+      "The ring has a really nice finish and feels good to wear. It looked exactly like I expected, and the delivery was also smooth.",
     rating: 5,
     name: "Manikandan",
     city: "Madurai",
@@ -559,10 +562,11 @@ export const TESTIMONIALS = [
   },
   {
     id: "aravind",
-    quote: "Loved it! Thank you so much. Will shop again.",
+    quote:
+      "The photo inside the ring came out really nice. It feels personal and special, and the quality was better than I expected.",
     rating: 5,
     name: "Aravind",
     city: "Chennai",
-    image: null,
+    image: testimonialAravind,
   },
 ];

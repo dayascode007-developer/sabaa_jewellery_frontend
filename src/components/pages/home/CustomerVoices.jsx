@@ -101,22 +101,22 @@ function VoicePlayer({ voice }) {
   return (
     <div>
       <div
-        className="flex items-center gap-2.5 rounded-md px-2.5 py-2"
+        className="flex items-center gap-2 rounded-full px-2 py-1.5"
         style={{ backgroundColor: WHATSAPP }}
       >
         <button
           type="button"
           onClick={toggle}
           aria-label={playing ? `Pause ${voice.name} message` : `Play ${voice.name} message`}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white transition-transform hover:scale-105"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white transition-transform hover:scale-105"
           style={{ color: WHATSAPP }}
         >
           {playing ? (
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
+            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor" aria-hidden="true">
               <path d="M8 5h3v14H8zM13 5h3v14h-3z" />
             </svg>
           ) : (
-            <svg viewBox="0 0 24 24" className="ml-0.5 h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
+            <svg viewBox="0 0 24 24" className="ml-0.5 h-3 w-3" fill="currentColor" aria-hidden="true">
               <path d="M8 5.5v13l11-6.5-11-6.5Z" />
             </svg>
           )}
@@ -125,7 +125,7 @@ function VoicePlayer({ voice }) {
         {/* Bars before the playhead stay solid, the rest fade. The bars are
             shrink-0 and need ~158px; a phone card leaves ~101px, so the track
             clips instead of pushing the card wider. */}
-        <div className="flex h-6 min-w-0 flex-1 items-center gap-[2px] overflow-hidden" aria-hidden="true">
+        <div className="flex h-5 min-w-0 flex-1 items-center gap-[2px] overflow-hidden" aria-hidden="true">
           {BARS.map((height, i) => (
             <span
               key={i}
@@ -156,21 +156,21 @@ function VoicePlayer({ voice }) {
 
 function VoiceCard({ voice }) {
   return (
-    <article className="flex gap-3 rounded-lg border border-neutral-200 bg-white p-4">
-      <div className="flex w-16 shrink-0 flex-col items-center text-center">
-        <div className="relative h-14 w-14 overflow-hidden rounded-full bg-neutral-100 ring-1 ring-neutral-200">
+    <article className="flex gap-3 rounded-xl border border-[#EFE2DA] bg-white p-3.5">
+      <div className="flex w-[52px] shrink-0 flex-col items-center text-center">
+        <div className="relative h-11 w-11 overflow-hidden rounded-full bg-neutral-100 ring-1 ring-neutral-200">
           {voice.avatar ? (
-            <Image src={voice.avatar} alt="" fill sizes="56px" className="object-cover" />
+            <Image src={voice.avatar} alt="" fill sizes="44px" className="object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#EDE3D3] to-[#D8C6A8] text-sm font-medium text-[#8A6E45]">
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#EDE3D3] to-[#D8C6A8] text-xs font-medium text-[#8A6E45]">
               {voice.name.charAt(0)}
             </div>
           )}
         </div>
-        <p className="mt-1.5 text-[12px] font-semibold" style={{ color: MAROON }}>
+        <p className="mt-1.5 text-[11px] font-semibold leading-tight" style={{ color: MAROON }}>
           {voice.name}
         </p>
-        <p className="text-[10px] leading-tight text-neutral-500">{voice.city}</p>
+        <p className="text-[9px] leading-tight text-neutral-500">{voice.city}</p>
       </div>
 
       <div className="min-w-0 flex-1">
@@ -205,7 +205,7 @@ export default function CustomerVoices({ voices = CUSTOMER_VOICES }) {
 
   return (
     <section className="w-full bg-gradient-to-b from-[#FDF1EC] via-[#FDF8F5] to-white py-10">
-      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
+      <div className="mx-auto w-full max-w-[980px] px-4 sm:px-6">
         <div className="text-center">
           <p
             className="flex items-center justify-center gap-2 text-[11px] font-medium tracking-[0.18em] uppercase"
@@ -242,7 +242,7 @@ export default function CustomerVoices({ voices = CUSTOMER_VOICES }) {
           </p>
         </div>
 
-        <div className="mt-7 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-3.5 lg:grid-cols-2">
           {visible.map((voice) => (
             <VoiceCard key={voice.id} voice={voice} />
           ))}
