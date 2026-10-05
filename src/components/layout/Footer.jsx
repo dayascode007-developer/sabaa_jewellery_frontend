@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { useState } from "react";
-import { USEFUL_LINKS, COMPANY_INFO, LEGAL_LINKS } from "@/constants/footerData";
+import {
+  USEFUL_LINKS,
+  COMPANY_INFO,
+  LEGAL_LINKS,
+} from "@/constants/footerData";
 import useStoreSettings from "@/hooks/useStoreSettings";
 import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
 import instagramQr from "@/assets/logo/image.png";
@@ -30,7 +34,11 @@ const SOCIAL_LINKS = [
     label: "Facebook",
     href: "https://www.facebook.com/sabaajewelarts",
   },
-  { key: "whatsapp", label: "WhatsApp", href: `https://wa.me/${COMPANY_INFO.whatsapp}` },
+  {
+    key: "whatsapp",
+    label: "WhatsApp",
+    href: `https://wa.me/${COMPANY_INFO.whatsapp}`,
+  },
 ];
 
 function Icon({ path, className = "h-5 w-5", filled = false }) {
@@ -283,7 +291,11 @@ export default function Footer() {
                   >
                     <Icon path={GLYPHS.mail} className="h-6 w-6" />
                   </a>
-                  <a href="#" aria-label="Chat" className="transition-opacity hover:opacity-70">
+                  <a
+                    href="#"
+                    aria-label="Chat"
+                    className="transition-opacity hover:opacity-70"
+                  >
                     <Icon path={GLYPHS.chat} className="h-6 w-6" />
                   </a>
                 </div>
@@ -379,9 +391,13 @@ export default function Footer() {
             {/* Legal */}
             <div className="mt-6 flex flex-col gap-3 border-t border-white/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-[13px] text-neutral-300">
-                © 2026 <span className="font-semibold text-white">Nakshath International.</span>{" "}
+                © {new Date().getFullYear()}{" "}
+                <span className="font-semibold text-white">
+                  Nakshath International.
+                </span>{" "}
                 All Rights Reserved.
               </p>
+
               <ul className="flex flex-wrap items-center gap-5">
                 {LEGAL_LINKS.map((link) => (
                   <li key={link.id}>

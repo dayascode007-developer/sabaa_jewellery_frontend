@@ -32,7 +32,7 @@ export const LEGAL_LINKS = [
   { id: "cyber", label: "Cyber Security Policy", href: "/policy" },
   { id: "terms", label: "Terms & Conditions", href: "/policy" },
   { id: "privacy", label: "Privacy Notice", href: "/policy" },
-  { id: "disclaimer", label: "Disclaimer", href: "/policy" },
+  { id: "disclaimer", label: "Disclaimer", href: "/disclaimer" },
 ];
 
 const currentYear = new Date().getFullYear();

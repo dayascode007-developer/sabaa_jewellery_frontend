@@ -17,7 +17,13 @@ const CONTAINER_CLASS = "mx-auto max-w-[1400px] px-4 sm:px-6";
 
 const rupees = (n) => {
   if (!n) return "₹0.00";
-  return "₹" + Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (
+    "₹" +
+    Number(n).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
 };
 
 export default function Wishlist() {
@@ -39,7 +45,8 @@ export default function Wishlist() {
   const getStockStatus = (item) => {
     const quantity = parseInt(item.quantity || 0);
     if (quantity === 0) return { inStock: false, label: "Out of Stock" };
-    if (quantity <= 2) return { inStock: true, label: `Only ${quantity} left in stock` };
+    if (quantity <= 2)
+      return { inStock: true, label: `Only ${quantity} left in stock` };
     return { inStock: true, label: null };
   };
 
@@ -47,7 +54,9 @@ export default function Wishlist() {
     return (
       <div className={`${CONTAINER_CLASS} py-6 md:py-8 pb-24 lg:pb-8`}>
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Wishlist</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            My Wishlist
+          </h1>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           <WishlistCardShimmer count={6} />
@@ -64,10 +73,13 @@ export default function Wishlist() {
           My Wishlist
         </h1>
         <p className="text-sm md:text-base text-gray-600 mt-2">
-          <span className="inline-flex items-center justify-center text-white font-semibold h-6 w-6 md:h-7 md:w-7 rounded-full text-xs md:text-sm" style={{ backgroundColor: MAROON }}>
+          <span
+            className="inline-flex items-center justify-center text-white font-semibold h-6 w-6 md:h-7 md:w-7 rounded-full text-xs md:text-sm"
+            style={{ backgroundColor: MAROON }}
+          >
             {wishlistItems.length}
-          </span>
-          {" "}{wishlistItems.length === 1 ? "item" : "items"} in your wishlist
+          </span>{" "}
+          {wishlistItems.length === 1 ? "item" : "items"} in your wishlist
         </p>
       </div>
 
@@ -82,7 +94,8 @@ export default function Wishlist() {
                 className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300"
               >
                 {/* Product Image Container - Rectangular on mobile (80%), square on sm+ (100%) */}
-                <div className="relative w-full overflow-hidden bg-neutral-100 pb-[80%] sm:pb-[100%] group cursor-pointer"
+                <div
+                  className="relative w-full overflow-hidden bg-neutral-100 pb-[80%] sm:pb-[100%] group cursor-pointer"
                   onClick={() => router.push(`/product/${item.product_id}`)}
                 >
                   {item.main_image ? (
@@ -93,7 +106,9 @@ export default function Wishlist() {
                     />
                   ) : (
                     <div className="absolute inset-0 h-full w-full bg-gradient-to-br from-[#EDE3D3] via-[#E3D5BE] to-[#D8C6A8] flex items-center justify-center">
-                      <span className="text-[10px] text-[#8A6E45] text-center px-2">{item.title}</span>
+                      <span className="text-[10px] text-[#8A6E45] text-center px-2">
+                        {item.title}
+                      </span>
                     </div>
                   )}
 
@@ -117,7 +132,10 @@ export default function Wishlist() {
                     className="absolute top-2 right-2 bg-white hover:bg-gray-100 rounded-full p-1.5 md:p-2 md:top-3 md:right-3 shadow-md transition-colors z-10"
                     title="Remove from wishlist"
                   >
-                    <MdDeleteOutline size={16} className="text-gray-700 md:w-5 md:h-5" />
+                    <MdDeleteOutline
+                      size={16}
+                      className="text-gray-700 md:w-5 md:h-5"
+                    />
                   </button>
                 </div>
 
@@ -144,25 +162,37 @@ export default function Wishlist() {
                       <span className="text-[17px] font-semibold text-gray-900">
                         {rupees(item.sale_price)}
                       </span>
-                      {item.regular_price && Number(item.regular_price) > Number(item.sale_price) && (
-                        <span className="text-[13px] text-gray-400 line-through">
-                          {rupees(item.regular_price)}
-                        </span>
-                      )}
+                      {item.regular_price &&
+                        Number(item.regular_price) >
+                          Number(item.sale_price) && (
+                          <span className="text-[13px] text-gray-400 line-through">
+                            {rupees(item.regular_price)}
+                          </span>
+                        )}
                       {/* Discount Badge - Same line as prices */}
                       {item.discount_percentage && (
                         <span
                           className="text-[10px] sm:text-[12px] font-bold inline-flex items-center gap-0.5"
                           style={{
-                            backgroundImage: "linear-gradient(90deg, #DD9836, #FFB347, #DD9836)",
+                            backgroundImage:
+                              "linear-gradient(90deg, #DD9836, #FFB347, #DD9836)",
                             backgroundSize: "200% 100%",
                             WebkitBackgroundClip: "text",
                             WebkitTextFillColor: "transparent",
                             backgroundClip: "text",
-                            animation: "shimmer 3s ease-in-out infinite"
+                            animation: "shimmer 3s ease-in-out infinite",
                           }}
                         >
-                          <span style={{ fontSize: "1em", lineHeight: "1", background: "none", WebkitTextFillColor: "#DD9836" }}>%</span>
+                          <span
+                            style={{
+                              fontSize: "1em",
+                              lineHeight: "1",
+                              background: "none",
+                              WebkitTextFillColor: "#DD9836",
+                            }}
+                          >
+                            %
+                          </span>
                           {item.discount_percentage} off
                         </span>
                       )}
