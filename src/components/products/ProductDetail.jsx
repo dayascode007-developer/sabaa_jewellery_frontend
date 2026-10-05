@@ -1055,7 +1055,10 @@ export default function ProductDetail({ product }) {
                 <SymbolWheel
                   value={symbolId}
                   onChange={setSymbolId}
-                  symbols={[{ id: "", name: "None" }, ...(product.symbols || [])]}
+                  symbols={[
+                    { id: "", name: "None" },
+                    ...(product.symbols || []),
+                  ]}
                 />
               </div>
 
@@ -1120,20 +1123,32 @@ export default function ProductDetail({ product }) {
               Renders nothing at all unless this product has a try-on model. */}
           {product.ar_model_id ? (
             <div className="mt-5">
-              <TryOnButton modelId={product.ar_model_id} title={product.title} />
+              <TryOnButton
+                modelId={product.ar_model_id}
+                title={product.title}
+              />
             </div>
           ) : null}
 
           {/* WhatsApp assist + Add to cart */}
           <div className="mt-5 flex flex-wrap items-start gap-4">
-            <div className="rounded-3xl p-4 w-56" style={{ backgroundColor: "#E8FECE" }}>
+            <div
+              className="rounded-3xl p-4 w-56"
+              style={{ backgroundColor: "#E8FECE" }}
+            >
               <div className="flex items-center gap-2 mb-2">
                 <FaWhatsapp className="h-5 w-5" style={{ color: "#5F7037" }} />
-                <p className="text-base font-semibold" style={{ color: "#5F7037" }}>
+                <p
+                  className="text-base font-semibold"
+                  style={{ color: "#5F7037" }}
+                >
                   WhatsApp
                 </p>
               </div>
-              <p className="text-[13px] leading-tight mb-3" style={{ color: "#5F7037" }}>
+              <p
+                className="text-[13px] leading-tight mb-3"
+                style={{ color: "#5F7037" }}
+              >
                 Get WhatsApp Assistance - Chat with us
               </p>
               <a

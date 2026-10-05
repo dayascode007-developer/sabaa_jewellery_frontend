@@ -29,10 +29,12 @@ export const COMPANY_INFO = {
 };
 
 export const LEGAL_LINKS = [
-  { id: "cyber", label: "Cyber Security Policy", href: "#" },
-  { id: "terms", label: "Terms & Conditions", href: "#" },
-  { id: "privacy", label: "Privacy Notice", href: "#" },
-  { id: "disclaimer", label: "Disclaimer", href: "#" },
+  { id: "cyber", label: "Cyber Security Policy", href: "/policy" },
+  { id: "terms", label: "Terms & Conditions", href: "/policy" },
+  { id: "privacy", label: "Privacy Notice", href: "/policy" },
+  { id: "disclaimer", label: "Disclaimer", href: "/disclaimer" },
 ];
 
-export const COPYRIGHT = "© 2026 Nakshath International. All Rights Reserved.";
+const currentYear = new Date().getFullYear();
+
+export const COPYRIGHT = `© ${currentYear} Nakshath International. All Rights Reserved.`;

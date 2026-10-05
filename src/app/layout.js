@@ -113,6 +113,18 @@ export default function RootLayout({ children }) {
       // are pointed at it in globals.css.
       className={`${geistSans.variable} ${geistMono.variable} ${zcoolXiaoWei.variable} h-full antialiased`}
     >
+      <head>
+        {/* Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-JL84ZVP5TS"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-JL84ZVP5TS');`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {/* Loaders live per section, in each folder's loading.js — nothing here. */}
         <Providers>{children}</Providers>

@@ -12,8 +12,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 // Allow dynamic params since we're fetching from API
 export const dynamicParams = true;
 
-async function fetchBlogById(id) {
+async function fetchBlogById(slug) {
   try {
+    // Extract ID from slug format: "9-diamond-jewellery-guide" -> "9"
+    const id = slug.split('-')[0];
+
     const response = await fetch(`${API_URL}/api/blogs/${id}`, {
       cache: 'no-store',
     });

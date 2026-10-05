@@ -102,7 +102,6 @@ function Logo() {
 }
 
 export default function Header() {
-  console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
   const dispatch = useDispatch();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);

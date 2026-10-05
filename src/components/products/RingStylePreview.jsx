@@ -29,6 +29,17 @@ export default function RingStylePreview({
   const text = ringName.trim();
   const displayText = text || "Your Name";
 
+  // For CENTER direction with space in name, split at space
+  const isCenterWithSpace = symbolSide === "center" && text.includes(" ");
+  let firstPart = displayText;
+  let secondPart = "";
+
+  if (isCenterWithSpace) {
+    const parts = displayText.split(" ");
+    firstPart = parts[0];
+    secondPart = parts.slice(1).join(" ");
+  }
+
   return (
     <div className="mt-5">
       <p
@@ -75,6 +86,7 @@ export default function RingStylePreview({
             <div
               style={{
                 display: "flex",
+                flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
@@ -96,32 +108,106 @@ export default function RingStylePreview({
                 />
               ) : null}
 
-              <span
-                style={{
-                  color: text
-                    ? color?.name === "Black"
-                      ? "#000000"
-                      : color?.name === "Red"
-                      ? "#DC143C"
-                      : color?.name === "Blue"
-                      ? "#0047AB"
-                      : MAROON
-                    : "#CCCCCC",
-                  fontSize: "28px",
-                  fontWeight: "bold",
-                  fontFamily: font.name ? `'${font.name}', serif` : "serif",
-                  textShadow:
-                    "0 1px 3px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.2)",
-                  whiteSpace: "nowrap",
-                  letterSpacing: font.id ? "0.5px" : "0",
-                  lineHeight: "1",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {displayText}
-              </span>
+              {isCenterWithSpace ? (
+                <>
+                  <span
+                    style={{
+                      color: text
+                        ? color?.name === "Black"
+                          ? "#000000"
+                          : color?.name === "Red"
+                          ? "#DC143C"
+                          : color?.name === "Blue"
+                          ? "#0047AB"
+                          : MAROON
+                        : "#CCCCCC",
+                      fontSize: "28px",
+                      fontWeight: "bold",
+                      fontFamily: font.name ? `'${font.name}', serif` : "serif",
+                      textShadow:
+                        "0 1px 3px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.2)",
+                      whiteSpace: "nowrap",
+                      letterSpacing: font.id ? "0.5px" : "0",
+                      lineHeight: "1",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {firstPart}
+                  </span>
+                </>
+              ) : (
+                <span
+                  style={{
+                    color: text
+                      ? color?.name === "Black"
+                        ? "#000000"
+                        : color?.name === "Red"
+                        ? "#DC143C"
+                        : color?.name === "Blue"
+                        ? "#0047AB"
+                        : MAROON
+                      : "#CCCCCC",
+                    fontSize: "28px",
+                    fontWeight: "bold",
+                    fontFamily: font.name ? `'${font.name}', serif` : "serif",
+                    textShadow:
+                      "0 1px 3px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.2)",
+                    whiteSpace: "nowrap",
+                    letterSpacing: font.id ? "0.5px" : "0",
+                    lineHeight: "1",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {displayText}
+                </span>
+              )}
+
+              {symbol.url && symbolSide === "center" ? (
+                <img
+                  src={symbol.url}
+                  alt={symbol.name}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    objectFit: "contain",
+                    filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+                    flexShrink: 0,
+                  }}
+                />
+              ) : null}
+
+              {isCenterWithSpace ? (
+                <span
+                  style={{
+                    color: text
+                      ? color?.name === "Black"
+                        ? "#000000"
+                        : color?.name === "Red"
+                        ? "#DC143C"
+                        : color?.name === "Blue"
+                        ? "#0047AB"
+                        : MAROON
+                      : "#CCCCCC",
+                    fontSize: "28px",
+                    fontWeight: "bold",
+                    fontFamily: font.name ? `'${font.name}', serif` : "serif",
+                    textShadow:
+                      "0 1px 3px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.2)",
+                    whiteSpace: "nowrap",
+                    letterSpacing: font.id ? "0.5px" : "0",
+                    lineHeight: "1",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {secondPart}
+                </span>
+              ) : null}
 
               {symbol.url && symbolSide === "right" ? (
                 <img
