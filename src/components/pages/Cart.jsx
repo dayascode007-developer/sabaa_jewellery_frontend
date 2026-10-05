@@ -215,6 +215,7 @@ export default function Cart() {
   const subtotal = selectedItems.reduce((t, i) => t + i.price * i.quantity, 0);
 
   const [coupon, setCoupon] = useState("");
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const appliedCoupon = useSelector(selectAppliedCoupon);
   const couponError = useSelector(selectCouponError);
@@ -240,6 +241,40 @@ export default function Cart() {
 
     dispatch(validateCoupon({ code: coupon, cartTotal: subtotal }));
   };
+
+  // Confirmation modal for clearing cart
+  if (showClearConfirm) {
+    return (
+      <main className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
+          <h2 className="text-lg font-semibold text-neutral-900">Clear Cart?</h2>
+          <p className="mt-2 text-sm text-neutral-600">
+            This will remove all items from your cart. This action cannot be undone.
+          </p>
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={() => setShowClearConfirm(false)}
+              className="flex-1 rounded-md border border-neutral-300 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                dispatch(clearCart());
+                setShowClearConfirm(false);
+              }}
+              className="flex-1 rounded-md px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: MAROON }}
+            >
+              Clear Cart
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (cartState.loading) {
     return (
@@ -313,11 +348,7 @@ export default function Cart() {
 
           <button
             type="button"
-            onClick={() => {
-              if (window.confirm("Clear your entire cart?")) {
-                dispatch(clearCart());
-              }
-            }}
+            onClick={() => setShowClearConfirm(true)}
             className="flex items-center gap-1 transition-opacity hover:opacity-70"
             style={{ color: MAROON }}
           >
