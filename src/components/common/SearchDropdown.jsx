@@ -167,7 +167,17 @@ function SearchDropdown({ isOpen, onCategoryClick }) {
   };
 
   return (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-neutral-200 max-h-[600px] overflow-y-auto z-50">
+    <div
+      // Why the panel needed two clicks with a mouse but one tap on a phone:
+      // pressing an item blurred the search input, Header's blur handler then
+      // scheduled this panel to unmount 200ms later, and the item moved out
+      // from under the pointer before mouseup — so the first click never
+      // became a click event. Keeping focus on the input stops the timer ever
+      // starting, so one click is enough. A tap beats the 200ms, which is why
+      // small screens were unaffected.
+      onMouseDown={(e) => e.preventDefault()}
+      className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-neutral-200 max-h-[600px] overflow-y-auto z-50"
+    >
       {/* Category Suggestion */}
       {actualQuery && matchingCategories.length > 0 && (
         <div className="border-b border-neutral-200">
