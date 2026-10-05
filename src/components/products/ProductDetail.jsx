@@ -7,6 +7,7 @@ import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
 import { TfiHandPointRight } from "react-icons/tfi";
 import { FaWhatsapp } from "react-icons/fa";
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
+import { pixelTrack } from "@/lib/pixel";
 import {
   addToWishlist,
   removeFromWishlist,
@@ -590,6 +591,23 @@ export default function ProductDetail({ product }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // ViewContent — what retargeting is built on: it is how Meta knows which ring
+  // to show someone who looked and left. Keyed on the product id so switching
+  // between products reports each one, while a re-render of the same product
+  // does not fire twice.
+  const viewTracked = useRef(null);
+  useEffect(() => {
+    if (!product?.id || viewTracked.current === product.id) return;
+    viewTracked.current = product.id;
+    pixelTrack("ViewContent", {
+      content_type: "product",
+      content_ids: [String(product.id)],
+      content_name: product.title,
+      value: Number(product.price || 0),
+      currency: "INR",
+    });
+  }, [product?.id, product?.title, product?.price]);
+
   const token = useSelector((state) => state.auth.token);
   const wishlistItems = useSelector((state) => state.wishlist.items);
   const cartItems = useSelector(selectCartItems);
@@ -691,6 +709,17 @@ export default function ProductDetail({ product }) {
 
       // Call backend API via Redux thunk
       await dispatch(addToCart(cartItem)).unwrap();
+
+      // After the add succeeds, never before — a failed add that still reported
+      // AddToCart would teach Meta to optimise for people who cannot buy.
+      pixelTrack("AddToCart", {
+        content_type: "product",
+        content_ids: [String(product.id)],
+        content_name: product.title,
+        contents: [{ id: String(product.id), quantity: qty }],
+        value: Number(product.price || 0) * qty,
+        currency: "INR",
+      });
 
       // Remove from wishlist after successful add to cart
       dispatch(removeFromWishlist(product.id));

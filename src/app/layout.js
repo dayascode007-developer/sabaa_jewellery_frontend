@@ -8,7 +8,9 @@ import {
   ZCOOL_XiaoWei,
   // Antic_Didone,  // previous menu-bar face — kept for an easy switch back
 } from "next/font/google";
+import { Suspense } from "react";
 import Providers from "@/store/Providers";
+import MetaPixel from "@/components/analytics/MetaPixel";
 import "./globals.css";
 
 // preload: false on the faces that are not used in the first screenful. They
@@ -114,6 +116,13 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {/* Loaders live per section, in each folder's loading.js — nothing here. */}
         <Providers>{children}</Providers>
+
+        {/* Suspense is required, not optional: MetaPixel reads useSearchParams,
+            and without a boundary that opts every page out of static rendering
+            and fails the production build. */}
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
       </body>
     </html>
   );
