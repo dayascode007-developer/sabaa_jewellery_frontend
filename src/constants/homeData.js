@@ -90,7 +90,12 @@ const PROMO = {
 };
 
 export const NAV_ITEMS = [
-  { id: "all", label: "All Jewellery", href: "/category/all-jewellery", icon: navAllJewellery },
+  {
+    id: "all",
+    label: "All Jewellery",
+    href: "/category/all-jewellery",
+    icon: navAllJewellery,
+  },
   {
     id: "rings",
     label: "Rings",
@@ -100,7 +105,10 @@ export const NAV_ITEMS = [
       columns: [
         {
           items: [
-            { label: "Name Engrave ring", href: "/category/name-engrave-rings" },
+            {
+              label: "Name Engrave ring",
+              href: "/category/name-engrave-rings",
+            },
             { label: "Astrology Raasi Rings", href: "/category/raasi-rings" },
             { label: "Face & Photo Ring", href: "/category/photo-rings" },
           ],
@@ -258,16 +266,51 @@ export const CATEGORIES = [
   // These follow the sub-main names as the admin panel has them today ("Name
   // Engrave Rings", "Photo Rings", "God Rings", "Menz Chain", "Female Chains",
   // "Kids Chains"). Renaming one there changes its slug, so update it here too.
-  { id: "engraving-rings", label: "Engraving Rings", image: engrave, href: "/category/name-engrave-rings" },
+  {
+    id: "engraving-rings",
+    label: "Engraving Rings",
+    image: engrave,
+    href: "/category/name-engrave-ring",
+  },
   // "Face &" dropped — the tile now reads simply "Photo Rings".
-  { id: "face-photo-rings", label: "Photo Rings", image: faceAndPhotoRing, href: "/category/photo-rings" },
+  {
+    id: "face-photo-rings",
+    label: "Photo Rings",
+    image: faceAndPhotoRing,
+    href: "/category/photo-ring",
+  },
   // Opens the Raasi rings sub-main, not the God rings it pointed at before.
-  { id: "symbol-rings", label: "Symbol Rings", image: symbolsRing, href: "/category/raasi-rings" },
-  { id: "mens-chain", label: "Mens Chain", image: mensChain, href: "/category/menz-chain" },
-  { id: "womens-chain", label: "Womens Chain", image: womensChain, href: "/category/female-chains" },
-  { id: "kids-chain", label: "Kids Chain", image: kids, href: "/category/kids-chains" },
+  {
+    id: "symbol-rings",
+    label: "Symbol Rings",
+    image: symbolsRing,
+    href: "/category/raasi-rings",
+  },
+  {
+    id: "mens-chain",
+    label: "Mens Chain",
+    image: mensChain,
+    href: "/category/menschain",
+  },
+  {
+    id: "womens-chain",
+    label: "Womens Chain",
+    image: womensChain,
+    href: "/category/femalechain",
+  },
+  {
+    id: "kids-chain",
+    label: "Kids Chain",
+    image: kids,
+    href: "/category/kidzchain",
+  },
   // The whole Earrings category — Stud and Jimikki both — rather than one of them.
-  { id: "earrings", label: "Earrings", image: earings, href: "/category/all-earrings" },
+  {
+    id: "earrings",
+    label: "Earrings",
+    image: earings,
+    href: "/category/all-earrings",
+  },
 ];
 
 // The banner artwork already contains the wordmark, headline, feature badges
@@ -276,11 +319,41 @@ export const CATEGORIES = [
 // `image` is the wide desktop cut, `mobileImage` the square phone cut. The
 // carousel swaps between them at the sm breakpoint.
 export const HERO_SLIDES = [
-  { id: "banner", image: banner, mobileImage: bannerMobile, alt: "Crafted by tradition, personalized for you", href: "#" },
-  { id: "banner1", image: banner1, mobileImage: bannerMobile1, alt: "Customized Panchaloga rings", href: "#" },
-  { id: "banner3", image: banner3, mobileImage: bannerMobile3, alt: "Handcrafted by skilled smiths", href: "#" },
-  { id: "banner4", image: banner4, mobileImage: bannerMobile4, alt: "Laser engraved Panchaloga jewellery", href: "#" },
-  { id: "banner5", image: banner5, mobileImage: bannerMobile5, alt: "Authentic Panchaloga craftsmanship", href: "#" },
+  {
+    id: "banner",
+    image: banner,
+    mobileImage: bannerMobile,
+    alt: "Crafted by tradition, personalized for you",
+    href: "#",
+  },
+  {
+    id: "banner1",
+    image: banner1,
+    mobileImage: bannerMobile1,
+    alt: "Customized Panchaloga rings",
+    href: "#",
+  },
+  {
+    id: "banner3",
+    image: banner3,
+    mobileImage: bannerMobile3,
+    alt: "Handcrafted by skilled smiths",
+    href: "#",
+  },
+  {
+    id: "banner4",
+    image: banner4,
+    mobileImage: bannerMobile4,
+    alt: "Laser engraved Panchaloga jewellery",
+    href: "#",
+  },
+  {
+    id: "banner5",
+    image: banner5,
+    mobileImage: bannerMobile5,
+    alt: "Authentic Panchaloga craftsmanship",
+    href: "#",
+  },
 ];
 
 // Newly-launched collection tiles.
@@ -317,14 +390,70 @@ export const COLLECTIONS = [
 // dynamic needs no component change.
 // `youtubeId` null → the card opens a modal saying no video is linked yet.
 export const UNBOXING_VIDEOS = [
-  { id: "u1", youtubeId: null, title: "Our valuable customer feedback after delivery", channel: "Sabaa Jewel Arts", duration: "0:45", thumbnail: null },
-  { id: "u2", youtubeId: null, title: "Customer Unboxing vedio after delivery", channel: "Sabaa Jewel Arts", duration: "0:52", thumbnail: null },
-  { id: "u3", youtubeId: null, title: "Delivery unbox vedio sent by our customer", channel: "Sabaa Jewel Arts", duration: "0:58", thumbnail: null },
-  { id: "u4", youtubeId: null, title: "Delivery unboxing by customer", channel: "Sabaa Jewel Arts", duration: "0:40", thumbnail: null },
-  { id: "u5", youtubeId: null, title: "Happy customer receiving her Impon chain", channel: "Sabaa Jewel Arts", duration: "1:05", thumbnail: null },
-  { id: "u6", youtubeId: null, title: "Symbol ring unboxing from Madurai", channel: "Sabaa Jewel Arts", duration: "0:37", thumbnail: null },
-  { id: "u7", youtubeId: null, title: "Engraved ring reveal — anniversary gift", channel: "Sabaa Jewel Arts", duration: "0:49", thumbnail: null },
-  { id: "u8", youtubeId: null, title: "Kids chain unboxing with family", channel: "Sabaa Jewel Arts", duration: "1:12", thumbnail: null },
+  {
+    id: "u1",
+    youtubeId: null,
+    title: "Our valuable customer feedback after delivery",
+    channel: "Sabaa Jewel Arts",
+    duration: "0:45",
+    thumbnail: null,
+  },
+  {
+    id: "u2",
+    youtubeId: null,
+    title: "Customer Unboxing vedio after delivery",
+    channel: "Sabaa Jewel Arts",
+    duration: "0:52",
+    thumbnail: null,
+  },
+  {
+    id: "u3",
+    youtubeId: null,
+    title: "Delivery unbox vedio sent by our customer",
+    channel: "Sabaa Jewel Arts",
+    duration: "0:58",
+    thumbnail: null,
+  },
+  {
+    id: "u4",
+    youtubeId: null,
+    title: "Delivery unboxing by customer",
+    channel: "Sabaa Jewel Arts",
+    duration: "0:40",
+    thumbnail: null,
+  },
+  {
+    id: "u5",
+    youtubeId: null,
+    title: "Happy customer receiving her Impon chain",
+    channel: "Sabaa Jewel Arts",
+    duration: "1:05",
+    thumbnail: null,
+  },
+  {
+    id: "u6",
+    youtubeId: null,
+    title: "Symbol ring unboxing from Madurai",
+    channel: "Sabaa Jewel Arts",
+    duration: "0:37",
+    thumbnail: null,
+  },
+  {
+    id: "u7",
+    youtubeId: null,
+    title: "Engraved ring reveal — anniversary gift",
+    channel: "Sabaa Jewel Arts",
+    duration: "0:49",
+    thumbnail: null,
+  },
+  {
+    id: "u8",
+    youtubeId: null,
+    title: "Kids chain unboxing with family",
+    channel: "Sabaa Jewel Arts",
+    duration: "1:12",
+    thumbnail: null,
+  },
 ];
 
 // Voice notes. Same static-now/dynamic-later contract as UNBOXING_VIDEOS.
@@ -469,20 +598,63 @@ export const PROMO_BANNER = {
 // placeholder at the same size, so dropping real artwork in is a swap:
 //   { id: "s1", image: myReel, alt: "..." }
 export const STYLE_SLIDES = [
-  { id: "s1", image: styleChain, alt: "Impon chain styling look", tone: "from-[#1B3A6B] via-[#12294D] to-[#0B1A33]" },
-  { id: "s2", image: styleEarings, alt: "Earrings styling look", tone: "from-[#1F6F6B] via-[#155450] to-[#0C3835]" },
-  { id: "s3", image: styleNeckless, alt: "Necklace styling look", tone: "from-[#6B4A2A] via-[#4E351E] to-[#2E1F12]" },
-  { id: "s4", image: stylePendent, alt: "Pendant styling look", tone: "from-[#1A2360] via-[#131A45] to-[#0A0E28]" },
-  { id: "s5", image: styleChain2, alt: "Gold chain styling look", tone: "from-[#2E5B6B] via-[#20404C] to-[#132830]" },
-  { id: "s6", image: styleEarings2, alt: "Jimikki earrings styling look", tone: "from-[#5B2540] via-[#411A2E] to-[#26101B]" },
-  { id: "s7", image: stylePendent2, alt: "Temple pendant styling look", tone: "from-[#3F5B25] via-[#2D411A] to-[#1A2610]" },
+  {
+    id: "s1",
+    image: styleChain,
+    alt: "Impon chain styling look",
+    tone: "from-[#1B3A6B] via-[#12294D] to-[#0B1A33]",
+  },
+  {
+    id: "s2",
+    image: styleEarings,
+    alt: "Earrings styling look",
+    tone: "from-[#1F6F6B] via-[#155450] to-[#0C3835]",
+  },
+  {
+    id: "s3",
+    image: styleNeckless,
+    alt: "Necklace styling look",
+    tone: "from-[#6B4A2A] via-[#4E351E] to-[#2E1F12]",
+  },
+  {
+    id: "s4",
+    image: stylePendent,
+    alt: "Pendant styling look",
+    tone: "from-[#1A2360] via-[#131A45] to-[#0A0E28]",
+  },
+  {
+    id: "s5",
+    image: styleChain2,
+    alt: "Gold chain styling look",
+    tone: "from-[#2E5B6B] via-[#20404C] to-[#132830]",
+  },
+  {
+    id: "s6",
+    image: styleEarings2,
+    alt: "Jimikki earrings styling look",
+    tone: "from-[#5B2540] via-[#411A2E] to-[#26101B]",
+  },
+  {
+    id: "s7",
+    image: stylePendent2,
+    alt: "Temple pendant styling look",
+    tone: "from-[#3F5B25] via-[#2D411A] to-[#1A2610]",
+  },
 ];
 
 export const TRUST_ITEMS = [
-  { id: "trusted", icon: "people", lines: ["Trusted by 5000+", "Happy Customers"] },
+  {
+    id: "trusted",
+    icon: "people",
+    lines: ["Trusted by 5000+", "Happy Customers"],
+  },
   { id: "quality", icon: "ring", lines: ["Premium Quality", "Rings"] },
   { id: "delivery", icon: "truck", lines: ["Fast & Secure", "Delivery"] },
-  { id: "satisfaction", icon: "smile", lines: ["Customer Satisfaction", "is Our Priority"] },
+  {
+    id: "satisfaction",
+    icon: "smile",
+    lines: ["Customer Satisfaction", "is Our Priority"],
+  },
 ];
 
 // Backdrop for the New Arrivals block. The "New Arrivals" heading, the
@@ -499,14 +671,38 @@ export const NEW_ARRIVALS_BANNER = {
 // `ratio` mirrors the file's native aspect so the baked-in caption is never
 // cropped off the bottom-left corner.
 export const NEW_ARRIVALS = [
-  { id: "panchaloga-rings", alt: "Panchaloga Rings", image: panchalogaRings, ratio: "1416/595", href: "/category/all-rings" },
+  {
+    id: "panchaloga-rings",
+    alt: "Panchaloga Rings",
+    image: panchalogaRings,
+    ratio: "1416/595",
+    href: "/category/all-rings",
+  },
   // "symbol-rings" matched nothing — the API has no grouping for god rings,
   // only Hindu, Christian and Muslim separately, and Hindu is the only one
   // carrying stock.
-  { id: "divine-rings", alt: "Divine Rings Collection", image: divineRings, ratio: "1415/592", href: "/category/hindu-rings" },
-  { id: "god-engraved", alt: "God Engraved Rings", image: godEngravedRings, ratio: "1411/595", href: "/category/hindu-rings" },
+  {
+    id: "divine-rings",
+    alt: "Divine Rings Collection",
+    image: divineRings,
+    ratio: "1415/592",
+    href: "/category/hindu-rings",
+  },
+  {
+    id: "god-engraved",
+    alt: "God Engraved Rings",
+    image: godEngravedRings,
+    ratio: "1411/595",
+    href: "/category/hindu-rings",
+  },
   // The API category is "Pendant", singular — "all-pendants" resolved to nothing.
-  { id: "temple-pendants", alt: "Divine Temple Pendants", image: templePendants, ratio: "1407/597", href: "/category/all-pendant" },
+  {
+    id: "temple-pendants",
+    alt: "Divine Temple Pendants",
+    image: templePendants,
+    ratio: "1407/597",
+    href: "/category/all-pendant",
+  },
 ];
 
 export const ASSURANCE_ITEMS = [
@@ -520,16 +716,51 @@ export const ASSURANCE_ITEMS = [
 // renders the image alone; anything added in HTML would duplicate it.
 // `ratio` is the file's native aspect so nothing is cropped.
 export const PHOTO_RING_CARDS = [
-  { id: "moment", alt: "Your Moment, Forever", image: murugaRing, ratio: "587/621" },
-  { id: "tradition", alt: "Crafted With Tradition", image: craftedRing, ratio: "589/622" },
-  { id: "gift", alt: "A Gift That Speaks Hearts", image: vijayRing, ratio: "586/623" },
+  {
+    id: "moment",
+    alt: "Your Moment, Forever",
+    image: murugaRing,
+    ratio: "587/621",
+  },
+  {
+    id: "tradition",
+    alt: "Crafted With Tradition",
+    image: craftedRing,
+    ratio: "589/622",
+  },
+  {
+    id: "gift",
+    alt: "A Gift That Speaks Hearts",
+    image: vijayRing,
+    ratio: "586/623",
+  },
 ];
 
 export const PHOTO_RING_FEATURES = [
-  { id: "pure", icon: "shieldCheck", title: "Pure Panchalogam", lines: ["Durable &", "Skin-Friendly"] },
-  { id: "love", icon: "handHeart", title: "Made With Love", lines: ["Crafted with", "Care"] },
-  { id: "trusted", icon: "medal", title: "Trusted By Generations", lines: ["Quality You", "Can Trust"] },
-  { id: "delivery", icon: "truck", title: "Safe & Secure Delivery", lines: ["Delivered to Your", "Doorstep"] },
+  {
+    id: "pure",
+    icon: "shieldCheck",
+    title: "Pure Panchalogam",
+    lines: ["Durable &", "Skin-Friendly"],
+  },
+  {
+    id: "love",
+    icon: "handHeart",
+    title: "Made With Love",
+    lines: ["Crafted with", "Care"],
+  },
+  {
+    id: "trusted",
+    icon: "medal",
+    title: "Trusted By Generations",
+    lines: ["Quality You", "Can Trust"],
+  },
+  {
+    id: "delivery",
+    icon: "truck",
+    title: "Safe & Secure Delivery",
+    lines: ["Delivered to Your", "Doorstep"],
+  },
 ];
 
 export const TESTIMONIALS = [

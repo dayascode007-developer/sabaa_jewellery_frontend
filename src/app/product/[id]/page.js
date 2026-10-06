@@ -119,7 +119,9 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
 
 export default function ProductPage() {
   const params = useParams();
-  const productId = params?.id;
+  // Extract ID from slug format: "150-hgv" -> "150"
+  const slug = params?.id;
+  const productId = slug?.split('-')[0];
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showShimmer, setShowShimmer] = useState(false);

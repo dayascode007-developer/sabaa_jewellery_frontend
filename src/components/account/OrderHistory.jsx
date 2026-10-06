@@ -33,12 +33,13 @@ export default function OrderHistory({ onTrackOrder }) {
     dispatch(fetchOrders({ limit: PAGE_SIZE, offset }));
   }, [dispatch, currentPage]);
 
-  // `item` is optional so the order-level button keeps its old behaviour of
-  // reviewing the first product; the per-product buttons pass their own item.
+  // MULTI-PRODUCT SUPPORT: Pass all order items for multi-product review
   const handleWriteReview = (order, item) => {
-    const target = item || order.items?.[0];
-    if (!target) return;
-    dispatch(openReviewModal({ product: target, orderId: order.id }));
+    // If specific item passed, use only that (backward compatible for per-product buttons)
+    // Otherwise, pass ALL items from the order for multi-product review
+    const productsToReview = item ? [item] : (order.items || []);
+    if (productsToReview.length === 0) return;
+    dispatch(openReviewModal({ product: productsToReview, orderId: order.id }));
   };
 
   // Deep link from the post-delivery feedback WhatsApp:
@@ -141,7 +142,10 @@ export default function OrderHistory({ onTrackOrder }) {
     return messages[status] || status;
   };
 
-  if (loading) {
+  // Show shimmer only on initial load (no orders yet), not on pagination
+  const isInitialLoad = loading && orders.length === 0;
+
+  if (isInitialLoad) {
     return <OrderHistoryShimmer count={3} />;
   }
 
