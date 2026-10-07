@@ -1,10 +1,10 @@
 export const USEFUL_LINKS = [
   { id: "about", label: "About Us", href: "/about" },
-  { id: "polish", label: "Jewel Polish & Care", href: "#" },
+  { id: "polish", label: "Jewel Polish & Care", href: "/jewel-care" },
   { id: "tracking", label: "Order Tracking", href: "#" },
   { id: "returns", label: "Policy Page", href: "/policy" },
   { id: "blogs", label: "Blogs", href: "/blogs" },
-  { id: "faqs", label: "Help & FAQs", href: "#" },
+  { id: "faqs", label: "Help & FAQs", href: "/faqs" },
 ];
 
 export const COMPANY_INFO = {

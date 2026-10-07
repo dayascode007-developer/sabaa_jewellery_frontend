@@ -144,6 +144,15 @@ function NavIcon({ item }) {
 // Small ringed mark beside each menu link, echoing the reference layout.
 // One mark per kind of jewellery. Every dropdown item used to carry the ring
 // glyph, so chains and pendants were marked with a ring.
+const chainMark = (
+  <>
+    <path d="M3.5 7c0 6.5 3.8 11 8.5 11s8.5-4.5 8.5-11" />
+    <circle cx="6" cy="11" r="1.4" />
+    <circle cx="12" cy="15.4" r="1.4" />
+    <circle cx="18" cy="11" r="1.4" />
+  </>
+);
+
 const ITEM_MARKS = {
   rings: (
     <>
@@ -152,14 +161,12 @@ const ITEM_MARKS = {
     </>
   ),
   // A hanging chain — a curve of links across the top.
-  impon: (
-    <>
-      <path d="M3.5 7c0 6.5 3.8 11 8.5 11s8.5-4.5 8.5-11" />
-      <circle cx="6" cy="11" r="1.4" />
-      <circle cx="12" cy="15.4" r="1.4" />
-      <circle cx="18" cy="11" r="1.4" />
-    </>
-  ),
+  impon: chainMark,
+  // Same trap as VIEW_ALL_SLUG below: the API supplies the nav id as the
+  // lowercased, hyphenated category name, so "Impon Chain" arrives as
+  // "impon-chain". Without this alias the lookup missed, fell through to
+  // ITEM_MARKS.rings, and every chain sub-category was marked with a ring.
+  "impon-chain": chainMark,
   // A dollar hanging from a chain. The first attempt drew the cord as a curve
   // meeting a circle, which at 14px read as a pair of horns.
   pendant: (
@@ -477,10 +484,12 @@ export default function CategoryNav() {
   const moreCategories = rawCategories.slice(NAVBAR_CATEGORY_COUNT);
 
   // Static items for "More" menu (About Us, Blogs, etc.)
+  // `mark` selects the glyph from STATIC_MARKS in CascadingMoreMenu — these are
+  // pages, so they do not use the jewellery category marks.
   const moreStaticItems = [
-    { label: "About Us", href: "/about" },
-    { label: "Blogs", href: "/blogs" },
-    { label: "Jewel Polish & Care", href: "#" },
+    { label: "About Us", href: "/about", mark: "about" },
+    { label: "Blogs", href: "/blogs", mark: "blogs" },
+    { label: "Jewel Polish & Care", href: "/jewel-care", mark: "care" },
   ];
 
   const close = useCallback(() => setOpenId(null), []);

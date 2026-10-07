@@ -372,41 +372,128 @@ export const PROCESS_STEPS = [
   },
 ];
 
+// Supplied by Sabaa. Contact details appear in several answers and are kept in
+// SUPPORT_EMAIL / SUPPORT_WHATSAPP below so a change is made in one place.
+export const SUPPORT_EMAIL = "admin@sabaa.in";
+export const SUPPORT_WHATSAPP = "7871900355";
+
+const contactLine = `For support ${SUPPORT_EMAIL}. WhatsApp: ${SUPPORT_WHATSAPP}`;
+
 export const FAQS = [
   {
-    id: "panchaloga",
-    q: "What is Panchaloga?",
-    a: "Panchaloga is a traditional South Indian alloy of five metals, used in temple and ceremonial jewellery for centuries. Sabaa has been working in Panchalogam since 1980.",
+    id: "composition",
+    q: "What is the metal composition of Panchalogam impon?",
+    a: "Copper, Zinc, Tin, Silver and Brass.",
   },
   {
-    id: "engrave",
-    q: "What can I engrave on my ring?",
-    a: "A name, a face, a fingerprint, a barcode, a voice waveform — or anything else you send us. If you are unsure whether your idea will work at ring scale, message us on WhatsApp and we will tell you honestly before you order.",
+    id: "ring-tarnish",
+    q: "Do this Panchaloga ring color fade or tarnish?",
+    a: "It depends on your usage. All rings are delivered with a buffing mirror polish — raw metal without any coating. Once you start using it, the ring changes to an antique finish, and it remains an antique finish with daily usage. If rings are kept on a shelf without usage, the copper content starts to tarnish and fade. You can repolish it with vibhuti powder or Colgate powder to remove the tarnish and continue using it.",
   },
   {
-    id: "metals",
-    q: "Which metals do you work in?",
-    a: "Panchalogam and silver are our core, and we also take on custom engraved gold rings.",
+    id: "chain-tarnish",
+    q: "Do this Panchaloga ring color fade or tarnish?",
+    a: "All Sabaa chains are provided with a 6 month warranty on colour. All chains are micro coated, unlike the rings, so they need to be removed while taking a bath. Please use them gently — rough use is not advisable if you want to increase the life of the chain colour.",
   },
   {
-    id: "delivery",
-    q: "How long does a customized order take?",
-    a: "Customized pieces are typically ready within 10 days. Because every piece is made to your request, the exact timeline is confirmed with you when the design is approved.",
+    id: "customise",
+    q: "Can I customize a Panchaloga ring with my name or initials?",
+    a: "Yes. Depending on the selected ring design, you can personalise your Panchaloga ring with a name, initials, date, short word, or other suitable engraving.",
   },
   {
-    id: "size",
-    q: "How do I find my ring size?",
-    a: "Every product page has a size selector with a size chart beside it. If you are still unsure, send us a message before ordering — resizing an engraved ring is not always possible.",
+    id: "engrave-what",
+    q: "What can I engrave on a customized ring?",
+    a: "You can typically engrave names, initials, special dates, meaningful words, or short messages. The available character limit may vary depending on the ring size and design.",
   },
   {
-    id: "gifting",
-    q: "Do you offer gift packaging and international shipping?",
-    a: "Gift packaging is free and can be selected on the product page. International shipment is available — tick the option at checkout and we will confirm the details with you.",
+    id: "symbols",
+    q: "Can I add a symbol or religious design to the ring?",
+    a: "Yes, selected customized designs may allow symbols, initials, zodiac signs, religious symbols, or other motifs. Please check the customization options available for the particular product.",
+  },
+  {
+    id: "fonts",
+    q: "Can I choose the font for the engraving?",
+    a: "Font options are given on the ordering page during the customization process. Sabaa will use an engraving style that provides good visibility and durability while complementing the ring design.",
+  },
+  {
+    id: "provide-details",
+    q: "How do I provide my customization details?",
+    a: "After selecting the customized ring, enter your required engraving or personalization details in the designated customization field during the ordering process. Select size, font and enamel colour on the order page.",
+  },
+  {
+    id: "ring-size",
+    q: "How do I select the correct ring size?",
+    a: "Please refer to Sabaa's ring size guide before placing your order. Since customized rings are made specifically according to the selected details and size, we recommend checking your ring size carefully before ordering.",
+  },
+  {
+    id: "change-size",
+    q: "Can I change the ring size after placing a customized order?",
+    a: "Size changes may not be possible once customization or production has started.",
+  },
+  {
+    id: "preview",
+    q: "Can I see a preview of my customized ring before production?",
+    a: "Preview availability depends on the product and customization option. If a preview is provided, production will proceed after the required confirmation.",
+  },
+  {
+    id: "production-time",
+    q: "How long does it take to make a customized Panchaloga ring?",
+    a: "Customized rings may require 7-10 days, with additional processing time depending on the design.",
+  },
+  {
+    id: "cancel",
+    q: "Can I cancel a customized ring order?",
+    a: "Yes, you can cancel the order. But the advance payment cannot be refunded.",
+  },
+  {
+    id: "return",
+    q: "Can I return or exchange a customized Panchaloga ring?",
+    a: `There is no return or exchange accepted unless there is damage on the delivered product. ${contactLine}`,
+  },
+  {
+    id: "unique",
+    q: "Is every customized Panchaloga ring unique?",
+    a: "Yes. Since the ring is personalized according to your selected details, each customized piece has its own individual character.",
+  },
+  {
+    id: "not-gold",
+    q: "Is Panchaloga the same as gold?",
+    a: "No. There is no gold content in this ring. Panchaloga is a traditional metal alloy used in Indian jewellery and spiritual craftsmanship. A Panchaloga ring is different from solid gold jewellery and should not be represented as gold jewellery unless specifically stated.",
+  },
+  {
+    id: "engraving-fade",
+    q: "Will the engraving fade over time?",
+    a: "No. We engrave to a depth that lasts lifelong, subject to usage, friction and care.",
   },
   {
     id: "care",
-    q: "How do I care for an engraved piece?",
-    a: "Keep it away from perfumes, chlorine and household cleaners, wipe it with a soft dry cloth after wearing, and store it separately so the engraving is not scratched by other jewellery.",
+    q: "How should I care for my customized Panchaloga ring?",
+    a: "Use it daily to avoid tarnish. Clean it with vibhuti or Colgate powder to polish it whenever required.",
+  },
+  {
+    id: "gifting",
+    q: "Can I order customized Panchaloga rings as gifts?",
+    a: "Yes. Customized Panchaloga rings can be a meaningful gift for birthdays, anniversaries, weddings, religious occasions, or other special moments.",
+  },
+  {
+    id: "couples",
+    q: "Can I customize rings for couples?",
+    a: "Yes, depending on the available designs. You can consider matching rings with names, initials, dates, or complementary engravings for couples.",
+  },
+  {
+    id: "multiple",
+    q: "Can I order multiple customized rings with different names?",
+    a: "No, this is limited to 1 item per order.",
+  },
+  {
+    id: "wrong-details",
+    q: "What happens if I enter the wrong name or engraving details?",
+    a: `Please carefully verify all customization details before placing your order. Once production has started, changes may not be possible. ${contactLine}`,
+  },
+  {
+    id: "contact",
+    q: "How can I contact Sabaa regarding a customized ring?",
+    a: `For questions about customization, sizing, design, or an existing order, contact Sabaa customer support through the contact details provided on our website. Our team will assist you with the available customization options. ${contactLine}`,
   },
 ];
 
