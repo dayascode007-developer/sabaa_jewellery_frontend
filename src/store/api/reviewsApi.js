@@ -11,7 +11,14 @@ export const submitReviewApi = async (orderId, productId, customerName, rating, 
 
   const formData = new FormData();
   formData.append("orderId", orderId);
-  formData.append("productId", productId);
+
+  // MULTI-PRODUCT SUPPORT: Send productIds as comma-separated string for easier parsing
+  if (Array.isArray(productId)) {
+    formData.append("productIds", productId.join(","));
+  } else {
+    formData.append("productId", productId);
+  }
+
   formData.append("customerName", customerName);
   formData.append("rating", rating);
   formData.append("reviewTitle", reviewTitle);
@@ -20,6 +27,8 @@ export const submitReviewApi = async (orderId, productId, customerName, rating, 
   if (userImgFile) {
     formData.append("review-user-img", userImgFile);
   }
+
+  console.log("📤 Submitting review with:", { orderId, productId, customerName });
 
   const response = await fetch(`${API_URL}/api/customer/reviews/submit`, {
     method: "POST",

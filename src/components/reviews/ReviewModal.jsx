@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MdClose, MdStar } from "react-icons/md";
 import { FaStar } from "react-icons/fa6";
@@ -20,10 +20,24 @@ export default function ReviewModal({ isOpen, onSuccess }) {
   const [localError, setLocalError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState([]);
 
   const selectedProduct = useSelector(selectSelectedProduct);
   const selectedOrderId = useSelector(selectSelectedOrderId);
   const error = useSelector(selectReviewError);
+
+  // MULTI-PRODUCT SUPPORT: Auto-select all products if modal opens
+  useEffect(() => {
+    if (isOpen && selectedProduct) {
+      if (Array.isArray(selectedProduct)) {
+        // If array of products passed, select all their IDs
+        setSelectedProductIds(selectedProduct.map(p => p.product_id || p.id));
+      } else {
+        // Single product - auto-select it
+        setSelectedProductIds([selectedProduct.product_id || selectedProduct.id]);
+      }
+    }
+  }, [isOpen, selectedProduct]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,6 +62,11 @@ export default function ReviewModal({ isOpen, onSuccess }) {
       return;
     }
 
+    if (selectedProductIds.length === 0) {
+      setLocalError("Please select at least one product to review");
+      return;
+    }
+
     setLocalError(null);
     setSubmitting(true);
 
@@ -57,9 +76,10 @@ export default function ReviewModal({ isOpen, onSuccess }) {
 
       const capitalizedName = customerName.trim().charAt(0).toUpperCase() + customerName.trim().slice(1);
 
+      // MULTI-PRODUCT SUPPORT: Send array of product IDs
       await submitReviewApi(
         selectedOrderId,
-        selectedProduct.product_id,
+        selectedProductIds,
         capitalizedName,
         rating,
         reviewTitle.trim(),
@@ -98,8 +118,13 @@ export default function ReviewModal({ isOpen, onSuccess }) {
 
   if (!isOpen || !selectedProduct) return null;
 
+  // MULTI-PRODUCT: Check if reviews enabled for all products
+  const hasDisabledReviews = Array.isArray(selectedProduct)
+    ? selectedProduct.some(p => p.enable_reviews === false)
+    : selectedProduct.enable_reviews === false;
+
   // Reviews disabled - "Please wait" state
-  if (!selectedProduct?.enable_reviews) {
+  if (hasDisabledReviews) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg max-w-md w-full p-6 text-center">
@@ -155,12 +180,39 @@ export default function ReviewModal({ isOpen, onSuccess }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Product Info */}
-            <div className="p-3 rounded-lg" style={{ backgroundColor: "#f9fafb", borderLeft: `3px solid ${MAROON}` }}>
-              <p className="text-xs text-gray-600 font-medium uppercase mb-1">Product</p>
-              <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                {selectedProduct?.title}
+            {/* MULTI-PRODUCT: Show checkboxes for all products */}
+            <div>
+              <p className="text-sm font-medium mb-2" style={{ color: MAROON }}>
+                Products to Review <span className="text-red-600">*</span>
               </p>
+              <div className="space-y-2">
+                {Array.isArray(selectedProduct) ? (
+                  selectedProduct.map((product) => (
+                    <label key={product.id} className="flex items-center gap-3 p-2 rounded border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedProductIds.includes(product.product_id || product.id)}
+                        onChange={(e) => {
+                          const pId = product.product_id || product.id;
+                          if (e.target.checked) {
+                            setSelectedProductIds(prev => [...prev, pId]);
+                          } else {
+                            setSelectedProductIds(prev => prev.filter(id => id !== pId));
+                          }
+                        }}
+                        className="cursor-pointer w-4 h-4"
+                      />
+                      <span className="text-sm font-medium text-gray-900 line-clamp-1">{product.title}</span>
+                    </label>
+                  ))
+                ) : (
+                  <div className="p-3 rounded-lg border border-gray-200" style={{ backgroundColor: "#f9fafb", borderLeft: `3px solid ${MAROON}` }}>
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2">
+                      {selectedProduct?.title}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Customer Name */}

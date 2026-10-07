@@ -27,6 +27,13 @@ const rupees = (n) => {
   return "₹" + Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
+const toSlug = (name) =>
+  name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/&/g, "")
+    .replace(/--+/g, "-");
+
 function Stepper({ item }) {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -103,7 +110,7 @@ function CartLine({ item, selected, onToggle }) {
       </label>
 
       <Link
-        href={`/product/${item.id}`}
+        href={`/product/${item.id}-${toSlug(item.title)}`}
         className="relative h-24 w-24 shrink-0 overflow-hidden rounded bg-neutral-100 sm:h-28 sm:w-28"
       >
         {item.image ? (
@@ -120,7 +127,7 @@ function CartLine({ item, selected, onToggle }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-3">
           <Link
-            href={`/product/${item.id}`}
+            href={`/product/${item.id}-${toSlug(item.title)}`}
             className="text-[15px] leading-snug font-medium text-neutral-900 transition-colors hover:text-[#7B1E2B]"
           >
             {item.title}

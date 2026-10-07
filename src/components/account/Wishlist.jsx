@@ -26,6 +26,15 @@ const rupees = (n) => {
   );
 };
 
+const toSlug = (name) => {
+  if (!name) return "";
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/&/g, "")
+    .replace(/--+/g, "-");
+};
+
 export default function Wishlist() {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -96,7 +105,7 @@ export default function Wishlist() {
                 {/* Product Image Container - Rectangular on mobile (80%), square on sm+ (100%) */}
                 <div
                   className="relative w-full overflow-hidden bg-neutral-100 pb-[80%] sm:pb-[100%] group cursor-pointer"
-                  onClick={() => router.push(`/product/${item.product_id}`)}
+                  onClick={() => router.push(`/product/${item.product_id}-${toSlug(item.title)}`)}
                 >
                   {item.main_image ? (
                     <img
@@ -151,7 +160,7 @@ export default function Wishlist() {
                   {/* Product Name */}
                   <h3
                     className="font-[family-name:var(--font-heading)] mt-0.5 line-clamp-2 min-h-[1.6em] text-[12px] leading-tight text-gray-900 transition-colors cursor-pointer hover:text-[#7B1E2B] sm:mt-1.5 sm:min-h-[2.6em] sm:text-[15px] sm:leading-snug"
-                    onClick={() => router.push(`/product/${item.product_id}`)}
+                    onClick={() => router.push(`/product/${item.product_id}-${toSlug(item.title)}`)}
                   >
                     {item.title}
                   </h3>
@@ -201,7 +210,7 @@ export default function Wishlist() {
 
                   {/* Click Here Link */}
                   <Link
-                    href={`/product/${item.product_id}`}
+                    href={`/product/${item.product_id}-${toSlug(item.title)}`}
                     className="mt-2 sm:mt-3 w-full py-1 sm:py-2.5 text-[10px] sm:text-[12px] text-white font-semibold rounded transition-all hover:opacity-90 block text-center"
                     style={{ backgroundColor: MAROON }}
                   >

@@ -162,8 +162,8 @@ function SearchDropdown({ isOpen, onCategoryClick }) {
     }
   };
 
-  const handleProductClick = (productId) => {
-    router.push(`/product/${productId}`);
+  const handleProductClick = (productId, productTitle) => {
+    router.push(`/product/${productId}-${toSlug(productTitle)}`);
   };
 
   return (
@@ -220,7 +220,7 @@ function SearchDropdown({ isOpen, onCategoryClick }) {
               {(searchResults.length > 0 ? searchResults : matchingProductTitles).slice(0, 8).map((product) => (
                 <button
                   key={product.id}
-                  onClick={() => handleProductClick(product.id)}
+                  onClick={() => handleProductClick(product.id, product.title)}
                   className="flex flex-col items-center gap-2 p-2 rounded hover:bg-neutral-50 transition-colors text-center"
                 >
                   <div className="w-full aspect-square rounded bg-neutral-100 flex items-center justify-center overflow-hidden">
@@ -277,7 +277,7 @@ function SearchDropdown({ isOpen, onCategoryClick }) {
             {trendingProducts.slice(0, 6).map((product) => (
               <button
                 key={product.id}
-                onClick={() => handleProductClick(product.id)}
+                onClick={() => handleProductClick(product.id, product.title)}
                 className="flex flex-col items-center gap-2 hover:opacity-70 transition-opacity"
               >
                 <div className="w-20 h-20 rounded-lg bg-neutral-100 overflow-hidden flex items-center justify-center">

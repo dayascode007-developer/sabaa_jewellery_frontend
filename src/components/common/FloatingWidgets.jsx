@@ -70,51 +70,6 @@ export default function FloatingWidgets() {
         }
       `}</style>
 
-      {/* Left — Introducing Shortcuts. Sits flush against the viewport edge, so
-          only the bottom-right corner is rounded; the other three meet the edge
-          square. No dismiss control, so it is always shown. */}
-      <div
-        className={`fixed bottom-20 left-0 z-40 transition-transform duration-700 ease-out lg:bottom-6 ${
-          entered ? "translate-x-0" : "-translate-x-[130%]"
-        }`}
-      >
-        <div
-          // overflow-hidden clips the shine sweep to the pill's rounded box.
-          className="relative flex items-center gap-2 overflow-hidden rounded-br-[20px] border px-3 py-2 shadow-lg"
-          style={{ backgroundColor: MAROON, borderColor: GOLD }}
-        >
-          {/* Stars sit behind the content and twinkle in step with the sweep */}
-          {STARS.map((star) => (
-            <span
-              key={star.left}
-              aria-hidden="true"
-              data-shine
-              className="pointer-events-none absolute text-white"
-              style={{
-                left: star.left,
-                top: star.top,
-                animation: `sabaaTwinkle 2.4s ease-in-out infinite alternate`,
-                animationDelay: star.delay,
-              }}
-            >
-              <Sparkle size={star.size} />
-            </span>
-          ))}
-
-          <span className="text-[12px] font-medium whitespace-nowrap text-white sm:text-[13px]">
-            Introducing Shortcuts
-          </span>
-
-          {/* Shine sweep. Last in the DOM so it passes over the text. */}
-          <span
-            aria-hidden="true"
-            data-shine
-            className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-[#C9A227]/70 to-transparent"
-            style={{ animation: "sabaaShine 2.4s ease-in-out infinite alternate" }}
-          />
-        </div>
-      </div>
-
       {/* Right — WhatsApp. The chat prompt and chat button that used to sit
           under it are gone; nothing was wired behind them. */}
       <div

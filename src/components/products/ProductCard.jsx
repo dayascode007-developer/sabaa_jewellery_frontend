@@ -16,6 +16,13 @@ import { getCategoryLabel } from "@/constants/productData";
 
 const MAROON = "#7B1E2B";
 
+const toSlug = (name) =>
+  name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/&/g, "")
+    .replace(/--+/g, "-");
+
 const rupees = (n) =>
   "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -123,7 +130,7 @@ export default function ProductCard({ product }) {
           wrapping the markup — nesting a link around some of the text but not
           the rest produces invalid JSX. Controls sit above it on higher z. */}
       <Link
-        href={`/product/${product.id}`}
+        href={`/product/${product.id}-${toSlug(product.title)}`}
         className="absolute inset-0 z-10"
         aria-label={product.title}
       />
@@ -227,7 +234,7 @@ export default function ProductCard({ product }) {
         {/* Mobile: always show button. Desktop: show only on hover. */}
         <div className="mt-auto h-8 w-full overflow-hidden transition-[height] duration-300 ease-out sm:h-11 md:h-0 md:group-hover:h-11 md:group-focus-within:h-11">
           <Link
-            href={`/product/${product.id}`}
+            href={`/product/${product.id}-${toSlug(product.title)}`}
             className="relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded font-[family-name:var(--font-category)] text-[10px] font-medium text-white transition-opacity hover:opacity-90 sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px]"
             style={{ backgroundColor: MAROON }}
           >
