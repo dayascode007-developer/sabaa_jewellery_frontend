@@ -3,41 +3,156 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { MdLocalShipping, MdStarBorder, MdDownload, MdChevronLeft, MdChevronRight } from "react-icons/md";
+import {
+  MdLocalShipping,
+  MdStarBorder,
+  MdDownload,
+  MdChevronLeft,
+  MdChevronRight,
+  MdSearch,
+  MdTune,
+  MdClose,
+} from "react-icons/md";
 import { downloadOrderInvoice } from "@/utils/downloadInvoice";
 import { getOrderApi } from "@/store/api/ordersApi";
 import { fetchOrders } from "@/store/slices/ordersSlice";
 import { OrderHistoryShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import ReviewModal from "@/components/reviews/ReviewModal";
 import OrderDetailsModal from "./OrderDetailsModal";
-import { openReviewModal, selectIsModalOpen, closeReviewModal } from "@/store/slices/reviewsSlice";
+import FilterModal from "./FilterModal";
+import {
+  openReviewModal,
+  selectIsModalOpen,
+  closeReviewModal,
+} from "@/store/slices/reviewsSlice";
 
 const MAROON = "#430121";
 const PAGE_SIZE = 10;
 
 export default function OrderHistory({ onTrackOrder }) {
   const dispatch = useDispatch();
-  const { list: orders, loading, error, pagination } = useSelector((state) => state.orders);
+  const {
+    list: orders,
+    loading,
+    error,
+    pagination,
+  } = useSelector((state) => state.orders);
   const isModalOpen = useSelector(selectIsModalOpen);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({ statuses: [], times: [] });
+  const [allOrders, setAllOrders] = useState([]);
   // The ?review= value already acted on, so the modal is not reopened when the
   // orders list refetches. A ref, not state: nothing renders from it, and
   // setting state here would cascade an extra render on every link open.
   const deepLinkHandled = useRef(null);
   const searchParams = useSearchParams();
 
+  const POSSIBLE_STATUSES = [
+    "pending",
+    "shipped",
+    "out_for_delivery",
+    "delivered",
+  ];
+
+  // Extract available time ranges from orders
+  const getAvailableTimeRanges = () => {
+    if (!orders || orders.length === 0) return [];
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const availableRanges = [];
+    const yearsSet = new Set();
+
+    for (const order of orders) {
+      const orderDate = new Date(order.created_at);
+
+      // Last 30 days
+      if (orderDate >= thirtyDaysAgo) {
+        if (!availableRanges.find((r) => r.value === "30days")) {
+          availableRanges.push({ value: "30days", label: "Last 30 days" });
+        }
+      }
+
+      // Years
+      yearsSet.add(orderDate.getFullYear());
+    }
+
+    // Add years in descending order
+    Array.from(yearsSet)
+      .sort((a, b) => b - a)
+      .forEach((year) => {
+        availableRanges.push({ value: String(year), label: String(year) });
+      });
+
+    // Add "Older" if there are orders before 2023
+    if (yearsSet.has(2022) || yearsSet.has(2021) || yearsSet.has(2020) || Array.from(yearsSet).some((y) => y < 2023)) {
+      if (!availableRanges.find((r) => r.value === "older")) {
+        availableRanges.push({ value: "older", label: "Older" });
+      }
+    }
+
+    return availableRanges;
+  };
+
+  const availableTimeRanges = getAvailableTimeRanges();
+
+  // Filter orders based on active filters (search is handled by backend)
+  const filteredOrders =
+    orders?.filter((order) => {
+      // Status filter
+      if (activeFilters.statuses.length > 0) {
+        if (!activeFilters.statuses.includes(order.status)) return false;
+      }
+
+      // Time filter
+      if (activeFilters.times.length > 0) {
+        const orderDate = new Date(order.created_at);
+        const currentDate = new Date();
+        const thirtyDaysAgo = new Date(currentDate.setDate(currentDate.getDate() - 30));
+        let matchesTime = false;
+
+        for (const timeFilter of activeFilters.times) {
+          if (timeFilter === "30days" && orderDate >= thirtyDaysAgo) {
+            matchesTime = true;
+            break;
+          }
+          if (timeFilter === "older" && orderDate.getFullYear() < 2023) {
+            matchesTime = true;
+            break;
+          }
+          // Handle any year dynamically (2024, 2026, etc.)
+          if (!isNaN(Number(timeFilter)) && orderDate.getFullYear() === Number(timeFilter)) {
+            matchesTime = true;
+            break;
+          }
+        }
+        if (!matchesTime) return false;
+      }
+
+      return true;
+    }) || [];
+
+  const handleApplyFilters = (filters) => {
+    setActiveFilters(filters);
+  };
+
+  // Always show all 4 main statuses regardless of current page
+  const availableStatuses = POSSIBLE_STATUSES;
+
   useEffect(() => {
     const offset = (currentPage - 1) * PAGE_SIZE;
-    dispatch(fetchOrders({ limit: PAGE_SIZE, offset }));
-  }, [dispatch, currentPage]);
+    dispatch(fetchOrders({ limit: PAGE_SIZE, offset, search: searchTerm }));
+  }, [dispatch, currentPage, searchTerm]);
 
   // MULTI-PRODUCT SUPPORT: Pass all order items for multi-product review
   const handleWriteReview = (order, item) => {
     // If specific item passed, use only that (backward compatible for per-product buttons)
     // Otherwise, pass ALL items from the order for multi-product review
-    const productsToReview = item ? [item] : (order.items || []);
+    const productsToReview = item ? [item] : order.items || [];
     if (productsToReview.length === 0) return;
     dispatch(openReviewModal({ product: productsToReview, orderId: order.id }));
   };
@@ -84,7 +199,8 @@ export default function OrderHistory({ onTrackOrder }) {
 
       const productId = Number(productPart);
       const item =
-        (Number.isInteger(productId) && items.find((i) => i.product_id === productId)) ||
+        (Number.isInteger(productId) &&
+          items.find((i) => i.product_id === productId)) ||
         items[0];
 
       if (item.has_reviewed) return;
@@ -153,7 +269,9 @@ export default function OrderHistory({ onTrackOrder }) {
     return (
       <div className="text-center py-12">
         <MdLocalShipping className="mx-auto text-4xl text-red-300 mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Error loading orders</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          Error loading orders
+        </h3>
         <p className="text-sm text-gray-600">{error}</p>
       </div>
     );
@@ -161,16 +279,54 @@ export default function OrderHistory({ onTrackOrder }) {
 
   return (
     <div className="space-y-6">
+      {/* Search Bar - Left Side Input, Right Side Filter Icon */}
+      <div className="flex items-center justify-between">
+          <div className="relative max-w-md flex-1">
+            <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+            <input
+              type="text"
+              placeholder="Search orders..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm md:text-base text-black"
+              style={{ "--tw-ring-color": MAROON }}
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                type="button"
+              >
+                <MdClose className="text-lg" />
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => setIsFilterModalOpen(true)}
+            className="relative flex items-center justify-center gap-1 md:gap-2 p-2 md:p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0 ml-2 md:ml-3"
+            title="Filter"
+          >
+            <MdTune className="text-gray-600 text-lg md:text-xl" />
+            <span className="text-sm md:text-base font-medium text-gray-600">Filters</span>
+            {(activeFilters.statuses.length > 0 || activeFilters.times.length > 0) && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {activeFilters.statuses.length + activeFilters.times.length}
+              </span>
+            )}
+          </button>
+        </div>
+
       {/* Pagination Controls - Top Right (Responsive) */}
-      {orders && orders.length > 0 && (
+      {filteredOrders && filteredOrders.length > 0 && (
         <div className="flex items-center justify-end gap-2 md:gap-4 mb-6 md:mb-8 pb-3 md:pb-4 border-b border-gray-200 overflow-x-auto">
           <button
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
             className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1 md:py-2 rounded-lg border-2 font-semibold text-xs md:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-70 whitespace-nowrap flex-shrink-0"
             style={{
-              borderColor: currentPage === 1 ? '#ccc' : MAROON,
-              color: currentPage === 1 ? '#999' : MAROON,
+              borderColor: currentPage === 1 ? "#ccc" : MAROON,
+              color: currentPage === 1 ? "#999" : MAROON,
             }}
           >
             <MdChevronLeft className="text-xs md:text-base" /> Previous
@@ -178,20 +334,23 @@ export default function OrderHistory({ onTrackOrder }) {
 
           <div className="flex items-center gap-1 md:gap-2 whitespace-nowrap">
             <span className="text-xs md:text-sm text-gray-600">
-              Page <strong>{currentPage}</strong>/{pagination?.total ? Math.ceil(pagination.total / PAGE_SIZE) : '?'}
+              Page <strong>{currentPage}</strong>/
+              {pagination?.total
+                ? Math.ceil(pagination.total / PAGE_SIZE)
+                : "?"}
             </span>
             <span className="text-xs text-gray-500">
-              {pagination ? `(${pagination.count}/${pagination.total})` : ''}
+              {pagination ? `(${pagination.count}/${pagination.total})` : ""}
             </span>
           </div>
 
           <button
-            onClick={() => setCurrentPage(prev => prev + 1)}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
             disabled={pagination && !pagination.hasMore}
             className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1 md:py-2 rounded-lg border-2 font-semibold text-xs md:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-70 whitespace-nowrap flex-shrink-0"
             style={{
-              borderColor: (pagination && !pagination.hasMore) ? '#ccc' : MAROON,
-              color: (pagination && !pagination.hasMore) ? '#999' : MAROON,
+              borderColor: pagination && !pagination.hasMore ? "#ccc" : MAROON,
+              color: pagination && !pagination.hasMore ? "#999" : MAROON,
             }}
           >
             Next <MdChevronRight className="text-xs md:text-base" />
@@ -199,8 +358,8 @@ export default function OrderHistory({ onTrackOrder }) {
         </div>
       )}
 
-      {orders && orders.length > 0 ? (
-        orders.map((order) => (
+      {filteredOrders && filteredOrders.length > 0 ? (
+        filteredOrders.map((order) => (
           <div
             key={order.id}
             className="bg-white border border-gray-200 rounded-lg overflow-hidden"
@@ -312,7 +471,9 @@ export default function OrderHistory({ onTrackOrder }) {
                   {getStatusMessage(order.status)}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {order.tracking_url ? "Track your package" : "Awaiting shipment"}
+                  {order.tracking_url
+                    ? "Track your package"
+                    : "Awaiting shipment"}
                 </p>
               </div>
             </div>
@@ -325,10 +486,16 @@ export default function OrderHistory({ onTrackOrder }) {
                     {/* Product Image */}
                     <div className="flex-shrink-0">
                       <img
-                        src={item.main_image || "https://via.placeholder.com/100x100?text=Product"}
+                        src={
+                          item.main_image ||
+                          "https://via.placeholder.com/100x100?text=Product"
+                        }
                         alt={item.title}
                         className="w-20 h-20 md:w-24 md:h-24 object-cover rounded bg-gray-100"
-                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100?text=Product")}
+                        onError={(e) =>
+                          (e.target.src =
+                            "https://via.placeholder.com/100x100?text=Product")
+                        }
                       />
                     </div>
 
@@ -349,7 +516,8 @@ export default function OrderHistory({ onTrackOrder }) {
                           there is nothing to say about a ring that has not
                           arrived. The order-level button below still exists and
                           reviews the first product. */}
-                      {order.status === "delivered" && order.items.length > 1 ? (
+                      {order.status === "delivered" &&
+                      order.items.length > 1 ? (
                         item.has_reviewed ? (
                           <p className="mt-2 text-xs text-gray-400">Reviewed</p>
                         ) : (
@@ -428,18 +596,32 @@ export default function OrderHistory({ onTrackOrder }) {
         <div className="text-center py-12">
           <MdLocalShipping className="mx-auto text-4xl text-gray-300 mb-4" />
           <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
-            No orders yet
+            {searchTerm && orders?.length > 0
+              ? "No orders found"
+              : "No orders yet"}
           </h3>
           <p className="text-sm md:text-base text-gray-600 mb-6">
-            Start shopping to see your orders here
+            {searchTerm && orders?.length > 0
+              ? "Try searching with different keywords"
+              : "Start shopping to see your orders here"}
           </p>
-          <a
-            href="/"
-            className="inline-block px-6 md:px-8 py-2.5 md:py-3 rounded-3xl font-semibold text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: MAROON }}
-          >
-            Continue Shopping
-          </a>
+          {searchTerm && orders?.length > 0 ? (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="inline-block px-6 md:px-8 py-2.5 md:py-3 rounded-3xl font-semibold text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: MAROON }}
+            >
+              Clear Search
+            </button>
+          ) : (
+            <a
+              href="/"
+              className="inline-block px-6 md:px-8 py-2.5 md:py-3 rounded-3xl font-semibold text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: MAROON }}
+            >
+              Continue Shopping
+            </a>
+          )}
         </div>
       )}
 
@@ -452,6 +634,15 @@ export default function OrderHistory({ onTrackOrder }) {
 
       {/* Review Modal */}
       <ReviewModal isOpen={isModalOpen} onSuccess={handleModalClose} />
+
+      {/* Filter Modal */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={handleApplyFilters}
+        availableStatuses={availableStatuses}
+        availableTimeRanges={availableTimeRanges}
+      />
     </div>
   );
 }

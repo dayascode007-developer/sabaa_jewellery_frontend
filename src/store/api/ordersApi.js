@@ -54,23 +54,25 @@ export const getOrderApi = async (orderId) => {
   return data.data;
 };
 
-export const getOrdersApi = async (limit = 10, offset = 0) => {
+export const getOrdersApi = async (limit = 10, offset = 0, search = "") => {
   const token = getToken();
 
   if (!token) {
     throw new Error("Authentication required. Please login first.");
   }
 
-  const response = await fetch(
-    `${API_URL}/api/customer/orders?limit=${limit}&offset=${offset}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  let url = `${API_URL}/api/customer/orders?limit=${limit}&offset=${offset}`;
+  if (search && search.trim()) {
+    url += `&search=${encodeURIComponent(search)}`;
+  }
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
     const error = await response.json();

@@ -88,11 +88,25 @@ export default function ShareMenu({ title, path }) {
   const copyLink = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+
     try {
-      await navigator.clipboard.writeText(url);
+      // Try modern Clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // Fallback: use old document.execCommand method
+        const textarea = document.createElement("textarea");
+        textarea.value = url;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
-    } catch {
+    } catch (error) {
       setCopied(false);
     }
   };

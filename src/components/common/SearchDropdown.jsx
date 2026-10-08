@@ -127,17 +127,6 @@ function SearchDropdown({ isOpen, onCategoryClick }) {
     return allProducts.slice(0, 8);
   }, [actualQuery, categoriesData]);
 
-  // Debug logging
-  useEffect(() => {
-    if (actualQuery) {
-      console.log("🔍 Search Query:", actualQuery);
-      console.log("📁 Categories loaded:", categoriesData?.length || 0);
-      console.log("🎁 Search Results from API:", searchResults.length);
-      console.log("📦 Matching Product Titles:", matchingProductTitles.length);
-      console.log("✅ Matching Categories:", matchingCategories.length);
-    }
-  }, [actualQuery, categoriesData, searchResults, matchingProductTitles, matchingCategories]);
-
   useEffect(() => {
     // Load categories if not already loaded
     if (!categoriesData || (Array.isArray(categoriesData) && categoriesData.length === 0)) {

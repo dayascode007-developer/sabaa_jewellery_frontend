@@ -791,7 +791,11 @@ export default function ProductDetail({ product }) {
             `}</style>
               <ShareMenu
                 title={product.title}
-                path={`/product/${product.id}`}
+                path={`/product/${product.id}-${product.title
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")
+                  .replace(/&/g, "")
+                  .replace(/--+/g, "-")}`}
               />
 
               <button

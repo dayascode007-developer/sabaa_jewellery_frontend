@@ -3,9 +3,9 @@ import { getOrdersApi } from "../api/ordersApi";
 
 export const fetchOrders = createAsyncThunk(
   "orders/fetchOrders",
-  async ({ limit = 10, offset = 0 } = {}, { rejectWithValue }) => {
+  async ({ limit = 10, offset = 0, search = "" } = {}, { rejectWithValue }) => {
     try {
-      const data = await getOrdersApi(limit, offset);
+      const data = await getOrdersApi(limit, offset, search);
       return data;
     } catch (error) {
       return rejectWithValue(error.message);
