@@ -352,8 +352,8 @@ const getSectionIcon = (sectionId) => {
 };
 
 function Accordion({ sections, description }) {
-  // Description starts open, matching the reference.
-  const [openId, setOpenId] = useState("description");
+  // All sections start closed
+  const [openId, setOpenId] = useState(null);
   const rows = [
     ...sections,
     { id: "description", title: "Description", body: description },
