@@ -227,6 +227,67 @@ const ITEM_MARKS = {
       <circle cx="16" cy="8" r="1" />
     </>
   ),
+  // A zodiac wheel for Raasi Rings
+  "raasi-rings": (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="5" r="1.2" />
+      <circle cx="17" cy="9" r="1.2" />
+      <circle cx="17" cy="15" r="1.2" />
+      <circle cx="12" cy="19" r="1.2" />
+      <circle cx="7" cy="15" r="1.2" />
+      <circle cx="7" cy="9" r="1.2" />
+    </>
+  ),
+  // Engraved text for Name Engrave Ring
+  "name-engrave-ring": (
+    <>
+      <path d="M5 10h14" />
+      <path d="M5 13h14" />
+      <path d="M5 16h10" />
+    </>
+  ),
+  // Temple for Hindu Rings
+  "hindu-rings": (
+    <>
+      <path d="M4 16h16v2H4z" />
+      <path d="M6 9l6-4 6 4" />
+      <line x1="7" y1="9" x2="7" y2="16" strokeWidth="0.8" />
+      <line x1="12" y1="9" x2="12" y2="16" strokeWidth="0.8" />
+      <line x1="17" y1="9" x2="17" y2="16" strokeWidth="0.8" />
+    </>
+  ),
+  // Cross for Christian Rings
+  "christian-rings": (
+    <>
+      <path d="M12 5v14" strokeWidth="1.2" />
+      <path d="M8 10h8" strokeWidth="1.2" />
+    </>
+  ),
+  // Crescent moon for Muslim Rings
+  "muslim-rings": (
+    <>
+      <path d="M8 12a4 4 0 0 0 8 0" />
+      <circle cx="15" cy="10" r="1" fill="currentColor" />
+    </>
+  ),
+  // Laser beam for Laser Photo Ring
+  "laser-photo-ring": (
+    <>
+      <rect x="4" y="7" width="16" height="10" rx="1" />
+      <circle cx="12" cy="12" r="2.5" />
+      <path d="M14.5 12l3 0" strokeWidth="1.2" />
+      <path d="M9.5 12l-3 0" strokeWidth="1.2" />
+    </>
+  ),
+  // Picture frame for Real Photo Ring
+  "real-photo-ring": (
+    <>
+      <rect x="4" y="6" width="16" height="12" rx="1.5" />
+      <circle cx="10" cy="10" r="1.5" />
+      <path d="M4 16l4-4 4 4 2-2 6 6" />
+    </>
+  ),
 };
 
 function ItemMark({ kind }) {
@@ -240,7 +301,7 @@ function ItemMark({ kind }) {
         strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
-        style={{ color: "#C9A227" }}
+        style={{ color: "#7B1E2B" }}
         aria-hidden="true"
       >
         {ITEM_MARKS[kind] ?? ITEM_MARKS.rings}
@@ -324,6 +385,8 @@ function MegaPanel({ menu, kind, onNavigate }) {
                             entry.label.toLowerCase().includes("god") ? "god-rings" :
                             entry.label.toLowerCase().includes("initial") ? "initial-rings" :
                             entry.label.toLowerCase().includes("photo") ? "photo-ring" :
+                            entry.label.toLowerCase().includes("raasi") ? "raasi-rings" :
+                            entry.label.toLowerCase().includes("engrave") ? "name-engrave-ring" :
                             kind
                           } />
                           {entry.label}
@@ -363,6 +426,10 @@ function MegaPanel({ menu, kind, onNavigate }) {
                               ? "initial-rings"
                               : g.heading.toLowerCase().includes("photo")
                               ? "photo-ring"
+                              : g.heading.toLowerCase().includes("raasi")
+                              ? "raasi-rings"
+                              : g.heading.toLowerCase().includes("engrave")
+                              ? "name-engrave-ring"
                               : kind
                           }
                         />
@@ -411,7 +478,14 @@ function MegaPanel({ menu, kind, onNavigate }) {
                         onClick={onNavigate}
                         className="flex items-center gap-2.5 rounded px-1 py-2 text-[13px] text-neutral-700 transition-colors hover:text-[#7B1E2B]"
                       >
-                        <ItemMark kind={kind} />
+                        <ItemMark kind={
+                          link.label.toLowerCase().includes("hindu") ? "hindu-rings" :
+                          link.label.toLowerCase().includes("christian") ? "christian-rings" :
+                          link.label.toLowerCase().includes("muslim") ? "muslim-rings" :
+                          link.label.toLowerCase().includes("laser") ? "laser-photo-ring" :
+                          link.label.toLowerCase().includes("real") ? "real-photo-ring" :
+                          kind
+                        } />
                         {link.label}
                       </Link>
                     </li>
