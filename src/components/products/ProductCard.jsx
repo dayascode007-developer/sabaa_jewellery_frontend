@@ -12,7 +12,6 @@ import {
 } from "@/store/slices/wishlistSlice";
 import SuccessModal from "@/components/common/SuccessModal";
 import AuthModal from "@/components/common/AuthModal";
-import { getCategoryLabel } from "@/constants/productData";
 
 const MAROON = "#7B1E2B";
 
@@ -194,12 +193,7 @@ export default function ProductCard({ product }) {
           like a poster; ranged left, the eye runs straight down the column of
           names and prices. */}
       <div className="flex flex-1 flex-col px-2 py-1.5 sm:px-4 sm:pt-3.5 sm:pb-4">
-        {/* Subcategory name, with category label fallback */}
-        <p className="text-[8px] tracking-[0.08em] text-neutral-500 uppercase leading-tight sm:text-[10px] sm:tracking-[0.12em]">
-          {product.subcategories?.[0]?.name || getCategoryLabel(product.category)}
-        </p>
-
-        <h3 className="font-[family-name:var(--font-heading)] mt-0.5 line-clamp-2 min-h-[1.6em] text-[12px] leading-tight text-neutral-800 transition-colors group-hover:text-[#7B1E2B] sm:mt-1.5 sm:min-h-[2.6em] sm:text-[15px] sm:leading-snug">
+        <h3 className="font-[family-name:var(--font-heading)] mt-0 line-clamp-2 min-h-[1.6em] text-[12px] leading-tight text-neutral-800 transition-colors group-hover:text-[#7B1E2B] sm:mt-0 sm:min-h-[2.6em] sm:text-[15px] sm:leading-snug">
           {product.title}
         </h3>
 

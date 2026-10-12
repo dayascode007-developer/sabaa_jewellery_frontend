@@ -705,6 +705,7 @@ export default function ProductDetail({ product }) {
           : {}),
         // Include customer photo for Real Photo Ring products
         ...(isRealPhotoRing && customerPhoto ? { customerPhoto } : {}),
+        ...(giftWrap ? { giftWrap: true } : {}),
       };
 
       // Call backend API via Redux thunk
@@ -1338,15 +1339,20 @@ export default function ProductDetail({ product }) {
             </div>
           </div>
 
-          <label className="mt-4 flex items-center gap-2 text-[12px] text-neutral-700">
-            <input
-              type="checkbox"
-              checked={giftWrap}
-              onChange={(e) => setGiftWrap(e.target.checked)}
-              className="h-3.5 w-3.5"
-            />
-            Gift Packaging (Free)
-          </label>
+          {(product.categoryName === "Rings" ||
+            product.subMainCategoryName
+              ?.toLowerCase()
+              .includes("ring")) && (
+            <label className="mt-4 flex items-center gap-2 text-[12px] text-neutral-700">
+              <input
+                type="checkbox"
+                checked={giftWrap}
+                onChange={(e) => setGiftWrap(e.target.checked)}
+                className="h-3.5 w-3.5"
+              />
+              Gift Packaging (Free)
+            </label>
+          )}
 
           <Accordion
             sections={product.sections}

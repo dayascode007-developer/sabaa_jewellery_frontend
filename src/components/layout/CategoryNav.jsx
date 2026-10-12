@@ -202,6 +202,23 @@ const ITEM_MARKS = {
       <circle cx="12" cy="8.5" r="0.8" />
     </>
   ),
+  // A temple for God Rings
+  "god-rings": (
+    <>
+      <path d="M4 18h16v2H4z" />
+      <path d="M6 10l6-5 6 5" />
+      <line x1="8" y1="10" x2="8" y2="18" />
+      <line x1="12" y1="10" x2="12" y2="18" />
+      <line x1="16" y1="10" x2="16" y2="18" />
+    </>
+  ),
+  // A stylized letter 'A' for Initial Rings
+  "initial-rings": (
+    <>
+      <path d="M8 18 L12 4 L16 18" strokeWidth="1.2" />
+      <path d="M9.5 12 L14.5 12" strokeWidth="1.2" />
+    </>
+  ),
 };
 
 function ItemMark({ kind }) {
@@ -325,7 +342,15 @@ function MegaPanel({ menu, kind, onNavigate }) {
                         className="flex w-full items-center gap-2.5 rounded px-1 py-2 text-left text-[13px] transition-colors hover:text-[#7B1E2B]"
                         style={{ color: open ? MAROON : "#404040" }}
                       >
-                        <ItemMark kind={kind} />
+                        <ItemMark
+                          kind={
+                            g.heading.toLowerCase().includes("god")
+                              ? "god-rings"
+                              : g.heading.toLowerCase().includes("initial")
+                              ? "initial-rings"
+                              : kind
+                          }
+                        />
                         {/* No flex-1 on the label: that pushed the chevron out
                             to the far edge of the column, away from the words
                             it belongs to. */}
