@@ -53,7 +53,9 @@ import heroBanner from "@/assets/banner/heroBanner.jpg.webp";
 // Square (1024x1024) phone cut of the same promo artwork.
 import heroBannerMobile from "@/assets/banner/mobile-hero banner.webp";
 
-import banner from "@/assets/banner/banner.webp";
+// Replaces the previous banner.webp for slide 1 — same Vinayagar artwork,
+// new version supplied Oct 2026.
+import banner from "@/assets/banner/vinayagar-banner.webp";
 import banner1 from "@/assets/banner/banner1.jpg.webp";
 import banner3 from "@/assets/banner/banner3.jpg.webp";
 import banner4 from "@/assets/banner/banner4.jpg.webp";
