@@ -219,6 +219,14 @@ const ITEM_MARKS = {
       <path d="M9.5 12 L14.5 12" strokeWidth="1.2" />
     </>
   ),
+  // A camera for Photo Ring
+  "photo-ring": (
+    <>
+      <rect x="4" y="6" width="16" height="12" rx="1.5" />
+      <circle cx="12" cy="12" r="3.5" />
+      <circle cx="16" cy="8" r="1" />
+    </>
+  ),
 };
 
 function ItemMark({ kind }) {
@@ -312,7 +320,12 @@ function MegaPanel({ menu, kind, onNavigate }) {
                           onMouseEnter={scheduleClose}
                           className="flex items-center gap-2.5 rounded px-1 py-2 text-[13px] text-neutral-700 transition-colors hover:text-[#7B1E2B]"
                         >
-                          <ItemMark kind={kind} />
+                          <ItemMark kind={
+                            entry.label.toLowerCase().includes("god") ? "god-rings" :
+                            entry.label.toLowerCase().includes("initial") ? "initial-rings" :
+                            entry.label.toLowerCase().includes("photo") ? "photo-ring" :
+                            kind
+                          } />
                           {entry.label}
                         </Link>
                       </li>
@@ -348,6 +361,8 @@ function MegaPanel({ menu, kind, onNavigate }) {
                               ? "god-rings"
                               : g.heading.toLowerCase().includes("initial")
                               ? "initial-rings"
+                              : g.heading.toLowerCase().includes("photo")
+                              ? "photo-ring"
                               : kind
                           }
                         />
