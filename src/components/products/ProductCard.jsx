@@ -57,6 +57,53 @@ export default function ProductCard({ product }) {
 
   useEffect(() => setMounted(true), []);
 
+  // Staggered reveal: each card fades and lifts into place the first time it
+  // scrolls into view, offset slightly from its neighbours so a row arrives as
+  // a ripple rather than all at once.
+  //
+  // The delay comes from the card's position within its own grid, wrapped every
+  // four, so the stagger stays under a quarter second no matter how far down
+  // the page a card sits. A plain running index would leave card fifty waiting
+  // three seconds after it had already been scrolled past.
+  const cardRef = useRef(null);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+
+    // Browsers without IntersectionObserver must not be left looking at an
+    // invisible grid. Scheduled rather than called straight here, so this never
+    // sets state synchronously inside the effect.
+    if (typeof IntersectionObserver === "undefined") {
+      const id = requestAnimationFrame(() => setRevealed(true));
+      return () => cancelAnimationFrame(id);
+    }
+
+    // Written to the node rather than held in state: the delay only affects
+    // styling, so re-rendering every card just to store a number is wasted
+    // work. Wrapped every four so the stagger stays under a quarter second
+    // however far down the page a card sits — a plain running index would
+    // leave card fifty waiting three seconds after it had been scrolled past.
+    const siblings = el.parentElement ? Array.from(el.parentElement.children) : [];
+    el.style.transitionDelay = `${(siblings.indexOf(el) % 4) * 70}ms`;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setRevealed(true);
+        // Once revealed it stays revealed; scrolling back up must not replay it.
+        observer.disconnect();
+      },
+      // The negative margin holds the reveal until the card is properly in
+      // view, rather than firing while its first pixel is still off-screen.
+      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   // Show modal when item is added to wishlist
   useEffect(() => {
     if (isAddingToWishlist.current && wishlisted) {
@@ -125,7 +172,15 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-neutral-200/80 bg-white transition-shadow duration-300 hover:shadow-[0_6px_24px_rgba(0,0,0,0.09)]">
+    <article
+      ref={cardRef}
+      // motion-reduce keeps the card fully visible for anyone who has asked
+      // their system for less movement — a long grid of sliding cards is
+      // genuinely unpleasant for them.
+      className={`group relative flex flex-col overflow-hidden rounded-xl border border-neutral-200/80 bg-white transition-[opacity,transform,box-shadow] duration-500 ease-out hover:shadow-[0_6px_24px_rgba(0,0,0,0.09)] motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${
+        revealed ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+      }`}
+    >
       {/* Stretched link: covers the whole card so anywhere is clickable, without
           wrapping the markup — nesting a link around some of the text but not
           the rest produces invalid JSX. Controls sit above it on higher z. */}
@@ -147,7 +202,7 @@ export default function ProductCard({ product }) {
             <img
               src={product.image}
               alt={product.title}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${revealed ? "scale-100" : "scale-75"} motion-reduce:scale-100`}
             />
           ) : (
             <Image
@@ -155,7 +210,7 @@ export default function ProductCard({ product }) {
               alt={product.title}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className={`object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${revealed ? "scale-100" : "scale-75"} motion-reduce:scale-100`}
             />
           )
         ) : (

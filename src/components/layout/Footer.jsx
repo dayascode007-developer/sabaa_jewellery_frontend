@@ -271,34 +271,6 @@ export default function Footer() {
                     {info.email}
                   </a>
                 </address>
-
-                <span className="mt-4 block h-px w-40 bg-white/25" />
-
-                <div className="mt-4 flex items-center gap-6 text-white">
-                  <a
-                    href={`https://wa.me/${info.whatsapp}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="WhatsApp"
-                    className="transition-opacity hover:opacity-70"
-                  >
-                    <Icon path={GLYPHS.whatsapp} filled className="h-6 w-6" />
-                  </a>
-                  <a
-                    href={`mailto:${info.email}`}
-                    aria-label="Email"
-                    className="transition-opacity hover:opacity-70"
-                  >
-                    <Icon path={GLYPHS.mail} className="h-6 w-6" />
-                  </a>
-                  <a
-                    href="#"
-                    aria-label="Chat"
-                    className="transition-opacity hover:opacity-70"
-                  >
-                    <Icon path={GLYPHS.chat} className="h-6 w-6" />
-                  </a>
-                </div>
               </div>
 
               {/* Contact + map */}

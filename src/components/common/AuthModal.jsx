@@ -40,7 +40,7 @@ export default function AuthModal({ open, initialView = "login", onClose }) {
         let userMessage = "Login failed";
 
         if (errorMessage?.includes("not found") || errorMessage?.includes("404")) {
-          userMessage = "Please enter a valid email or phone number and sign up first";
+          userMessage = "Please enter a valid phone number and sign up first";
         } else if (errorMessage?.includes("invalid") || errorMessage?.includes("Invalid")) {
           userMessage = "Please enter a valid email or phone number";
         } else if (errorMessage?.includes("network") || errorMessage?.includes("Network")) {
