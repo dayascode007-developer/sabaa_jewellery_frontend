@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
+
 import {
   selectCartItems,
   selectCartCount,
@@ -150,26 +151,16 @@ function CartLine({ item, selected, onToggle }) {
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <path d="M4 7h16M9.5 7V5h5v2M6.5 7l.8 12.2h9.4L17.5 7" />
+              <path d="m7 7 10 10M17 7 7 17" />
             </svg>
           </button>
         </div>
 
-        <p className="mt-1 text-[12px] text-neutral-500">{meta}</p>
-        {item.code ? (
-          <p className="text-[12px] text-neutral-400">SKU: {item.code}</p>
-        ) : null}
+        {meta && <p className="mt-1 text-[12px] text-neutral-500">{meta}</p>}
 
-        <div className="mt-auto flex flex-col-reverse md:flex-row md:items-end md:justify-between gap-3 pt-3">
-          <div className="flex flex-col">
-            <Stepper item={item} />
-            {item.limit_purchases && (
-              <p className="mt-1 text-[11px] text-neutral-600">
-                * Maximum allowed qty 1
-              </p>
-            )}
-          </div>
-          <span className="font-semibold text-neutral-900 flex-shrink-0 whitespace-nowrap md:text-right" style={{fontSize: 'clamp(14px, 4vw, 18px)'}}>
+        <div className="mt-3 flex items-center justify-between">
+          <Stepper item={item} />
+          <span className="text-[14px] font-semibold text-neutral-900">
             {rupees(item.price * item.quantity)}
           </span>
         </div>
@@ -252,9 +243,11 @@ export default function Cart() {
   // Confirmation modal for clearing cart
   if (showClearConfirm) {
     return (
-      <main className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-        <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
-          <h2 className="text-lg font-semibold text-neutral-900">Clear Cart?</h2>
+      <main className="mx-auto w-full max-w-[1400px] px-4 py-16 text-center sm:px-6">
+        <div className="mx-auto max-w-sm">
+          <h2 className="font-[family-name:var(--font-heading)] text-[24px]" style={{ color: MAROON }}>
+            Clear cart?
+          </h2>
           <p className="mt-2 text-sm text-neutral-600">
             This will remove all items from your cart. This action cannot be undone.
           </p>
@@ -337,59 +330,25 @@ export default function Cart() {
           style={{ color: MAROON }}
         >
           My Cart{" "}
-          <span className="text-[16px] font-normal text-neutral-500">
-            ({totalCount} {totalCount === 1 ? "Item" : "Items"})
+          <span className="text-[18px] font-normal text-neutral-600">
+            ({totalCount} {totalCount === 1 ? "item" : "items"})
           </span>
         </h1>
 
-        <div className="flex items-center gap-5 text-[13px]">
-          <Link
-            href="/category/all-jewellery"
-            className="flex items-center gap-1 text-neutral-600 transition-colors hover:text-neutral-900"
-          >
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M15 5l-7 7 7 7" />
-            </svg>
-            Continue Shopping
-          </Link>
-
+        {items.length > 0 && (
           <button
             type="button"
             onClick={() => setShowClearConfirm(true)}
-            className="flex items-center gap-1 transition-opacity hover:opacity-70"
+            className="text-[13px] font-medium transition-opacity hover:opacity-70"
             style={{ color: MAROON }}
           >
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 7h16M9.5 7V5h5v2M6.5 7l.8 12.2h9.4L17.5 7" />
-            </svg>
-            Clear Cart
+            Clear cart
           </button>
-        </div>
+        )}
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_340px]">
-        {/* Lines */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3">
-            <label className="flex cursor-pointer items-center gap-2.5 text-[14px] font-medium text-neutral-800">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                // Some ticked but not all — shown as a dash rather than a tick.
-                ref={(el) => {
-                  if (el) el.indeterminate = !allSelected && selectedItems.length > 0;
-                }}
-                onChange={toggleAll}
-                className="h-[18px] w-[18px] cursor-pointer accent-[#7B1E2B]"
-              />
-              Select All
-            </label>
-
-            <span className="text-[13px] text-neutral-500">
-              {selectedItems.length} of {items.length} selected
-            </span>
-          </div>
-
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-3">
           {items.map((item) => (
             <CartLine
               key={item.id}
@@ -400,18 +359,45 @@ export default function Cart() {
           ))}
         </div>
 
-        {/* Coupon + summary */}
-        <div className="space-y-5">
-          <div className="rounded-lg border border-neutral-200 bg-white p-4">
-            <p className="flex items-center gap-2.5 text-[14px] font-medium text-neutral-800">
+        {/* Order Summary */}
+        <aside className="rounded-lg border border-neutral-200 bg-white p-4 sm:p-6 h-fit">
+          <h2
+            className="font-[family-name:var(--font-heading)] text-[18px] font-medium"
+            style={{ color: MAROON }}
+          >
+            Order Summary
+          </h2>
+
+          <div className="mt-6 space-y-3">
+            <SummaryRow label="Subtotal" value={rupees(subtotal)} />
+            {discount > 0 && <SummaryRow label="Discount" value={`-${rupees(discount)}`} accent={MAROON} />}
+            <SummaryRow label="Shipping" value={rupees(orderSummary.shipping)} />
+            <div className="border-t border-neutral-200 pt-3">
+              <SummaryRow label="Total" value={rupees(orderSummary.total)} accent={MAROON} />
+            </div>
+          </div>
+
+          <Link
+            href="/checkout"
+            className={`mt-6 block w-full rounded-md py-3 text-center text-[15px] font-semibold text-white transition-opacity hover:opacity-90 ${
+              selectedItems.length === 0 ? "cursor-not-allowed opacity-50" : ""
+            }`}
+            style={{
+              backgroundColor: MAROON,
+              pointerEvents: selectedItems.length === 0 ? "none" : "auto",
+            }}
+          >
+            {selectedItems.length === 0 ? "Select items to checkout" : "Proceed to Checkout"}
+          </Link>
+
+          {/* Coupon section */}
+          <div className="mt-6 border-t border-neutral-200 pt-4">
+            <p className="flex items-center gap-2 text-[13px] text-neutral-600">
               <span
-                className="flex h-9 w-9 items-center justify-center rounded"
-                style={{ backgroundColor: "#FDF0F2", color: MAROON }}
+                className="flex h-5 w-5 items-center justify-center rounded text-[10px]"
+                style={{ backgroundColor: MAROON, color: "white" }}
               >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M3.5 8.5V6.5h17v2a2 2 0 0 0 0 7v2h-17v-2a2 2 0 0 0 0-7Z" />
-                  <path d="M9.5 9.5l5 5M9.8 9.8h.01M14.2 14.2h.01" />
-                </svg>
+                🎁
               </span>
               Have a Coupon?
             </p>
@@ -458,71 +444,7 @@ export default function Cart() {
               </p>
             )}
           </div>
-
-          <div className="rounded-lg border border-neutral-200 bg-white p-4">
-            <h2
-              className="font-[family-name:var(--font-heading)] text-[20px] leading-none"
-              style={{ color: MAROON }}
-            >
-              Order Summary
-            </h2>
-
-            <div className="mt-4 space-y-2.5 border-b border-neutral-200 pb-4">
-              <SummaryRow label={`Items (${count})`} value={rupees(subtotal)} />
-              <SummaryRow label="Subtotal" value={rupees(subtotal)} />
-              {discount > 0 && (
-                <SummaryRow
-                  label={`Discount (${appliedCoupon.code})`}
-                  value={`−${rupees(discount)}`}
-                  accent="#1E7A45"
-                />
-              )}
-            </div>
-
-            <div className="mt-4 flex items-baseline justify-between gap-4">
-              <span
-                className="font-[family-name:var(--font-heading)] text-[17px]"
-                style={{ color: MAROON }}
-              >
-                Grand Total
-              </span>
-              <span className="text-[20px] font-semibold text-neutral-900">
-                {rupees(orderSummary.grandTotal)}
-              </span>
-            </div>
-
-            {/* Muted with nothing ticked — there is nothing to check out, and
-                the button itself says so rather than failing on click.
-                A Link when it is usable, a disabled button when it is not:
-                an <a> cannot be disabled. */}
-            {selectedItems.length ? (
-              <Link
-                href="/checkout"
-                className="mt-4 block w-full rounded-md py-3 text-center text-[15px] font-medium text-white transition-opacity hover:opacity-90"
-                style={{ backgroundColor: MAROON }}
-              >
-                Proceed to Payment ({selectedItems.length})
-              </Link>
-            ) : (
-              <button
-                type="button"
-                disabled
-                className="mt-4 w-full cursor-not-allowed rounded-md py-3 text-[15px] font-medium text-white"
-                style={{ backgroundColor: "#CFA9B0" }}
-              >
-                Select items to order
-              </button>
-            )}
-
-            <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[12px] text-neutral-500">
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M12 3.5 19 6v6c0 4.2-2.9 7.5-7 8.5-4.1-1-7-4.3-7-8.5V6l7-2.5Z" />
-                <path d="M9.2 12.2 11.4 14.4 15.7 10" />
-              </svg>
-              100% Secure Checkout
-            </p>
-          </div>
-        </div>
+        </aside>
       </div>
     </main>
   );

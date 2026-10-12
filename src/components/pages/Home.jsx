@@ -27,10 +27,17 @@ export default function Home() {
       <SiteHeader />
 
       <main>
-        {/* The "Customize Your Perfect Masterpiece / Shop by Categories"
-            heading used to sit here. Removed — the category row now opens the
-            page directly. */}
-        <div className="pt-6" />
+        {/* "Customize Your Perfect Masterpiece / Shop by Categories" - Desktop only */}
+        <div className="hidden lg:block bg-[#FDF0F2] py-8">
+          <div className="mx-auto max-w-[1400px] px-4 sm:px-6 text-center">
+            <h2 className="font-heading text-[32px]  leading-tight text-[#7B1E2B]">
+              Customize your Perfect Masterpiece
+            </h2>
+            <p className="mt-2 text-[16px] text-[#7B1E2B]">
+              Shop by CATEGORIES
+            </p>
+          </div>
+        </div>
 
         <ShopByCategories />
 

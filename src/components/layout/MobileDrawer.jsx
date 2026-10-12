@@ -6,6 +6,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { NAV_ITEMS } from "@/constants/homeData";
 import { logout } from "@/store/slices/authSlice";
+import { clearWishlist } from "@/store/slices/wishlistSlice";
+import { clearCartLocal } from "@/store/slices/cartSlice";
 import { fetchCategories, selectNavItems, selectCategoriesLoading } from "@/store/slices/categoriesSlice";
 import { MobileDrawerShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import { AiOutlineLogout } from "react-icons/ai";
@@ -219,6 +221,8 @@ export default function MobileDrawer({ open, onClose }) {
   const handleConfirmLogout = () => {
     setShowLogoutModal(false);
     dispatch(logout(token));
+    dispatch(clearWishlist());
+    dispatch(clearCartLocal());
     onClose();
     router.push("/");
   };

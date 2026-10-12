@@ -9,6 +9,8 @@ import { PiNotepad, PiShoppingCartLight } from "react-icons/pi";
 import { AiOutlineLogout } from "react-icons/ai";
 import { MdArrowBack } from "react-icons/md";
 import { logout, initializeAuth } from "@/store/slices/authSlice";
+import { clearWishlist } from "@/store/slices/wishlistSlice";
+import { clearCartLocal } from "@/store/slices/cartSlice";
 import {
   fetchOrderTracking,
   selectTracking,
@@ -74,6 +76,8 @@ export default function AccountDashboard() {
   const handleConfirmLogout = () => {
     setShowLogoutModal(false);
     dispatch(logout(token));
+    dispatch(clearWishlist());
+    dispatch(clearCartLocal());
     router.push("/");
   };
 

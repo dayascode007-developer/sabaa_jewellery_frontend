@@ -43,6 +43,7 @@ export const addToCartApi = async (cartItem) => {
     if (cartItem.symbolId) formData.append("symbolId", cartItem.symbolId);
     if (cartItem.symbolSide) formData.append("symbolSide", cartItem.symbolSide);
     if (cartItem.colorId) formData.append("colorId", cartItem.colorId);
+    if (cartItem.giftWrap) formData.append("giftWrap", cartItem.giftWrap);
     formData.append("customer_photo", cartItem.customerPhoto);
     body = formData;
   } else {
