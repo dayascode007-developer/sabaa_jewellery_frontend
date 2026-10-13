@@ -54,7 +54,7 @@ export default function TrackOrder({ trackingData, loading = false, error = null
   }
 
   // Use existing endpoint data structure with Shiprocket integration
-  const { purchase_id, status_label, timeline = [], shipment = {}, address = {}, items = [], total_amount, estimated_delivery, shiprocket_tracking } = trackingData;
+  const { purchase_id, status, status_label, timeline = [], shipment = {}, address = {}, items = [], total_amount, estimated_delivery, shiprocket_tracking } = trackingData;
 
   // Merge Shiprocket real-time events with admin timeline
   let mergedTimeline = [...timeline];
@@ -81,8 +81,11 @@ export default function TrackOrder({ trackingData, loading = false, error = null
     });
   }
 
-  // Keep only 4 main statuses for progress bar, but show all events in mobile timeline
-  const mainStatuses = ["pending", "shipped", "out_for_delivery", "delivered"];
+  // Keep only main statuses for progress bar. Include "delayed" only if current status is delayed
+  const isCurrentStatusDelayed = status === "delayed";
+  const mainStatuses = isCurrentStatusDelayed
+    ? ["pending", "shipped", "out_for_delivery", "delayed", "delivered"]
+    : ["pending", "shipped", "out_for_delivery", "delivered"];
 
   const filteredTimeline = mergedTimeline
     .filter((step) => mainStatuses.includes(step.status))
@@ -147,12 +150,15 @@ export default function TrackOrder({ trackingData, loading = false, error = null
                 <div className="flex h-full">
                   {filteredTimeline.map((step, index) => {
                     const isCompleted = step.completed;
+                    const isCurrent = step.current;
+                    const isCurrentDelayed = currentStep?.status === "delayed";
+                    const lineColor = isCurrentDelayed ? "#f97316" : GREEN; // Orange if current is delayed
                     return (
                       <div
                         key={index}
                         className="flex-1"
                         style={{
-                          backgroundColor: isCompleted ? GREEN : "#d1d5db",
+                          backgroundColor: isCompleted || isCurrent ? lineColor : "#d1d5db",
                         }}
                       />
                     );
@@ -165,6 +171,9 @@ export default function TrackOrder({ trackingData, loading = false, error = null
                 const Icon = ORDER_STATUSES[index]?.icon || MdCheckCircle;
                 const isCompleted = step.completed;
                 const isCurrent = step.current;
+                const isCurrentDelayed = currentStep?.status === "delayed";
+                const isDelayed = step.status === "delayed" && (isCompleted || isCurrent);
+                const statusColor = isCurrentDelayed ? "#f97316" : GREEN; // Orange if any step is delayed
 
                 return (
                   <div
@@ -181,7 +190,7 @@ export default function TrackOrder({ trackingData, loading = false, error = null
                       }`}
                       style={{
                         backgroundColor:
-                          isCompleted || isCurrent ? GREEN : "#e5e7eb",
+                          isCompleted || isCurrent ? statusColor : "#e5e7eb",
                         borderColor: "white",
                       }}
                     >
@@ -226,13 +235,13 @@ export default function TrackOrder({ trackingData, loading = false, error = null
                   strokeWidth="2"
                 />
 
-                {/* Green line overlay - shows progress through current status */}
+                {/* Green/Orange line overlay - shows progress through current status */}
                 <line
                   x1="2"
                   y1="0"
                   x2="2"
                   y2={`${progressPercent}%`}
-                  stroke={GREEN}
+                  stroke={currentStep?.status === "delayed" ? "#f97316" : GREEN}
                   strokeWidth="2"
                 />
               </svg>
@@ -244,6 +253,8 @@ export default function TrackOrder({ trackingData, loading = false, error = null
                   const isCompleted = step.completed;
                   const isCurrent = step.current;
                   const isShiprocket = step.source === 'shiprocket';
+                  const isCurrentDelayed = currentStep?.status === "delayed";
+                  const statusColor = isCurrentDelayed ? "#f97316" : GREEN; // Orange if any step is delayed
 
                   return (
                     <div
@@ -258,7 +269,7 @@ export default function TrackOrder({ trackingData, loading = false, error = null
                         }`}
                         style={{
                           backgroundColor:
-                            isCompleted || isCurrent ? GREEN : "#e5e7eb",
+                            isCompleted || isCurrent ? statusColor : "#e5e7eb",
                           borderColor: "white",
                         }}
                       >
@@ -304,6 +315,25 @@ export default function TrackOrder({ trackingData, loading = false, error = null
             </div>
           </div>
         </div>
+
+        {/* Delivery Delayed Warning - Only show if status is delayed */}
+        {status_label?.toLowerCase() === "delivery delayed" && (
+          <div className="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4 md:p-6 mb-6 md:mb-8 flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <svg className="w-6 h-6 md:w-8 md:h-8 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-base md:text-lg font-bold text-orange-800 mb-2">
+                Delivery Delayed
+              </h4>
+              <p className="text-sm md:text-base text-orange-700">
+                We're sorry! Your order was not delivered on the expected date. Our delivery team is working to deliver it as soon as possible.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Info Sections Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">

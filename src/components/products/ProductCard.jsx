@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { SlHandbag } from "react-icons/sl";
+import { BiSolidOffer } from "react-icons/bi";
+
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import {
   addToWishlist,
@@ -177,7 +179,7 @@ export default function ProductCard({ product }) {
       // motion-reduce keeps the card fully visible for anyone who has asked
       // their system for less movement — a long grid of sliding cards is
       // genuinely unpleasant for them.
-      className={`group relative flex flex-col overflow-hidden rounded-xl border border-neutral-200/80 bg-white transition-[opacity,transform,box-shadow] duration-500 ease-out hover:shadow-[0_6px_24px_rgba(0,0,0,0.09)] motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${
+      className={`group relative flex flex-col overflow-hidden rounded-lg border border-neutral-200/80 bg-white transition-[opacity,transform,box-shadow] duration-500 ease-out hover:shadow-[0_6px_24px_rgba(0,0,0,0.09)] motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${
         revealed ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
       }`}
     >
@@ -253,33 +255,35 @@ export default function ProductCard({ product }) {
           {product.title}
         </h3>
 
-        <p className="mt-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0 sm:mt-2 sm:gap-x-2 sm:gap-y-0.5">
-          <span className="text-[17px] font-semibold text-neutral-900">
-            {rupees(product.price)}
-          </span>
-          {product.mrp && product.mrp > product.price ? (
-            <>
-              <span className="text-[13px] text-neutral-400 line-through">
-                {rupees(product.mrp)}
-              </span>
-              {/* Premium discount text with animation */}
-              <span
-                className="text-[10px] sm:text-[12px] font-bold inline-flex items-center gap-0.5"
-                style={{
-                  backgroundImage: "linear-gradient(90deg, #DD9836, #FFB347, #DD9836)",
-                  backgroundSize: "200% 100%",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  animation: "shimmer 3s ease-in-out infinite"
-                }}
-              >
-                <span style={{ fontSize: "1em", lineHeight: "1", background: "none", WebkitTextFillColor: "#DD9836" }}>%</span>
-                {discount} off
-              </span>
-            </>
-          ) : null}
-        </p>
+        <div className="mt-1 sm:mt-2">
+          <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 sm:gap-x-2 sm:gap-y-0.5">
+            <span className="text-[17px] font-semibold text-neutral-900">
+              {rupees(product.price)}
+            </span>
+            {product.mrp && product.mrp > product.price ? (
+              <>
+                <span className="text-[13px] text-neutral-400 line-through">
+                  {rupees(product.mrp)}
+                </span>
+                {/* Premium discount text with animation */}
+                <span
+                  className="w-full sm:w-auto text-[10px] sm:text-[12px] font-bold inline-flex items-center gap-0.5"
+                  style={{
+                    backgroundImage: "linear-gradient(90deg, #DD9836, #FFB347, #DD9836)",
+                    backgroundSize: "200% 100%",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    animation: "shimmer 3s ease-in-out infinite"
+                  }}
+                >
+                  <BiSolidOffer className="h-3 w-3 sm:h-4 sm:w-4" style={{ color: "#DD9836" }} />
+                  {discount} off
+                </span>
+              </>
+            ) : null}
+          </p>
+        </div>
 
         {/* Mobile: always show button. Desktop: show only on hover. */}
         <div className="mt-auto h-8 w-full overflow-hidden transition-[height] duration-300 ease-out sm:h-11 md:h-0 md:group-hover:h-11 md:group-focus-within:h-11">

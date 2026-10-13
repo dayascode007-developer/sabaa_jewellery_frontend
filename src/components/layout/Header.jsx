@@ -101,7 +101,7 @@ function Logo() {
   );
 }
 
-export default function Header() {
+export default function Header({ hideSearchOnMobile = false }) {
   const dispatch = useDispatch();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -257,7 +257,7 @@ export default function Header() {
 
         {/* Search — full width on its own row until md, then inline */}
         <div
-          className="order-last w-full min-w-0 md:order-none md:mx-auto md:max-w-2xl relative"
+          className={`order-last w-full min-w-0 md:order-none md:mx-auto md:max-w-2xl relative ${hideSearchOnMobile ? 'hidden md:block' : ''}`}
           ref={searchContainerRef}
         >
           {/* Flat hairline pill, no drop shadow — in the reference the bar sits

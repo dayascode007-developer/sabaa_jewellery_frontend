@@ -24,7 +24,7 @@ if (process.env.NODE_ENV !== "production" && COLLAPSE_AT - EXPAND_AT <= ROW_HEIG
   );
 }
 
-export default function SiteHeader() {
+export default function SiteHeader({ hideSearchOnMobile = false }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function SiteHeader() {
         scrolled ? "shadow-[0_2px_12px_rgba(0,0,0,0.08)]" : ""
       }`}
     >
-      <Header />
+      <Header hideSearchOnMobile={hideSearchOnMobile} />
 
       {/* Collapsed by height rather than unmounted, so the mega-menu keeps its
           state and the transition has something to animate.
