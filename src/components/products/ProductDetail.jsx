@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
 import { TfiHandPointRight } from "react-icons/tfi";
 import { FaWhatsapp } from "react-icons/fa";
+import { IoBagHandleOutline } from "react-icons/io5";
+import { IoIosEye } from "react-icons/io";
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import { pixelTrack } from "@/lib/pixel";
 import {
@@ -219,14 +221,12 @@ function Gallery({ product }) {
         </div>
       </div>
 
-      {/* Trust badges under the gallery */}
-      <div className="mt-6 grid grid-cols-2 gap-4">
+      {/* Trust badges - desktop only */}
+      <div className="hidden md:mt-6 md:grid md:grid-cols-2 md:gap-4">
         {[
           {
             id: "delivery",
             label: "Delivery in 10 Days",
-            // Van with the wheels sitting clear of the body rather than cutting
-            // through it, and two speed lines behind carrying the "10 Days".
             icon: (
               <>
                 <rect x="2.4" y="7.4" width="9.6" height="8.5" rx="1" />
@@ -240,8 +240,6 @@ function Gallery({ product }) {
           {
             id: "safe",
             label: "Safe to Use",
-            // Narrower shield with a shorter tick sitting properly inside it —
-            // the old tick ran almost edge to edge.
             icon: (
               <>
                 <path d="M12 3.4 18.4 5.8v5.9c0 3.9-2.6 7-6.4 8-3.8-1-6.4-4.1-6.4-8V5.8L12 3.4Z" />
@@ -586,6 +584,7 @@ export default function ProductDetail({ product }) {
   const [wishlistSuccess, setWishlistSuccess] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null); // "addToCart" or "wishlist"
+  const similarProductsRef = useRef(null);
   const [showCancellationPolicy, setShowCancellationPolicy] = useState(false);
   // Portalled to <body>, which does not exist during the server render.
   const [mounted, setMounted] = useState(false);
@@ -763,6 +762,13 @@ export default function ProductDetail({ product }) {
         </div>
 
         <div>
+          <h1
+            className="mb-3 font-[family-name:var(--font-category)] text-[22px] leading-snug font-bold sm:text-[28px] lg:text-[36px]"
+            style={{ color: MAROON }}
+          >
+            {product.title}
+          </h1>
+
           {/* Top row — bestseller flag and quick actions */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             {product.bestseller ? (
@@ -835,12 +841,54 @@ export default function ProductDetail({ product }) {
             </span>
           </p>
 
-          <h1
-            className="mt-1 font-[family-name:var(--font-category)] text-[22px] leading-snug font-bold sm:text-[28px] lg:text-[36px]"
-            style={{ color: MAROON }}
-          >
-            {product.title}
-          </h1>
+          {/* Trust badges - mobile only */}
+          <div className="md:hidden mt-6 grid grid-cols-2 gap-4">
+            {[
+              {
+                id: "delivery",
+                label: "Delivery in 10 Days",
+                icon: (
+                  <>
+                    <rect x="2.4" y="7.4" width="9.6" height="8.5" rx="1" />
+                    <path d="M12 10.4h3.7l3.3 3.3v2.2H12z" />
+                    <circle cx="6.5" cy="17.7" r="1.6" />
+                    <circle cx="16.3" cy="17.7" r="1.6" />
+                    <path d="M0.6 9.8h1.2M0.6 13h1.2" />
+                  </>
+                ),
+              },
+              {
+                id: "safe",
+                label: "Safe to Use",
+                icon: (
+                  <>
+                    <path d="M12 3.4 18.4 5.8v5.9c0 3.9-2.6 7-6.4 8-3.8-1-6.4-4.1-6.4-8V5.8L12 3.4Z" />
+                    <path d="M9.4 11.8 11.3 13.7 14.8 10.2" />
+                  </>
+                ),
+              },
+            ].map((b) => (
+              <div
+                key={b.id}
+                className="flex flex-col items-center gap-1.5 text-center"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-7 w-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ color: MAROON }}
+                  aria-hidden="true"
+                >
+                  {b.icon}
+                </svg>
+                <span className="text-[12px] text-neutral-700">{b.label}</span>
+              </div>
+            ))}
+          </div>
 
           <div className="mt-2">
             <Stars rating={5} />
@@ -855,16 +903,22 @@ export default function ProductDetail({ product }) {
             </span>
             {product.mrp > product.price ? (
               <>
-                <span className="text-[14px] text-neutral-400 line-through">
+                <span
+                  className="text-[14px] line-through"
+                  style={{ color: "#C98BA3" }}
+                >
                   {rupees(product.mrp)}
                 </span>
-                <span className="text-[13px] text-neutral-600">
+                <span
+                  className="text-[13px] font-semibold"
+                  style={{ color: MAROON }}
+                >
                   ({discount}% OFF)
                 </span>
               </>
             ) : null}
           </div>
-          <p className="mt-0.5 text-[11px] text-neutral-500">
+          <p className="mt-0.5 text-[11px]" style={{ color: MAROON }}>
             MRP inclusive of all taxes
           </p>
 
@@ -1266,7 +1320,7 @@ export default function ProductDetail({ product }) {
                 type="button"
                 onClick={onAddToCart}
                 disabled={inCart}
-                className={`mt-4 w-full rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity flex items-center justify-center gap-2 ${
+                className={`mt-4 w-full rounded px-6 py-2.5 text-[13px] font-medium text-white transition-opacity flex items-center justify-center gap-2 hidden md:flex ${
                   inCart
                     ? "cursor-default opacity-75"
                     : "hover:opacity-90 cursor-pointer"
@@ -1340,9 +1394,7 @@ export default function ProductDetail({ product }) {
           </div>
 
           {(product.categoryName === "Rings" ||
-            product.subMainCategoryName
-              ?.toLowerCase()
-              .includes("ring")) && (
+            product.subMainCategoryName?.toLowerCase().includes("ring")) && (
             <label className="mt-4 flex items-center gap-2 text-[12px] text-neutral-700">
               <input
                 type="checkbox"
@@ -1366,7 +1418,9 @@ export default function ProductDetail({ product }) {
       <ReviewsSection productId={product.id} />
 
       {/* Similar Products Section */}
-      <SimilarProducts product={product} />
+      <div ref={similarProductsRef}>
+        <SimilarProducts product={product} />
+      </div>
 
       {/* Full width below the product grid — it needs the room, and it is the
         same on every product, so it reads as page content rather than as one
@@ -1420,6 +1474,84 @@ export default function ProductDetail({ product }) {
         isOpen={showCancellationPolicy}
         onClose={() => setShowCancellationPolicy(false)}
       />
+
+      {/* Mobile Sticky Add to Cart Bar */}
+      <div className="fixed bottom-16 left-0 right-0 z-40 md:hidden md:bottom-0">
+        <div className="mx-auto w-full max-w-[1400px] px-4 py-3 sm:px-6 flex gap-3">
+          {/* Similar Products Button - Left Side */}
+          <button
+            type="button"
+            onClick={() => {
+              similarProductsRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
+            className="flex-1 px-4 py-2.5 text-[13px] font-medium transition-opacity hover:opacity-70 cursor-pointer flex items-center justify-center gap-2 border-2 rounded-full relative z-10 bg-white"
+            style={{ color: MAROON, borderColor: MAROON }}
+            aria-label="View similar products"
+          >
+            <IoIosEye className="h-4 w-4" />
+            Similar Products
+          </button>
+
+          {/* Add to Cart Button - Right Side */}
+          <button
+            type="button"
+            onClick={onAddToCart}
+            disabled={inCart}
+            className={`flex-1 rounded-full px-6 py-2.5 text-[13px] font-medium text-white transition-opacity flex items-center justify-center gap-2 shadow-md ${
+              inCart
+                ? "cursor-default opacity-75"
+                : "hover:opacity-90 cursor-pointer"
+            }`}
+            style={{ backgroundColor: inCart ? "#999" : MAROON }}
+          >
+            {inCart ? (
+              <>
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M20 6L9 17l-5-5"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Added
+              </>
+            ) : (
+              <>
+                <IoBagHandleOutline className="h-4 w-4" />
+                Add To Cart
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Sticky WhatsApp Button - Right Side Mobile */}
+      <a
+        href={`https://wa.me/917871900355?text=Hi, I'm interested in ${product.title}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed right-0 bottom-40 z-40 md:hidden py-4 px-1 rounded-l-lg shadow-lg hover:shadow-xl transition-all"
+        style={{ backgroundColor: MAROON }}
+        aria-label="Chat with us on WhatsApp"
+      >
+        <div className="flex flex-col items-center gap-2">
+          <FaWhatsapp className="h-4 w-4 text-white" />
+        </div>
+      </a>
+
+      {/* Bottom padding on mobile to prevent content from hiding under sticky bar */}
+      <div className="h-20 md:h-0" />
     </div>
   );
 }

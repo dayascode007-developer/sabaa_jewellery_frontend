@@ -12,12 +12,17 @@ const INITIAL_COUNT = 4;
 function getYouTubeVideoId(url) {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube-nocookie\.com\/embed\/)([^&\n?#]+)/,
+    /(?:youtube\.com\/shorts\/)([^&\n?#]+)/,
   ];
   for (let pattern of patterns) {
     const match = url.match(pattern);
     if (match) return match[1];
   }
   return null;
+}
+
+function isYouTubeShorts(url) {
+  return /youtube\.com\/shorts\//.test(url);
 }
 
 function YouTubeMark({ className }) {
@@ -142,15 +147,45 @@ function VideoModal({ video, onClose }) {
         </div>
 
         {video.youtubeId ? (
-          <div className="aspect-video w-full">
-            <iframe
-              src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`}
-              title={video.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="h-full w-full border-0"
-            />
-          </div>
+          isYouTubeShorts(video.youtube_link) ? (
+            <div className="aspect-video w-full">
+              <a
+                href={video.youtube_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative w-full h-full flex items-center justify-center block"
+              >
+                {/* Thumbnail */}
+                <img
+                  src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
+                  alt={video.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
+
+                {/* Play button */}
+                <div className="relative flex items-center justify-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 group-hover:bg-red-700 transition-colors shadow-lg group-hover:shadow-xl">
+                    <svg viewBox="0 0 24 24" className="ml-1 h-8 w-8 fill-white" aria-hidden="true">
+                      <path d="M8 5.5v13l11-6.5-11-6.5Z" />
+                    </svg>
+                  </div>
+                </div>
+              </a>
+            </div>
+          ) : (
+            <div className="aspect-video w-full">
+              <iframe
+                src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`}
+                title={video.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="h-full w-full border-0"
+              />
+            </div>
+          )
         ) : (
           <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 px-6 text-center">
             <YouTubeMark className="h-6 w-9" />

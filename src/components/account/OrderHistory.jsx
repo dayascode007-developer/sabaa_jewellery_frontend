@@ -13,6 +13,8 @@ import {
   MdTune,
   MdClose,
 } from "react-icons/md";
+import { IoEyeSharp } from "react-icons/io5";
+import { TbShoppingCartShare } from "react-icons/tb";
 import { downloadOrderInvoice } from "@/utils/downloadInvoice";
 import { getOrderApi } from "@/store/api/ordersApi";
 import { fetchOrders } from "@/store/slices/ordersSlice";
@@ -43,7 +45,10 @@ export default function OrderHistory({ onTrackOrder }) {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [activeFilters, setActiveFilters] = useState({ statuses: [], times: [] });
+  const [activeFilters, setActiveFilters] = useState({
+    statuses: [],
+    times: [],
+  });
   const [allOrders, setAllOrders] = useState([]);
   // The ?review= value already acted on, so the modal is not reopened when the
   // orders list refetches. A ref, not state: nothing renders from it, and
@@ -89,7 +94,12 @@ export default function OrderHistory({ onTrackOrder }) {
       });
 
     // Add "Older" if there are orders before 2023
-    if (yearsSet.has(2022) || yearsSet.has(2021) || yearsSet.has(2020) || Array.from(yearsSet).some((y) => y < 2023)) {
+    if (
+      yearsSet.has(2022) ||
+      yearsSet.has(2021) ||
+      yearsSet.has(2020) ||
+      Array.from(yearsSet).some((y) => y < 2023)
+    ) {
       if (!availableRanges.find((r) => r.value === "older")) {
         availableRanges.push({ value: "older", label: "Older" });
       }
@@ -112,7 +122,9 @@ export default function OrderHistory({ onTrackOrder }) {
       if (activeFilters.times.length > 0) {
         const orderDate = new Date(order.created_at);
         const currentDate = new Date();
-        const thirtyDaysAgo = new Date(currentDate.setDate(currentDate.getDate() - 30));
+        const thirtyDaysAgo = new Date(
+          currentDate.setDate(currentDate.getDate() - 30)
+        );
         let matchesTime = false;
 
         for (const timeFilter of activeFilters.times) {
@@ -125,7 +137,10 @@ export default function OrderHistory({ onTrackOrder }) {
             break;
           }
           // Handle any year dynamically (2024, 2026, etc.)
-          if (!isNaN(Number(timeFilter)) && orderDate.getFullYear() === Number(timeFilter)) {
+          if (
+            !isNaN(Number(timeFilter)) &&
+            orderDate.getFullYear() === Number(timeFilter)
+          ) {
             matchesTime = true;
             break;
           }
@@ -281,41 +296,44 @@ export default function OrderHistory({ onTrackOrder }) {
     <div className="space-y-6">
       {/* Search Bar - Left Side Input, Right Side Filter Icon */}
       <div className="flex items-center justify-between">
-          <div className="relative max-w-md flex-1">
-            <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
-            <input
-              type="text"
-              placeholder="Search orders..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm md:text-base text-black"
-              style={{ "--tw-ring-color": MAROON }}
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                type="button"
-              >
-                <MdClose className="text-lg" />
-              </button>
-            )}
-          </div>
-
-          <button
-            onClick={() => setIsFilterModalOpen(true)}
-            className="relative flex items-center justify-center gap-1 md:gap-2 p-2 md:p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0 ml-2 md:ml-3"
-            title="Filter"
-          >
-            <MdTune className="text-gray-600 text-lg md:text-xl" />
-            <span className="text-sm md:text-base font-medium text-gray-600">Filters</span>
-            {(activeFilters.statuses.length > 0 || activeFilters.times.length > 0) && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {activeFilters.statuses.length + activeFilters.times.length}
-              </span>
-            )}
-          </button>
+        <div className="relative max-w-md flex-1">
+          <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+          <input
+            type="text"
+            placeholder="Search orders..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-10 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm md:text-base text-black"
+            style={{ "--tw-ring-color": MAROON }}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              type="button"
+            >
+              <MdClose className="text-lg" />
+            </button>
+          )}
         </div>
+
+        <button
+          onClick={() => setIsFilterModalOpen(true)}
+          className="relative flex items-center justify-center gap-1 md:gap-2 p-2 md:p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0 ml-2 md:ml-3"
+          title="Filter"
+        >
+          <MdTune className="text-gray-600 text-lg md:text-xl" />
+          <span className="text-sm md:text-base font-medium text-gray-600">
+            Filters
+          </span>
+          {(activeFilters.statuses.length > 0 ||
+            activeFilters.times.length > 0) && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+              {activeFilters.statuses.length + activeFilters.times.length}
+            </span>
+          )}
+        </button>
+      </div>
 
       {/* Pagination Controls - Top Right (Responsive) */}
       {filteredOrders && filteredOrders.length > 0 && (
@@ -541,25 +559,30 @@ export default function OrderHistory({ onTrackOrder }) {
 
             {/* Action Buttons */}
             <div className="px-4 md:px-6 py-4 md:py-5 border-t border-gray-200 flex flex-col sm:flex-row gap-2 md:gap-3">
-              {/* Track Package - Primary Button */}
+              {/* Track Package - Secondary Button */}
               <button
                 onClick={() => onTrackOrder && onTrackOrder(order)}
-                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-white text-xs md:text-sm transition-all hover:opacity-90 cursor-pointer"
-                style={{ backgroundColor: MAROON }}
-              >
-                Tracking Package
-              </button>
-
-              {/* View or Edit Order - Secondary Button */}
-              <button
-                onClick={() => handleViewDetails(order)}
-                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer"
+                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer flex items-center justify-center gap-1 md:gap-2"
                 style={{
                   borderColor: MAROON,
                   color: MAROON,
                 }}
               >
-                View order details
+                <TbShoppingCartShare className="text-xs md:text-sm" />
+                <span>Tracking Package</span>
+              </button>
+
+              {/* View or Edit Order - Secondary Button */}
+              <button
+                onClick={() => handleViewDetails(order)}
+                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer flex items-center justify-center gap-1 md:gap-2"
+                style={{
+                  borderColor: MAROON,
+                  color: MAROON,
+                }}
+              >
+                <IoEyeSharp className="text-xs md:text-sm" />
+                <span>View order details</span>
               </button>
 
               {/* Write Review - Secondary Button */}

@@ -289,10 +289,10 @@ export default function ProductCard({ product }) {
         <div className="mt-auto h-8 w-full overflow-hidden transition-[height] duration-300 ease-out sm:h-11 md:h-0 md:group-hover:h-11 md:group-focus-within:h-11">
           <Link
             href={`/product/${product.id}-${toSlug(product.title)}`}
-            className="relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded font-[family-name:var(--font-category)] text-[10px] font-medium transition-colors hover:bg-[#7B1E2B] hover:text-white sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px]"
+            className="relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded-full font-[family-name:var(--font-category)] text-[10px] font-medium transition-colors hover:bg-[#7B1E2B] hover:text-white sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px]"
             style={{ borderWidth: "1.5px", borderColor: MAROON, color: MAROON, backgroundColor: "transparent" }}
           >
-            <SlHandbag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <SlHandbag className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             Click Here
           </Link>
         </div>
