@@ -3,6 +3,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { MdDeleteOutline, MdFavoriteBorder } from "react-icons/md";
+import { SlHandbag } from "react-icons/sl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { WishlistCardShimmer } from "@/components/shimmer-loader/Shimmer-loader";
@@ -150,13 +151,6 @@ export default function Wishlist() {
 
                 {/* Product Details - ProductCard mobile spacing */}
                 <div className="flex flex-1 flex-col px-2 py-1.5 sm:px-4 sm:pt-3.5 sm:pb-4">
-                  {/* Category */}
-                  {item.category_name && (
-                    <p className="text-[8px] tracking-[0.08em] text-gray-500 uppercase leading-tight sm:text-[10px] sm:tracking-[0.12em]">
-                      {item.category_name}
-                    </p>
-                  )}
-
                   {/* Product Name */}
                   <h3
                     className="font-[family-name:var(--font-heading)] mt-0.5 line-clamp-2 min-h-[1.6em] text-[12px] leading-tight text-gray-900 transition-colors cursor-pointer hover:text-[#7B1E2B] sm:mt-1.5 sm:min-h-[2.6em] sm:text-[15px] sm:leading-snug"
@@ -211,9 +205,10 @@ export default function Wishlist() {
                   {/* Click Here Link */}
                   <Link
                     href={`/product/${item.product_id}-${toSlug(item.title)}`}
-                    className="mt-2 sm:mt-3 w-full py-1 sm:py-2.5 text-[10px] sm:text-[12px] text-white font-semibold rounded transition-all hover:opacity-90 block text-center"
-                    style={{ backgroundColor: MAROON }}
+                    className="mt-2 sm:mt-3 w-full py-1 sm:py-2.5 text-[10px] sm:text-[12px] font-semibold rounded transition-colors hover:bg-[#430121] hover:text-white flex items-center justify-center gap-1.5"
+                    style={{ borderWidth: "1.5px", borderColor: MAROON, color: MAROON, backgroundColor: "transparent" }}
                   >
+                    <SlHandbag className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     Click Here
                   </Link>
                 </div>

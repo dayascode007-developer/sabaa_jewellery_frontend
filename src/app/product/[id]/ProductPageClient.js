@@ -243,18 +243,20 @@ export default function ProductPageClient() {
 
   return (
     <div className="min-h-screen w-full bg-[#FFF8F0] pb-16 lg:pb-0">
-      <SiteHeader />
+      <SiteHeader hideSearchOnMobile={true} />
 
-      <Breadcrumb
-        items={[
-          { label: "Home", href: "/" },
-          {
-            label: product.categoryLabel,
-            href: categoryHref,
-          },
-          { label: product.title },
-        ]}
-      />
+      <div className="hidden md:block">
+        <Breadcrumb
+          items={[
+            { label: "Home", href: "/" },
+            {
+              label: product.categoryLabel,
+              href: categoryHref,
+            },
+            { label: product.title },
+          ]}
+        />
+      </div>
 
       <main>
         <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">

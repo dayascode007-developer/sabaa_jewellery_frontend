@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
+import { IoShieldCheckmarkOutline } from "react-icons/io5";
 
 import {
   selectCartItems,
@@ -361,37 +362,8 @@ export default function Cart() {
 
         {/* Order Summary */}
         <aside className="rounded-lg border border-neutral-200 bg-white p-4 sm:p-6 h-fit">
-          <h2
-            className="font-[family-name:var(--font-heading)] text-[18px] font-medium"
-            style={{ color: MAROON }}
-          >
-            Order Summary
-          </h2>
-
-          <div className="mt-6 space-y-3">
-            <SummaryRow label="Subtotal" value={rupees(subtotal)} />
-            {discount > 0 && <SummaryRow label="Discount" value={`-${rupees(discount)}`} accent={MAROON} />}
-            <SummaryRow label="Shipping" value={rupees(orderSummary.shipping)} />
-            <div className="border-t border-neutral-200 pt-3">
-              <SummaryRow label="Total" value={rupees(orderSummary.total)} accent={MAROON} />
-            </div>
-          </div>
-
-          <Link
-            href="/checkout"
-            className={`mt-6 block w-full rounded-md py-3 text-center text-[15px] font-semibold text-white transition-opacity hover:opacity-90 ${
-              selectedItems.length === 0 ? "cursor-not-allowed opacity-50" : ""
-            }`}
-            style={{
-              backgroundColor: MAROON,
-              pointerEvents: selectedItems.length === 0 ? "none" : "auto",
-            }}
-          >
-            {selectedItems.length === 0 ? "Select items to checkout" : "Proceed to Checkout"}
-          </Link>
-
           {/* Coupon section */}
-          <div className="mt-6 border-t border-neutral-200 pt-4">
+          <div className="border-b border-neutral-200 pb-4">
             <p className="flex items-center gap-2 text-[13px] text-neutral-600">
               <span
                 className="flex h-5 w-5 items-center justify-center rounded text-[10px]"
@@ -443,6 +415,46 @@ export default function Cart() {
                 ✗ {couponError}
               </p>
             )}
+          </div>
+
+          {/* Order Summary */}
+          <div className="mt-6">
+            <h2
+              className="font-[family-name:var(--font-heading)] text-[18px] font-medium"
+              style={{ color: MAROON }}
+            >
+              Order Summary
+            </h2>
+
+            <div className="mt-6 space-y-3">
+              <SummaryRow label={`Items (${selectedItems.length})`} value={rupees(subtotal)} />
+              <SummaryRow label="Subtotal" value={rupees(subtotal)} />
+              {discount > 0 && <SummaryRow label="Discount" value={`-${rupees(discount)}`} accent={MAROON} />}
+              <div className="border-t border-neutral-200 pt-3">
+                <div className="flex items-baseline justify-between gap-4 text-[16px] font-bold">
+                  <span style={{ color: MAROON }}>{`Grand Total`}</span>
+                  <span style={{ color: "#000000" }}>{rupees(orderSummary.grandTotal)}</span>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/checkout"
+              className={`mt-6 block w-full rounded-md py-3 text-center text-[15px] font-semibold text-white transition-opacity hover:opacity-90 ${
+                selectedItems.length === 0 ? "cursor-not-allowed opacity-50" : ""
+              }`}
+              style={{
+                backgroundColor: MAROON,
+                pointerEvents: selectedItems.length === 0 ? "none" : "auto",
+              }}
+            >
+              {selectedItems.length === 0 ? "Select items to checkout" : "Proceed to Checkout"}
+            </Link>
+
+            <p className="mt-3 text-center text-[12px] text-neutral-600 flex items-center justify-center gap-1.5">
+              <IoShieldCheckmarkOutline className="h-4 w-4" />
+              100% Secure Checkout
+            </p>
           </div>
         </aside>
       </div>
