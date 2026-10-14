@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import { CATEGORIES } from "@/constants/homeData";
 
 const MAROON = "#7B1E2B";
@@ -35,9 +36,14 @@ function Arrow({ direction, onClick, disabled }) {
   );
 }
 
-function CategoryCard({ category }) {
+function CategoryCard({ category, index = 0 }) {
+  // Same scroll-in effect as ProductCard: the card fades and lifts into place
+  // while the image zooms up to its resting size. No blur.
+  const [ref, revealed] = useRevealOnScroll(index);
+
   return (
     <Link
+      ref={ref}
       href={category.href}
       // 40% on phones so a third card peeks in at the edge — that sliver is
       // what tells people the row scrolls. At 46% two cards filled the width
@@ -45,24 +51,30 @@ function CategoryCard({ category }) {
       // 30% is the widest that still fits three whole cards with the fourth
       // showing at the edge. At 32% only two fit and the row stops reading as
       // scrollable.
-      className="group block w-[30%] shrink-0 snap-start sm:w-[30%] lg:w-[calc((100%-5rem)/6)]"
+      className={`group block w-[30%] shrink-0 snap-start transition-[opacity,transform] duration-500 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none sm:w-[30%] lg:w-[calc((100%-5rem)/6)] ${
+        revealed ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+      }`}
     >
       {/* One rounded card holding image and label, rather than a bare image
           with the caption floating underneath. */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-neutral-200 transition-shadow duration-300 group-hover:shadow-[0_6px_18px_rgba(0,0,0,0.13)]">
+      <div className="overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-neutral-200">
         <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
           <Image
             src={category.image}
             alt={category.label}
             fill
             // Left at 40vw even though the card is now 27% wide: the extra
-            // pixels are what keep the zoom below sharp instead of soft.
+            // pixels are what keep the phone crop below sharp instead of soft.
             sizes="(max-width: 640px) 40vw, (max-width: 1024px) 30vw, 16vw"
-            // Zoomed 25% on phones. The cards shrank to fit three across, and
+            // Cropped 25% on phones. The cards shrank to fit three across, and
             // at that size the piece was too small to make out; scaling in
             // crops the empty workbench around it and fills the frame with the
             // jewellery. Unchanged from sm up, where the card is big enough.
-            className="scale-125 object-cover transition-transform duration-300 sm:scale-100 sm:group-hover:scale-105"
+            // The reveal zooms each breakpoint up to its own resting scale
+            // (100 -> 125 on phones, 75 -> 100 from sm up) so the crop holds.
+            className={`object-cover transition-transform duration-500 ease-out sm:group-hover:scale-105 ${
+              revealed ? "scale-125 sm:scale-100" : "scale-100 sm:scale-75"
+            } motion-reduce:scale-125 sm:motion-reduce:scale-100`}
           />
         </div>
         <p
@@ -131,8 +143,8 @@ export default function ShopByCategories() {
           // the full gap returns from sm up.
           className="flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden"
         >
-          {CATEGORIES.map((category) => (
-            <CategoryCard key={category.id} category={category} />
+          {CATEGORIES.map((category, index) => (
+            <CategoryCard key={category.id} category={category} index={index} />
           ))}
         </div>
 

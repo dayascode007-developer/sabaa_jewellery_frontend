@@ -1,30 +1,23 @@
 import Image from "next/image";
-import Link from "next/link";
+import RevealTile from "@/components/common/RevealTile";
 import { NEW_ARRIVALS, NEW_ARRIVALS_BANNER } from "@/constants/homeData";
 
 // The caption and its diamond rule are part of the artwork, so the tile is just
 // the image. Sizing to the file's own aspect ratio stops object-cover trimming
 // the baked-in label off the bottom-left corner.
-function ArrivalTile({ item }) {
+function ArrivalTile({ item, index = 0 }) {
   return (
-    // Link, not <a> — a plain anchor reloads the whole page and the category
-    // loader never gets a chance to show.
-    <Link
+    // Renders a Link, not <a> — a plain anchor reloads the whole page and the
+    // category loader never gets a chance to show. The link carries the name,
+    // so the image itself has empty alt text.
+    <RevealTile
       href={item.href}
       aria-label={item.alt}
-      className="group relative block overflow-hidden rounded-sm ring-1 ring-white/60"
+      index={index}
+      className="rounded-sm ring-1 ring-white/60"
       style={{ aspectRatio: item.ratio }}
-    >
-      {/* The link carries the name now, so repeating it here would read it
-          out twice. */}
-      <Image
-        src={item.image}
-        alt=""
-        fill
-        sizes="(max-width: 768px) 90vw, 44vw"
-        className="object-cover transition-transform duration-500 group-hover:scale-105"
-      />
-    </Link>
+      image={{ src: item.image, alt: "", sizes: "(max-width: 768px) 90vw, 44vw" }}
+    />
   );
 }
 
@@ -54,8 +47,8 @@ export default function NewArrivals() {
           banner) clear; 8% clipped them by a few pixels. */}
       <div className="relative z-10 -mt-[7%] px-2 sm:px-8">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {NEW_ARRIVALS.map((item) => (
-            <ArrivalTile key={item.id} item={item} />
+          {NEW_ARRIVALS.map((item, index) => (
+            <ArrivalTile key={item.id} item={item} index={index} />
           ))}
         </div>
       </div>

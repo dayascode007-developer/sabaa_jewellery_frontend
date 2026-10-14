@@ -1,5 +1,4 @@
-import Image from "next/image";
-import Link from "next/link";
+import RevealTile from "@/components/common/RevealTile";
 import { COLLECTIONS } from "@/constants/homeData";
 
 const MAROON = "#7B1E2B";
@@ -7,26 +6,19 @@ const MAROON = "#7B1E2B";
 // The captions are part of the artwork, so the tile is just the image. Sizing
 // each tile to the file's own aspect ratio keeps object-cover from trimming
 // the baked-in text off an edge.
-function Tile({ collection, className, style, sizes }) {
+function Tile({ collection, className = "", style, sizes, index = 0 }) {
   return (
-    // Link, not <a> — a plain anchor reloads the whole page and the category
-    // loader never gets a chance to show.
-    <Link
+    // Renders a Link, not <a> — a plain anchor reloads the whole page and the
+    // category loader never gets a chance to show. The link carries the name,
+    // so the image itself has empty alt text.
+    <RevealTile
       href={collection.href}
       aria-label={collection.alt}
-      className={`group relative block overflow-hidden rounded-lg bg-neutral-100 ${className}`}
+      index={index}
+      className={`rounded-lg bg-neutral-100 ${className}`}
       style={style}
-    >
-      {/* The link carries the name now, so repeating it here would read it
-          out twice. */}
-      <Image
-        src={collection.image}
-        alt=""
-        fill
-        sizes={sizes}
-        className="object-cover transition-transform duration-500 group-hover:scale-105"
-      />
-    </Link>
+      image={{ src: collection.image, alt: "", sizes }}
+    />
   );
 }
 
@@ -58,15 +50,17 @@ export default function Collections() {
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
         <Tile
           collection={first}
+          index={0}
           style={{ aspectRatio: first.ratio }}
           sizes="(max-width: 640px) 100vw, 48vw"
         />
 
         <div className="flex flex-col gap-3 sm:h-full sm:gap-4">
-          {rest.map((collection) => (
+          {rest.map((collection, i) => (
             <Tile
               key={collection.id}
               collection={collection}
+              index={i + 1}
               className="sm:flex-1"
               style={{ aspectRatio: collection.ratio }}
               sizes="(max-width: 640px) 100vw, 48vw"

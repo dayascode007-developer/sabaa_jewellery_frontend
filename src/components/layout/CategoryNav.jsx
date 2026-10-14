@@ -16,6 +16,15 @@ import {
 import { NavbarShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import CascadingMoreMenu from "@/components/layout/CascadingMoreMenu";
 import moreIcon from "@/assets/svg_nav_icon/More.svg";
+import godRingIcon from "@/assets/icon/sub ring sample (1).png";
+import hinduRingIcon from "@/assets/icon/hindu ring.svg";
+import muslimRingIcon from "@/assets/icon/Muslim ring.svg";
+import christianRingIcon from "@/assets/icon/Christian ring.svg";
+import initialRingIcon from "@/assets/icon/initial ring.svg";
+import raasiRingIcon from "@/assets/icon/Raasi ring.svg";
+import nameRingIcon from "@/assets/icon/Name ring.svg";
+import photoRingIcon from "@/assets/icon/Real photo ring.svg";
+import laserRingIcon from "@/assets/icon/Laser ring.svg";
 
 // Each dropdown's "View All" lands on the aggregate page for that parent, and
 // the three thumbnails beside it are the first products from the same set.
@@ -212,6 +221,25 @@ const ITEM_MARKS = {
       <line x1="16" y1="10" x2="16" y2="18" />
     </>
   ),
+  // A pair of flower studs — earrings come in twos, and a lone one read as
+  // a single piece. Lighter stroke than the other marks: two flowers in a
+  // 24px box blur together at the default 1.6.
+  stud: (
+    <>
+      {/* left stud */}
+      <circle cx="7.3" cy="12" r="1" strokeWidth="1.1" />
+      <circle cx="7.3" cy="9.4" r="1.4" strokeWidth="1.1" />
+      <circle cx="7.3" cy="14.6" r="1.4" strokeWidth="1.1" />
+      <circle cx="4.7" cy="12" r="1.4" strokeWidth="1.1" />
+      <circle cx="9.9" cy="12" r="1.4" strokeWidth="1.1" />
+      {/* right stud */}
+      <circle cx="16.7" cy="12" r="1" strokeWidth="1.1" />
+      <circle cx="16.7" cy="9.4" r="1.4" strokeWidth="1.1" />
+      <circle cx="16.7" cy="14.6" r="1.4" strokeWidth="1.1" />
+      <circle cx="14.1" cy="12" r="1.4" strokeWidth="1.1" />
+      <circle cx="19.3" cy="12" r="1.4" strokeWidth="1.1" />
+    </>
+  ),
   // A stylized letter 'A' for Initial Rings
   "initial-rings": (
     <>
@@ -290,7 +318,61 @@ const ITEM_MARKS = {
   ),
 };
 
+// Label text that earns a row its own mark, overriding the menu it sits in.
+const LABEL_MARKS = [
+  ["stud", "stud"],
+  ["god", "god-rings"],
+  ["hindu", "hindu"],
+  ["muslim", "muslim"],
+  ["christian", "christian"],
+  ["initial", "initial-rings"],
+  ["raasi", "raasi"],
+  ["name engrave", "name-engrave"],
+  ["laser", "laser"],
+  ["photo", "photo"],
+];
+
+// A row's own label wins over the menu it sits in; otherwise nothing changes.
+function markKindFor(label, kind) {
+  const name = (label ?? "").trim().toLowerCase();
+  const hit = LABEL_MARKS.find(([word]) => name.includes(word));
+  return hit ? hit[1] : kind;
+}
+
+const MARK_IMAGES = {
+  "god-rings": godRingIcon,
+  hindu: hinduRingIcon,
+  muslim: muslimRingIcon,
+  christian: christianRingIcon,
+  "initial-rings": initialRingIcon,
+  raasi: raasiRingIcon,
+  "name-engrave": nameRingIcon,
+  photo: photoRingIcon,
+  laser: laserRingIcon,
+};
+
 function ItemMark({ kind }) {
+  const image = MARK_IMAGES[kind];
+  if (image) {
+    // Vector marks are drawn to fit the badge and must not be cropped;
+    // the one photograph is a square that should fill it edge to edge.
+    const isSvg = typeof image?.src === "string" && image.src.endsWith(".svg");
+    return (
+      // No inner padding and no border: at 24px the ring needs every pixel,
+      // and the photo's own edge reads as the badge outline.
+      <span className="relative block h-6 w-6 shrink-0 overflow-hidden rounded-full">
+        <Image
+          src={image}
+          alt=""
+          fill
+          sizes="24px"
+          unoptimized={isSvg}
+          className={isSvg ? "object-contain" : "object-cover"}
+        />
+      </span>
+    );
+  }
+
   return (
     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-200">
       <svg
@@ -381,14 +463,7 @@ function MegaPanel({ menu, kind, onNavigate }) {
                           onMouseEnter={scheduleClose}
                           className="flex items-center gap-2.5 rounded px-1 py-2 text-[13px] text-neutral-700 transition-colors hover:text-[#7B1E2B]"
                         >
-                          <ItemMark kind={
-                            entry.label.toLowerCase().includes("god") ? "god-rings" :
-                            entry.label.toLowerCase().includes("initial") ? "initial-rings" :
-                            entry.label.toLowerCase().includes("photo") ? "photo-ring" :
-                            entry.label.toLowerCase().includes("raasi") ? "raasi-rings" :
-                            entry.label.toLowerCase().includes("engrave") ? "name-engrave-ring" :
-                            kind
-                          } />
+                          <ItemMark kind={markKindFor(entry.label, kind)} />
                           {entry.label}
                         </Link>
                       </li>
@@ -418,21 +493,7 @@ function MegaPanel({ menu, kind, onNavigate }) {
                         className="flex w-full items-center gap-2.5 rounded px-1 py-2 text-left text-[13px] transition-colors hover:text-[#7B1E2B]"
                         style={{ color: open ? MAROON : "#404040" }}
                       >
-                        <ItemMark
-                          kind={
-                            g.heading.toLowerCase().includes("god")
-                              ? "god-rings"
-                              : g.heading.toLowerCase().includes("initial")
-                              ? "initial-rings"
-                              : g.heading.toLowerCase().includes("photo")
-                              ? "photo-ring"
-                              : g.heading.toLowerCase().includes("raasi")
-                              ? "raasi-rings"
-                              : g.heading.toLowerCase().includes("engrave")
-                              ? "name-engrave-ring"
-                              : kind
-                          }
-                        />
+                        <ItemMark kind={markKindFor(g.heading, kind)} />
                         {/* No flex-1 on the label: that pushed the chevron out
                             to the far edge of the column, away from the words
                             it belongs to. */}
@@ -478,14 +539,7 @@ function MegaPanel({ menu, kind, onNavigate }) {
                         onClick={onNavigate}
                         className="flex items-center gap-2.5 rounded px-1 py-2 text-[13px] text-neutral-700 transition-colors hover:text-[#7B1E2B]"
                       >
-                        <ItemMark kind={
-                          link.label.toLowerCase().includes("hindu") ? "hindu-rings" :
-                          link.label.toLowerCase().includes("christian") ? "christian-rings" :
-                          link.label.toLowerCase().includes("muslim") ? "muslim-rings" :
-                          link.label.toLowerCase().includes("laser") ? "laser-photo-ring" :
-                          link.label.toLowerCase().includes("real") ? "real-photo-ring" :
-                          kind
-                        } />
+                        <ItemMark kind={markKindFor(link.label, kind)} />
                         {link.label}
                       </Link>
                     </li>

@@ -46,6 +46,16 @@ import testimonialAravind from "@/assets/testimonial_image/image3.png";
 
 import murugaRing from "@/assets/CustomizeRing/muruga ring (1).webp";
 import craftedRing from "@/assets/CustomizeRing/crafted with tradition ring (1).webp";
+
+// One portrait per customer voice, in the order they appear below.
+import voiceAvatar1 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_18 PM-1.webp";
+import voiceAvatar2 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_19 PM-2.webp";
+import voiceAvatar3 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_21 PM-3.webp";
+import voiceAvatar4 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_22 PM-4.webp";
+import voiceAvatar5 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_23 PM-5.webp";
+import voiceAvatar6 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_25 PM-6.webp";
+import voiceAvatar7 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_26 PM-7.webp";
+import voiceAvatar8 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_28 PM-8.webp";
 import vijayRing from "@/assets/CustomizeRing/vijay ring (1).webp";
 
 import newArrivalsBg from "@/assets/banner/Bg card image (1).webp";
@@ -466,7 +476,7 @@ export const CUSTOMER_VOICES = [
     id: "v1",
     name: "Meena",
     city: "Coimbatore",
-    avatar: null,
+    avatar: voiceAvatar1,
     title: "Our happy Customer Feedback - 1",
     lines: [
       "Superb quality ring and beautiful engraving.",
@@ -481,7 +491,7 @@ export const CUSTOMER_VOICES = [
     id: "v2",
     name: "Karthik",
     city: "Madurai",
-    avatar: null,
+    avatar: voiceAvatar2,
     title: "Our happy customer voice - 2",
     lines: [
       "The ring looks exactly like shown in the photos.",
@@ -496,7 +506,7 @@ export const CUSTOMER_VOICES = [
     id: "v3",
     name: "Subramani",
     city: "Tiruchirappalli",
-    avatar: null,
+    avatar: voiceAvatar3,
     title: "Our customer voice 3",
     lines: [
       "Fast delivery and excellent customer service.",
@@ -511,7 +521,7 @@ export const CUSTOMER_VOICES = [
     id: "v4",
     name: "Lakshmi",
     city: "Chennai",
-    avatar: null,
+    avatar: voiceAvatar4,
     title: "Our customer feedback 4",
     lines: [
       "I gifted this ring to my husband and he loved it.",
@@ -526,7 +536,7 @@ export const CUSTOMER_VOICES = [
     id: "v5",
     name: "Anitha",
     city: "Salem",
-    avatar: null,
+    avatar: voiceAvatar5,
     title: "Our customer voice 5",
     lines: [
       "Ordered an Impon chain for my mother.",
@@ -541,7 +551,7 @@ export const CUSTOMER_VOICES = [
     id: "v6",
     name: "Rajesh",
     city: "Erode",
-    avatar: null,
+    avatar: voiceAvatar6,
     title: "Our customer voice 6",
     lines: [
       "The symbol ring is exactly what I wanted.",
@@ -556,7 +566,7 @@ export const CUSTOMER_VOICES = [
     id: "v7",
     name: "Divya",
     city: "Tirunelveli",
-    avatar: null,
+    avatar: voiceAvatar7,
     title: "Our customer voice 7",
     lines: [
       "Beautiful photo ring, the image is so clear.",
@@ -571,7 +581,7 @@ export const CUSTOMER_VOICES = [
     id: "v8",
     name: "Muthu",
     city: "Thanjavur",
-    avatar: null,
+    avatar: voiceAvatar8,
     title: "Our customer voice 8",
     lines: [
       "Bought kids chains for both my children.",
