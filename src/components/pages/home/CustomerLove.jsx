@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import { TESTIMONIALS } from "@/constants/homeData";
 
 const MAROON = "#7B1E2B";
@@ -50,20 +51,31 @@ function Arrow({ direction, onClick, disabled }) {
   );
 }
 
-function TestimonialCard({ testimonial }) {
+function TestimonialCard({ testimonial, index = 0 }) {
+  // Same scroll-in effect as ProductCard: the card fades and lifts into place
+  // while the photo zooms from 75% to full size. No blur.
+  const [ref, revealed] = useRevealOnScroll(index);
+
   return (
-    <figure className="w-[70%] shrink-0 snap-start overflow-hidden rounded-lg border border-neutral-200 bg-white sm:w-[46%] lg:w-[calc((100%-3rem)/4)]">
+    <figure
+      ref={ref}
+      className={`group w-[70%] shrink-0 snap-start overflow-hidden rounded-lg border border-neutral-200 bg-white transition-[opacity,transform] duration-500 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none sm:w-[46%] lg:w-[calc((100%-3rem)/4)] ${
+        revealed ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+      }`}
+    >
       {/* Square rather than 4:5. The portrait crop made the photograph taller
           than it was wide and pushed the whole card down the page; a square
           still holds a face comfortably. */}
-      <div className="relative aspect-square w-full bg-neutral-100">
+      <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
         {testimonial.image ? (
           <Image
             src={testimonial.image}
             alt=""
             fill
             sizes="(max-width: 640px) 70vw, (max-width: 1024px) 46vw, 24vw"
-            className="object-cover"
+            className={`object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${
+              revealed ? "scale-100" : "scale-75"
+            } motion-reduce:scale-100`}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#EDE3D3] via-[#E3D5BE] to-[#D8C6A8]">
@@ -213,8 +225,8 @@ export default function CustomerLove() {
             onScroll={sync}
             className="flex min-w-0 flex-1 snap-x snap-mandatory gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {TESTIMONIALS.map((testimonial) => (
-              <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+            {TESTIMONIALS.map((testimonial, index) => (
+              <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
             ))}
           </div>
 

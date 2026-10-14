@@ -1,4 +1,4 @@
-import Image from "next/image";
+import RevealTile from "@/components/common/RevealTile";
 import { PHOTO_RING_CARDS, PHOTO_RING_FEATURES } from "@/constants/homeData";
 
 const MAROON = "#7B1E2B";
@@ -88,20 +88,14 @@ export default function MemoriesInMetal() {
 
         {/* Three photo-ring cards */}
         <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-3">
-          {PHOTO_RING_CARDS.map((card) => (
-            <div
+          {PHOTO_RING_CARDS.map((card, index) => (
+            <RevealTile
               key={card.id}
-              className="relative overflow-hidden rounded-[22px] border"
+              index={index}
+              className="rounded-[22px] border"
               style={{ aspectRatio: card.ratio, borderColor: "#E6CFA8" }}
-            >
-              <Image
-                src={card.image}
-                alt={card.alt}
-                fill
-                sizes="(max-width: 640px) 90vw, 32vw"
-                className="object-cover"
-              />
-            </div>
+              image={{ src: card.image, alt: card.alt, sizes: "(max-width: 640px) 90vw, 32vw" }}
+            />
           ))}
         </div>
 

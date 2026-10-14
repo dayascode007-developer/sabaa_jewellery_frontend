@@ -3,6 +3,7 @@ import Footer from "@/components/layout/Footer";
 import BottomNav from "@/components/layout/BottomNav";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import Policy from "@/components/pages/Policy";
+import { loaderDelay } from "@/lib/loaderDelay";
 
 export const metadata = {
   title: "Policies — Sabaa Jewel Arts",
@@ -13,7 +14,10 @@ export const metadata = {
 // The shell is rendered here rather than in app/layout.js because the home page
 // still renders its own. Hoisting them all into the root layout is the tidier
 // fix once you want it.
-export default function PolicyPage() {
+export default async function PolicyPage() {
+  // No-op unless NEXT_PUBLIC_LOADER_DELAY is set; see lib/loaderDelay.
+  await loaderDelay();
+
   return (
     <div className="min-h-screen w-full bg-white pb-16 lg:pb-0">
       <SiteHeader />

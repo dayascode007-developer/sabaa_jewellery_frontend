@@ -1,3 +1,5 @@
+"use client";
+
 // Videos are served from public/ rather than imported — the bundler has no
 // loader for .mp4, and a video wants range requests, which static serving gives.
 //
@@ -11,7 +13,7 @@ const LOADERS = {
     // Square. The source is 1920x1080 with the animation centred in a lot of
     // white, so it is cropped square during encoding rather than letterboxed
     // here — otherwise the mark would sit tiny in the middle of the box.
-    box: "h-[112px] w-[112px] sm:h-[132px] sm:w-[132px]",
+    box: "h-[240px] w-[240px] sm:h-[300px] sm:w-[300px]",
   },
   strip: {
     src: "/sabaa-loader-v2.mp4",
@@ -37,8 +39,14 @@ const KEYFRAMES = `
  * One loader animation on its own. Use inside a section that is waiting on
  * data; for a whole page use FullScreenLoader below.
  */
-export function SabaaSpinner({ variant = "mark", label = "Loading", className }) {
+export function SabaaSpinner({ variant = "mark", label = "Loading", className, speed = 1 }) {
   const loader = LOADERS[variant] ?? LOADERS.mark;
+
+  // playbackRate is not an attribute; it exists only on the element, and the
+  // browser resets it whenever a new source loads.
+  const applySpeed = (el) => {
+    if (el) el.playbackRate = speed;
+  };
 
   return (
     <span
@@ -48,6 +56,8 @@ export function SabaaSpinner({ variant = "mark", label = "Loading", className })
     >
       <style>{KEYFRAMES}</style>
       <video
+        ref={applySpeed}
+        onLoadedMetadata={(e) => (e.currentTarget.playbackRate = speed)}
         src={loader.src}
         // All four are required or mobile Safari and Chrome refuse to start it.
         autoPlay
@@ -56,7 +66,7 @@ export function SabaaSpinner({ variant = "mark", label = "Loading", className })
         playsInline
         preload="auto"
         aria-hidden="true"
-        className="block h-full w-full object-contain"
+        className="block h-full w-full object-contain mix-blend-multiply"
       />
     </span>
   );
@@ -78,18 +88,22 @@ export default function FullScreenLoader({
       role="status"
       aria-live="polite"
     >
-      <SabaaSpinner variant={variant} label={message} />
+      <SabaaSpinner variant={variant} label={message || "Loading"} />
 
-      <p
-        data-sabaa-loader-pulse
-        className="font-[family-name:var(--font-heading)] text-[15px] tracking-[0.16em] uppercase"
-        style={{
-          color: "#7B1E2B",
-          animation: "sabaaLoaderPulse 1.6s ease-in-out infinite",
-        }}
-      >
-        {message}
-      </p>
+      {/* Caption only when one is passed. Home, about, blogs and policy show
+          the animation alone; category and product still say what is loading. */}
+      {message ? (
+        <p
+          data-sabaa-loader-pulse
+          className="font-[family-name:var(--font-heading)] text-[15px] tracking-[0.16em] uppercase"
+          style={{
+            color: "#7B1E2B",
+            animation: "sabaaLoaderPulse 1.6s ease-in-out infinite",
+          }}
+        >
+          {message}
+        </p>
+      ) : null}
     </div>
   );
 }
