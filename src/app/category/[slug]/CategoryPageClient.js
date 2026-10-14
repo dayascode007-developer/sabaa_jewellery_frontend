@@ -229,7 +229,7 @@ export default function CategoryPageClient({ params: paramsPromise }) {
       <SiteHeader />
       <Breadcrumb items={[{ label: "Home", href: "/" }, { label: categoryLabel }]} />
 
-      <main className="bg-[#FDF0F2]">
+      <main className="bg-white">
         <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">
           <h1 className="font-[family-name:var(--font-heading)] text-[26px] leading-tight text-neutral-900 sm:text-[32px] lg:text-[40px]">
             {categoryLabel}{" "}

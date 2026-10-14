@@ -205,7 +205,7 @@ export default function Wishlist() {
                   {/* Click Here Link */}
                   <Link
                     href={`/product/${item.product_id}-${toSlug(item.title)}`}
-                    className="mt-2 sm:mt-3 w-full py-1 sm:py-2.5 text-[10px] sm:text-[12px] font-semibold rounded transition-colors hover:bg-[#430121] hover:text-white flex items-center justify-center gap-1.5"
+                    className="mt-2 sm:mt-3 w-full py-1 sm:py-2.5 text-[10px] sm:text-[12px] font-semibold rounded-full transition-colors hover:bg-[#430121] hover:text-white flex items-center justify-center gap-1.5"
                     style={{ borderWidth: "1.5px", borderColor: MAROON, color: MAROON, backgroundColor: "transparent" }}
                   >
                     <SlHandbag className="h-3 w-3 sm:h-3.5 sm:w-3.5" />

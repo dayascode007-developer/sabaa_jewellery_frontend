@@ -179,7 +179,7 @@ export default function ProductCard({ product }) {
       // motion-reduce keeps the card fully visible for anyone who has asked
       // their system for less movement — a long grid of sliding cards is
       // genuinely unpleasant for them.
-      className={`group relative flex flex-col overflow-hidden rounded-lg border border-neutral-200/80 bg-white transition-[opacity,transform,box-shadow] duration-500 ease-out hover:shadow-[0_6px_24px_rgba(0,0,0,0.09)] motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${
+      className={`group relative flex flex-col overflow-hidden rounded-lg border border-neutral-200/80 bg-white shadow-none transition-[opacity,transform] duration-500 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${
         revealed ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
       }`}
     >
