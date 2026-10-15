@@ -1180,6 +1180,10 @@ export default function ProductDetail({ product }) {
           {/* See it on yourself before deciding, so it sits with the buying
               choice rather than below the fold with the specifications.
               Renders nothing at all unless this product has a try-on model. */}
+
+          {/* See it on yourself before deciding, so it sits with the buying
+              choice rather than below the fold with the specifications.
+              Renders nothing at all unless this product has a model, which is most of them. */}
           {product.ar_model_id ? (
             <div className="mt-5">
               <TryOnButton
@@ -1416,6 +1420,7 @@ export default function ProductDetail({ product }) {
       </div>
 
       <ReviewsSection productId={product.id} />
+
 
       {/* Similar Products Section */}
       <div ref={similarProductsRef}>
