@@ -160,7 +160,14 @@ function CartLine({ item, selected, onToggle }) {
         {meta && <p className="mt-1 text-[12px] text-neutral-500">{meta}</p>}
 
         <div className="mt-3 flex items-center justify-between">
-          <Stepper item={item} />
+          <div className="flex flex-col gap-1">
+            <Stepper item={item} />
+            {(item?.limit_purchases === true || item?.maxQty === 1) && (
+              <p className="text-[12px] text-neutral-600">
+                * Maximum allowed qty 1
+              </p>
+            )}
+          </div>
           <span className="text-[14px] font-semibold text-neutral-900">
             {rupees(item.price * item.quantity)}
           </span>
