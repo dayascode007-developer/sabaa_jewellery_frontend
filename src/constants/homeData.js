@@ -48,14 +48,14 @@ import murugaRing from "@/assets/CustomizeRing/muruga ring (1).webp";
 import craftedRing from "@/assets/CustomizeRing/crafted with tradition ring (1).webp";
 
 // One portrait per customer voice, in the order they appear below.
-import voiceAvatar1 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_18 PM-1.webp";
-import voiceAvatar2 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_19 PM-2.webp";
-import voiceAvatar3 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_21 PM-3.webp";
-import voiceAvatar4 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_22 PM-4.webp";
-import voiceAvatar5 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_23 PM-5.webp";
-import voiceAvatar6 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_25 PM-6.webp";
-import voiceAvatar7 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_26 PM-7.webp";
-import voiceAvatar8 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 02_08_28 PM-8.webp";
+import voiceAvatar1 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_05 PM-1.webp";
+import voiceAvatar2 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_06 PM-2.webp";
+import voiceAvatar3 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_08 PM-3.webp";
+import voiceAvatar4 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_09 PM-4.webp";
+import voiceAvatar5 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_10 PM-5.webp";
+import voiceAvatar6 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_11 PM-6.webp";
+import voiceAvatar7 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_13 PM-7.webp";
+import voiceAvatar8 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_14 PM-8.webp";
 import vijayRing from "@/assets/CustomizeRing/vijay ring (1).webp";
 
 import newArrivalsBg from "@/assets/banner/Bg card image (1).webp";
@@ -476,20 +476,21 @@ export const CUSTOMER_VOICES = [
     id: "v1",
     name: "Meena",
     city: "Coimbatore",
-    avatar: voiceAvatar1,
+    // Swapped with v6 — the numbered portraits did not line up with the names.
+    avatar: voiceAvatar6,
     title: "Our happy Customer Feedback - 1",
     lines: [
       "Superb quality ring and beautiful engraving.",
       "Packaging was so good and delivery was on time.",
       "Very happy with my purchase!",
     ],
-    audio: null,
-    duration: "08:12",
+    audio: "/voices/voice-1.mp3",
+    duration: "0:17",
     youtubeUrl: "#",
   },
   {
     id: "v2",
-    name: "Karthik",
+    name: "Imran",
     city: "Madurai",
     avatar: voiceAvatar2,
     title: "Our happy customer voice - 2",
@@ -498,8 +499,8 @@ export const CUSTOMER_VOICES = [
       "I really loved the design and the finishing.",
       "Thank you Sabaa Jewel Arts!",
     ],
-    audio: null,
-    duration: "08:12",
+    audio: "/voices/voice-2.mp3",
+    duration: "1:32",
     youtubeUrl: "#",
   },
   {
@@ -513,8 +514,8 @@ export const CUSTOMER_VOICES = [
       "The ring quality is top-notch.",
       "Highly recommended!",
     ],
-    audio: null,
-    duration: "08:12",
+    audio: "/voices/voice-3.mp3",
+    duration: "1:53",
     youtubeUrl: "#",
   },
   {
@@ -528,13 +529,13 @@ export const CUSTOMER_VOICES = [
       "The engraving came out perfect.",
       "Very much satisfied!",
     ],
-    audio: null,
-    duration: "08:12",
+    audio: "/voices/voice-4.mp3",
+    duration: "0:31",
     youtubeUrl: "#",
   },
   {
     id: "v5",
-    name: "Anitha",
+    name: "Ayesha",
     city: "Salem",
     avatar: voiceAvatar5,
     title: "Our customer voice 5",
@@ -551,7 +552,8 @@ export const CUSTOMER_VOICES = [
     id: "v6",
     name: "Rajesh",
     city: "Erode",
-    avatar: voiceAvatar6,
+    // Swapped with v1 — see the note there.
+    avatar: voiceAvatar1,
     title: "Our customer voice 6",
     lines: [
       "The symbol ring is exactly what I wanted.",

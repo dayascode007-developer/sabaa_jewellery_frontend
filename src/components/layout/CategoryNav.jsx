@@ -25,6 +25,15 @@ import raasiRingIcon from "@/assets/icon/Raasi ring.svg";
 import nameRingIcon from "@/assets/icon/Name ring.svg";
 import photoRingIcon from "@/assets/icon/Real photo ring.svg";
 import laserRingIcon from "@/assets/icon/Laser ring.svg";
+import mensChainIcon from "@/assets/icon/mens chain.svg";
+import femaleChainIcon from "@/assets/icon/female chain.svg";
+import kidsChainIcon from "@/assets/icon/Kids chain.svg";
+import hinduPendantIcon from "@/assets/icon/Hindu pendent.svg";
+import christianPendantIcon from "@/assets/icon/Cristian pendant.svg";
+import mensBraceletIcon from "@/assets/icon/Mens bracelet.svg";
+import femaleBraceletIcon from "@/assets/icon/female bracelet.svg";
+import studIcon from "@/assets/icon/stud.svg";
+import jimikkiIcon from "@/assets/icon/jimikki.svg";
 
 // Each dropdown's "View All" lands on the aggregate page for that parent, and
 // the three thumbnails beside it are the first products from the same set.
@@ -320,11 +329,32 @@ const ITEM_MARKS = {
 
 // Label text that earns a row its own mark, overriding the menu it sits in.
 const LABEL_MARKS = [
+  // Pendants before rings — both say "hindu" / "christian".
+  ["hindu pend", "hindu-pendant"],
+  ["christian pend", "christian-pendant"],
+  ["cristian pend", "christian-pendant"],
+  // Women's before men's — "womens bracelet" contains "mens bracelet".
+  ["womens bracelet", "female-bracelet"],
+  ["female bracelet", "female-bracelet"],
+  ["mens bracelet", "mens-bracelet"],
+  // Chains, likewise women's and kids' before men's.
+  ["womens chain", "female-chain"],
+  ["female chain", "female-chain"],
+  ["femalechain", "female-chain"],
+  ["kid", "kids-chain"],
+  ["menz", "mens-chain"],
+  ["mens chain", "mens-chain"],
+  ["menschain", "mens-chain"],
+  // Earrings.
   ["stud", "stud"],
+  ["jimikki", "jimikki"],
+  ["jimiki", "jimikki"],
+  // Rings.
   ["god", "god-rings"],
   ["hindu", "hindu"],
   ["muslim", "muslim"],
   ["christian", "christian"],
+  ["cristian", "christian"],
   ["initial", "initial-rings"],
   ["raasi", "raasi"],
   ["name engrave", "name-engrave"],
@@ -349,6 +379,15 @@ const MARK_IMAGES = {
   "name-engrave": nameRingIcon,
   photo: photoRingIcon,
   laser: laserRingIcon,
+  "mens-chain": mensChainIcon,
+  "female-chain": femaleChainIcon,
+  "kids-chain": kidsChainIcon,
+  "hindu-pendant": hinduPendantIcon,
+  "christian-pendant": christianPendantIcon,
+  "mens-bracelet": mensBraceletIcon,
+  "female-bracelet": femaleBraceletIcon,
+  stud: studIcon,
+  jimikki: jimikkiIcon,
 };
 
 function ItemMark({ kind }) {

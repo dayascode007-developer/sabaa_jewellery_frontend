@@ -54,6 +54,12 @@ function WhatsAppMark({ className }) {
   );
 }
 
+// Each card owns its own <audio>, so nothing stopped two running at once —
+// pressing play on a second card left the first one going. Module scope
+// rather than state: every player on the page shares this single slot, and
+// swapping it must not re-render anyone.
+let activeVoice = null; // { audio, stop } for whichever clip is playing
+
 function VoicePlayer({ voice }) {
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0.35);
@@ -65,12 +71,19 @@ function VoicePlayer({ voice }) {
     if (!audio) return;
     const onTime = () =>
       setProgress(audio.duration ? audio.currentTime / audio.duration : 0);
-    const onEnd = () => setPlaying(false);
+    const onEnd = () => {
+      setPlaying(false);
+      // Finishing on its own frees the slot too, or the next card would try to
+      // stop a clip that already ended.
+      if (activeVoice?.audio === audio) activeVoice = null;
+    };
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("ended", onEnd);
     return () => {
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("ended", onEnd);
+      // Leaving the page mid-clip must not leave a stale handle behind.
+      if (activeVoice?.audio === audio) activeVoice = null;
     };
   }, []);
 
@@ -84,9 +97,26 @@ function VoicePlayer({ voice }) {
     if (playing) {
       audio.pause();
       setPlaying(false);
-    } else {
-      audio.play().then(() => setPlaying(true)).catch(() => setError(true));
+      if (activeVoice?.audio === audio) activeVoice = null;
+      return;
     }
+
+    // Stop whatever is already running before starting this one.
+    if (activeVoice && activeVoice.audio !== audio) activeVoice.stop();
+
+    audio
+      .play()
+      .then(() => {
+        setPlaying(true);
+        activeVoice = {
+          audio,
+          stop: () => {
+            audio.pause();
+            setPlaying(false);
+          },
+        };
+      })
+      .catch(() => setError(true));
   };
 
   const elapsed = () => {

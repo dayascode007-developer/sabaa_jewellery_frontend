@@ -36,15 +36,18 @@ function Arrow({ direction, onClick, disabled }) {
   );
 }
 
-function CategoryCard({ category, index = 0 }) {
+function CategoryCard({ category, index = 0, revealed = false }) {
   // Same scroll-in effect as ProductCard: the card fades and lifts into place
   // while the image zooms up to its resting size. No blur.
-  const [ref, revealed] = useRevealOnScroll(index);
-
+  //
+  // `revealed` belongs to the whole row, not to this card. Watching each card
+  // separately meant the ones scrolled off to the right never intersected the
+  // viewport, so they sat invisible and animated in one at a time as the row
+  // was scrolled — the row appeared to judder instead of simply moving.
   return (
     <Link
-      ref={ref}
       href={category.href}
+      style={{ transitionDelay: `${(index % 4) * 70}ms` }}
       // 40% on phones so a third card peeks in at the edge — that sliver is
       // what tells people the row scrolls. At 46% two cards filled the width
       // and the row looked complete.
@@ -99,6 +102,8 @@ function CategoryCard({ category, index = 0 }) {
 }
 
 export default function ShopByCategories() {
+  // One observer for the row. See the note in CategoryCard.
+  const [revealRef, revealed] = useRevealOnScroll();
   const trackRef = useRef(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
@@ -129,7 +134,7 @@ export default function ShopByCategories() {
   };
 
   return (
-    <section className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
+    <section ref={revealRef} className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
       {/* Tighter gap on phones so the arrows take as little width from the
           cards as possible now that they are always visible. */}
       <div className="flex items-center gap-2 sm:gap-3 lg:gap-5">
@@ -144,7 +149,12 @@ export default function ShopByCategories() {
           className="flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden"
         >
           {CATEGORIES.map((category, index) => (
-            <CategoryCard key={category.id} category={category} index={index} />
+            <CategoryCard
+              key={category.id}
+              category={category}
+              index={index}
+              revealed={revealed}
+            />
           ))}
         </div>
 
