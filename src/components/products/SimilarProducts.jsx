@@ -26,18 +26,16 @@ export default function SimilarProducts({ product }) {
 
         const categoryId = product.category_id;
         const subMainCategoryId = product.sub_main_category_id;
-        const subCategoryId = product.subcategories?.[0]?.id;
 
         if (!categoryId) {
           setProducts([]);
           return;
         }
 
+        // First fetch: Get all products in this submain category
         let url = `${API_URL}/api/products/categories-with-products?main=${categoryId}`;
         if (subMainCategoryId) {
           url += `&submain=${subMainCategoryId}`;
-        } else if (subCategoryId) {
-          url += `&sub=${subCategoryId}`;
         }
 
         const response = await fetch(url);
@@ -47,11 +45,27 @@ export default function SimilarProducts({ product }) {
         }
 
         const data = await response.json();
-        // Extract products from nested subcategories structure
         const category = data.data?.[0];
         const allProducts = category?.subcategories?.flatMap((sub) => sub.products || []) || [];
 
-        const filtered = allProducts
+        // Find current product to extract its subcategory
+        const currentProduct = allProducts.find((p) => p.id === product.id);
+        const subCategoryId = currentProduct?.subcategories?.[0]?.id;
+
+        // If subcategory found, fetch only products from that subcategory
+        let finalProducts = allProducts;
+        if (subCategoryId) {
+          const urlWithSub = `${API_URL}/api/products/categories-with-products?main=${categoryId}&submain=${subMainCategoryId}&sub=${subCategoryId}`;
+          const response2 = await fetch(urlWithSub);
+
+          if (response2.ok) {
+            const data2 = await response2.json();
+            const category2 = data2.data?.[0];
+            finalProducts = category2?.subcategories?.flatMap((sub) => sub.products || []) || [];
+          }
+        }
+
+        const filtered = finalProducts
           .filter((p) => p.id !== product.id)
           .map(transformProduct);
 
@@ -67,7 +81,7 @@ export default function SimilarProducts({ product }) {
     if (product?.id) {
       fetchSimilarProducts();
     }
-  }, [product?.id, product?.category_id, product?.sub_main_category_id, product?.subcategories]);
+  }, [product?.id, product?.category_id, product?.sub_main_category_id]);
 
   if (loading) {
     return (
