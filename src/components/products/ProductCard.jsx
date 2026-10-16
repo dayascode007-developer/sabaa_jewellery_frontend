@@ -26,7 +26,11 @@ const toSlug = (name) =>
     .replace(/--+/g, "-");
 
 const rupees = (n) =>
-  "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  "₹" +
+  n.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 export default function ProductCard({ product }) {
   const dispatch = useDispatch();
@@ -87,7 +91,9 @@ export default function ProductCard({ product }) {
     // work. Wrapped every four so the stagger stays under a quarter second
     // however far down the page a card sits — a plain running index would
     // leave card fifty waiting three seconds after it had been scrolled past.
-    const siblings = el.parentElement ? Array.from(el.parentElement.children) : [];
+    const siblings = el.parentElement
+      ? Array.from(el.parentElement.children)
+      : [];
     el.style.transitionDelay = `${(siblings.indexOf(el) % 4) * 70}ms`;
 
     const observer = new IntersectionObserver(
@@ -179,7 +185,7 @@ export default function ProductCard({ product }) {
       // motion-reduce keeps the card fully visible for anyone who has asked
       // their system for less movement — a long grid of sliding cards is
       // genuinely unpleasant for them.
-      className={`group relative flex flex-col overflow-hidden rounded-lg border border-neutral-200/80 bg-white transition-[opacity,transform,box-shadow] duration-500 ease-out hover:shadow-[0_6px_24px_rgba(0,0,0,0.09)] motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${
+      className={`group relative flex flex-col overflow-hidden rounded-lg border border-neutral-200/80 bg-white shadow-none transition-[opacity,transform] duration-500 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${
         revealed ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
       }`}
     >
@@ -198,13 +204,16 @@ export default function ProductCard({ product }) {
           Sized with padding-bottom rather than aspect-square because a
           percentage padding can be transitioned; an aspect ratio cannot be
           relied on to animate. */}
-      <div className="relative w-full overflow-hidden bg-neutral-100 pb-[80%] transition-[padding-bottom] duration-300 ease-out sm:pb-[100%] group-hover:pb-[calc(80%-30px)] sm:group-hover:pb-[calc(100%-44px)] group-focus-within:pb-[calc(80%-30px)] sm:group-focus-within:pb-[calc(100%-44px)]">
+      <div className="relative w-full overflow-hidden bg-neutral-100 pb-[90%] transition-[padding-bottom] duration-300 ease-out sm:pb-[100%] group-hover:pb-[calc(90%-30px)] sm:group-hover:pb-[calc(100%-44px)] group-focus-within:pb-[calc(90%-30px)] sm:group-focus-within:pb-[calc(100%-44px)]">
         {product.image ? (
-          typeof product.image === "string" && product.image.startsWith("http") ? (
+          typeof product.image === "string" &&
+          product.image.startsWith("http") ? (
             <img
               src={product.image}
               alt={product.title}
-              className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${revealed ? "scale-100" : "scale-75"} motion-reduce:scale-100`}
+              className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${
+                revealed ? "scale-100" : "scale-75"
+              } motion-reduce:scale-100`}
             />
           ) : (
             <Image
@@ -212,12 +221,16 @@ export default function ProductCard({ product }) {
               alt={product.title}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className={`object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${revealed ? "scale-100" : "scale-75"} motion-reduce:scale-100`}
+              className={`object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${
+                revealed ? "scale-100" : "scale-75"
+              } motion-reduce:scale-100`}
             />
           )
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#EDE3D3] via-[#E3D5BE] to-[#D8C6A8] p-3 text-center">
-            <span className="text-[10px] leading-tight text-[#8A6E45]">{product.title}</span>
+            <span className="text-[10px] leading-tight text-[#8A6E45]">
+              {product.title}
+            </span>
           </div>
         )}
 
@@ -269,15 +282,19 @@ export default function ProductCard({ product }) {
                 <span
                   className="w-full sm:w-auto text-[10px] sm:text-[12px] font-bold inline-flex items-center gap-0.5"
                   style={{
-                    backgroundImage: "linear-gradient(90deg, #DD9836, #FFB347, #DD9836)",
+                    backgroundImage:
+                      "linear-gradient(90deg, #DD9836, #FFB347, #DD9836)",
                     backgroundSize: "200% 100%",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
-                    animation: "shimmer 3s ease-in-out infinite"
+                    animation: "shimmer 3s ease-in-out infinite",
                   }}
                 >
-                  <BiSolidOffer className="h-3 w-3 sm:h-4 sm:w-4" style={{ color: "#DD9836" }} />
+                  <BiSolidOffer
+                    className="h-3 w-3 sm:h-4 sm:w-4"
+                    style={{ color: "#DD9836" }}
+                  />
                   {discount} off
                 </span>
               </>
@@ -290,7 +307,12 @@ export default function ProductCard({ product }) {
           <Link
             href={`/product/${product.id}-${toSlug(product.title)}`}
             className="relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded-full font-[family-name:var(--font-category)] text-[10px] font-medium transition-colors hover:bg-[#7B1E2B] hover:text-white sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px]"
-            style={{ borderWidth: "1.5px", borderColor: MAROON, color: MAROON, backgroundColor: "transparent" }}
+            style={{
+              borderWidth: "1.5px",
+              borderColor: MAROON,
+              color: MAROON,
+              backgroundColor: "transparent",
+            }}
           >
             <SlHandbag className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             Click Here
@@ -327,10 +349,7 @@ export default function ProductCard({ product }) {
 
       {/* Auth modal for login/signup */}
       {mounted ? (
-        <AuthModal
-          open={authOpen}
-          onClose={() => setAuthOpen(false)}
-        />
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       ) : null}
     </article>
   );

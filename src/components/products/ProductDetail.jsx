@@ -3,10 +3,15 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
+import {
+  MdFavoriteBorder,
+  MdFavorite,
+  MdOutlineShoppingCartCheckout,
+} from "react-icons/md";
 import { TfiHandPointRight } from "react-icons/tfi";
 import { FaWhatsapp } from "react-icons/fa";
-import { IoBagHandleOutline } from "react-icons/io5";
+import { FaArrowRightLong } from "react-icons/fa6";
+import { IoBagHandleOutline, IoCameraOutline } from "react-icons/io5";
 import { IoIosEye } from "react-icons/io";
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import { pixelTrack } from "@/lib/pixel";
@@ -567,7 +572,7 @@ export default function ProductDetail({ product }) {
   const [ringName, setRingName] = useState("");
   const [fontId, setFontId] = useState("");
   const [symbolId, setSymbolId] = useState("");
-  const [symbolSide, setSymbolSide] = useState("left");
+  const [symbolSide, setSymbolSide] = useState("");
   const [colorId, setColorId] = useState("");
 
   // Validation error states
@@ -575,6 +580,7 @@ export default function ProductDetail({ product }) {
   const [colorError, setColorError] = useState("");
   const [ringNameError, setRingNameError] = useState("");
   const [photoError, setPhotoError] = useState("");
+  const [symbolSideError, setSymbolSideError] = useState("");
   const [fontError, setFontError] = useState("");
 
   const dispatch = useDispatch();
@@ -660,15 +666,9 @@ export default function ProductDetail({ product }) {
       hasErrors = true;
     }
 
-    // Validation: Engraving name required if customisable
-    if (product.isCustomisable && !ringName?.trim()) {
-      setRingNameError("Please enter a name for engraving");
-      hasErrors = true;
-    }
-
-    // Validation: Font style required if customisable
-    if (product.isCustomisable && !fontId) {
-      setFontError("Please select a font style");
+    // Validation: Symbol Direction required if a symbol is selected
+    if (symbolId && !symbolSide?.trim()) {
+      setSymbolSideError("Please select a symbol direction");
       hasErrors = true;
     }
 
@@ -1055,7 +1055,7 @@ export default function ProductDetail({ product }) {
                   className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
-                  Ring Name <span className="text-red-600 ml-1">*</span>
+                  Ring Name
                 </label>
                 <input
                   id="ring-name"
@@ -1067,18 +1067,11 @@ export default function ProductDetail({ product }) {
                     setRingNameError("");
                   }}
                   placeholder="Name to engrave"
-                  className={`mt-1.5 w-full rounded border bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500 ${
-                    ringNameError ? "border-red-500" : "border-neutral-300"
-                  }`}
+                  className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
                 />
-                {ringNameError && (
-                  <p className="mt-1.5 text-sm text-red-600">{ringNameError}</p>
-                )}
-                {!ringNameError && (
-                  <p className="mt-1 text-right text-[10px] text-neutral-500">
-                    {ringName.length}/{NAME_MAX_LENGTH}
-                  </p>
-                )}
+                <p className="mt-1 text-right text-[10px] text-neutral-500">
+                  {ringName.length}/{NAME_MAX_LENGTH}
+                </p>
               </div>
 
               <div className="mt-3">
@@ -1087,7 +1080,7 @@ export default function ProductDetail({ product }) {
                   className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
-                  Font Style <span className="text-red-600 ml-1">*</span>
+                  Font Style
                 </label>
                 <FontDropdown
                   value={fontId}
@@ -1097,9 +1090,6 @@ export default function ProductDetail({ product }) {
                   }}
                   options={product.fonts || []}
                 />
-                {fontError && (
-                  <p className="mt-1.5 text-sm text-red-600">{fontError}</p>
-                )}
               </div>
 
               <div className="mt-3">
@@ -1156,6 +1146,9 @@ export default function ProductDetail({ product }) {
                       </label>
                     ))}
                   </div>
+                  {symbolSideError && (
+                    <p className="mt-1.5 text-sm text-red-600">{symbolSideError}</p>
+                  )}
                 </fieldset>
               ) : null}
 
@@ -1180,8 +1173,12 @@ export default function ProductDetail({ product }) {
           {/* See it on yourself before deciding, so it sits with the buying
               choice rather than below the fold with the specifications.
               Renders nothing at all unless this product has a try-on model. */}
+
+          {/* See it on yourself before deciding, so it sits with the buying
+              choice rather than below the fold with the specifications.
+              Renders nothing at all unless this product has a model, which is most of them. */}
           {product.ar_model_id ? (
-            <div className="mt-5">
+            <div className="mt-5 md:hidden">
               <TryOnButton
                 modelId={product.ar_model_id}
                 title={product.title}
@@ -1189,8 +1186,8 @@ export default function ProductDetail({ product }) {
             </div>
           ) : null}
 
-          {/* WhatsApp assist + Add to cart */}
-          <div className="mt-5 flex flex-wrap items-start gap-4">
+          {/* Mobile Layout - WhatsApp assist + Add to cart */}
+          <div className="mt-5 flex flex-wrap items-start gap-4 md:hidden">
             <div
               className="rounded-3xl p-4 w-56"
               style={{ backgroundColor: "#E8FECE" }}
@@ -1302,7 +1299,7 @@ export default function ProductDetail({ product }) {
               </div>
 
               {(product?.limit_purchases === true || product?.maxQty === 1) && (
-                <p className="mt-2 text-[12px] text-neutral-600">
+                <p className="mt-2 text-[12px] text-neutral-600 block">
                   * Maximum allowed qty 1
                 </p>
               )}
@@ -1353,8 +1350,217 @@ export default function ProductDetail({ product }) {
             </div>
           </div>
 
+          {/* Desktop Layout - Quantity, Try it on, Add to Cart (Row 1) + WhatsApp (Row 2) */}
+          <div className="hidden md:flex md:flex-col md:gap-4 md:mt-5">
+            {/* Row 1: Quantity | Try it on | Add to Cart */}
+            <div className="flex items-end gap-4">
+              {/* Quantity */}
+              <div className="flex-1">
+                <label
+                  htmlFor="qty"
+                  className="block text-[12px] text-neutral-700 mb-1"
+                >
+                  Quantity
+                </label>
+                <div className="flex w-full items-stretch overflow-hidden rounded border border-neutral-300 bg-white focus-within:border-[#7B1E2B]">
+                  <input
+                    id="qty"
+                    type="number"
+                    min={1}
+                    max={product.limit_purchases ? 1 : product.maxQty}
+                    value={qty}
+                    onChange={(e) => {
+                      const newValue = Number(e.target.value) || 1;
+                      if (product.limit_purchases) {
+                        setQty(1);
+                      } else {
+                        setQty(Math.min(Math.max(1, newValue), product.maxQty));
+                      }
+                    }}
+                    className="min-w-0 flex-1 bg-transparent py-2 pl-3 text-center text-[15px] font-semibold text-neutral-900 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
+
+                  <span className="flex w-6 shrink-0 flex-col border-l border-neutral-200">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!product.limit_purchases) {
+                          setQty((q) => Math.min(q + 1, product.maxQty));
+                        }
+                      }}
+                      disabled={
+                        product.limit_purchases || qty >= product.maxQty
+                      }
+                      aria-label="Increase quantity"
+                      className="flex flex-1 items-center justify-center transition-colors hover:bg-[#FDF0F2] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-3 w-3"
+                        fill="none"
+                        stroke={MAROON}
+                        strokeWidth="2.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m6 15 6-6 6 6" />
+                      </svg>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setQty((q) => Math.max(q - 1, 1))}
+                      disabled={qty <= 1}
+                      aria-label="Decrease quantity"
+                      className="flex flex-1 items-center justify-center border-t border-neutral-200 transition-colors hover:bg-[#FDF0F2] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-3 w-3"
+                        fill="none"
+                        stroke={MAROON}
+                        strokeWidth="2.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                  </span>
+                </div>
+              </div>
+
+              {/* Try it on Button */}
+              {product.ar_model_id ? (
+                <div
+                  className="flex-1"
+                  style={{
+                    display: "flex",
+                  }}
+                >
+                  <style>{`
+                    .try-on-desktop button {
+                      width: 100% !important;
+                      justify-content: center !important;
+                      border-width: 1.5px !important;
+                      border-radius: 0.375rem !important;
+                      padding: 0.520rem 1rem !important;
+                      font-weight: bold !important;
+                    }
+                    .try-on-desktop button:hover {
+                      background-color: #7B1E2B !important;
+                      color: white !important;
+                    }
+                  `}</style>
+                  <div className="try-on-desktop w-full">
+                    <TryOnButton
+                      modelId={product.ar_model_id}
+                      title={product.title}
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Add to Cart Button */}
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={inCart}
+                className={`rounded px-6 py-2.5 text-[13px] font-bold text-white transition-opacity flex items-center justify-center gap-2 flex-1 ${
+                  inCart
+                    ? "cursor-default opacity-75"
+                    : "hover:opacity-90 cursor-pointer"
+                }`}
+                style={{ backgroundColor: inCart ? "#999" : MAROON }}
+              >
+                {inCart ? (
+                  <>
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-4 w-4"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M20 6L9 17l-5-5"
+                        strokeWidth="2"
+                        stroke="currentColor"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    Already Added
+                  </>
+                ) : (
+                  <>
+                    <MdOutlineShoppingCartCheckout className="h-4 w-4" />
+                    Add to Cart
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Message: Maximum allowed qty */}
+            {(product?.limit_purchases === true || product?.maxQty === 1) && (
+              <p className="text-[12px] text-neutral-600">
+                * Maximum allowed qty 1
+              </p>
+            )}
+
+            {/* Row 2: WhatsApp */}
+            <div
+              className="rounded-3xl p-4 flex items-center justify-between gap-4 border-b-2"
+              style={{ backgroundColor: "#E8FECE" }}
+            >
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FaWhatsapp
+                    className="h-5 w-5"
+                    style={{ color: "#5F7037" }}
+                  />
+                  <p
+                    className="text-base font-semibold"
+                    style={{ color: "#5F7037" }}
+                  >
+                    WhatsApp
+                  </p>
+                </div>
+                <p
+                  className="text-[13px] leading-tight"
+                  style={{ color: "#5F7037" }}
+                >
+                  Get WhatsApp Assistance - Chat with us
+                </p>
+              </div>
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-2xl px-5 py-2.5 text-center text-[13px] font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap flex items-center gap-2"
+                style={{ backgroundColor: "#5F7037" }}
+              >
+                {/* <FaWhatsapp className="h-4 w-4" /> */}
+                Chat with Us
+                <FaArrowRightLong className="h-3 w-3" />
+              </a>
+            </div>
+
+            {/* Cancellation Policy */}
+            <button
+              type="button"
+              onClick={() => setShowCancellationPolicy(true)}
+              className="text-center text-[12px] text-blue-600 hover:text-blue-700 underline transition-colors py-2 flex items-center justify-center gap-1"
+            >
+              <TfiHandPointRight size={14} />
+              Please read our Cancellation Policy
+            </button>
+          </div>
+
           {/* Assurance row */}
-          <div className="mt-6 flex flex-nowrap items-start gap-8 sm:gap-12">
+          <div className="mt-6 flex w-full justify-between items-start">
             <div className="flex flex-col items-center gap-2 text-center">
               <span
                 className="font-[family-name:var(--font-heading)] text-[21px]"
@@ -1389,6 +1595,49 @@ export default function ProductDetail({ product }) {
               </svg>
               <span className="text-[12px] font-normal leading-tight text-neutral-700">
                 Precious Gifting
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center gap-2 text-center">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-8 w-8"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ color: MAROON }}
+                aria-hidden="true"
+              >
+                <rect x="2.4" y="7.4" width="9.6" height="8.5" rx="1" />
+                <path d="M12 10.4h3.7l3.3 3.3v2.2H12z" />
+                <circle cx="6.5" cy="17.7" r="1.6" />
+                <circle cx="16.3" cy="17.7" r="1.6" />
+                <path d="M0.6 9.8h1.2M0.6 13h1.2" />
+              </svg>
+              <span className="text-[12px] font-normal leading-tight text-neutral-700">
+                Delivery in 10 Days
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center gap-2 text-center">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-8 w-8"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ color: MAROON }}
+                aria-hidden="true"
+              >
+                <path d="M12 3.4 18.4 5.8v5.9c0 3.9-2.6 7-6.4 8-3.8-1-6.4-4.1-6.4-8V5.8L12 3.4Z" />
+                <path d="M9.4 11.8 11.3 13.7 14.8 10.2" />
+              </svg>
+              <span className="text-[12px] font-normal leading-tight text-neutral-700">
+                Safe to Use
               </span>
             </div>
           </div>
@@ -1528,7 +1777,7 @@ export default function ProductDetail({ product }) {
               </>
             ) : (
               <>
-                <IoBagHandleOutline className="h-4 w-4" />
+                <MdOutlineShoppingCartCheckout className="h-4 w-4" />
                 Add To Cart
               </>
             )}
