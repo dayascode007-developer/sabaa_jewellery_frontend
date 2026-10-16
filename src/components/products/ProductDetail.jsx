@@ -572,7 +572,7 @@ export default function ProductDetail({ product }) {
   const [ringName, setRingName] = useState("");
   const [fontId, setFontId] = useState("");
   const [symbolId, setSymbolId] = useState("");
-  const [symbolSide, setSymbolSide] = useState("left");
+  const [symbolSide, setSymbolSide] = useState("");
   const [colorId, setColorId] = useState("");
 
   // Validation error states
@@ -580,6 +580,7 @@ export default function ProductDetail({ product }) {
   const [colorError, setColorError] = useState("");
   const [ringNameError, setRingNameError] = useState("");
   const [photoError, setPhotoError] = useState("");
+  const [symbolSideError, setSymbolSideError] = useState("");
   const [fontError, setFontError] = useState("");
 
   const dispatch = useDispatch();
@@ -665,15 +666,9 @@ export default function ProductDetail({ product }) {
       hasErrors = true;
     }
 
-    // Validation: Engraving name required if customisable
-    if (product.isCustomisable && !ringName?.trim()) {
-      setRingNameError("Please enter a name for engraving");
-      hasErrors = true;
-    }
-
-    // Validation: Font style required if customisable
-    if (product.isCustomisable && !fontId) {
-      setFontError("Please select a font style");
+    // Validation: Symbol Direction required if a symbol is selected
+    if (symbolId && !symbolSide?.trim()) {
+      setSymbolSideError("Please select a symbol direction");
       hasErrors = true;
     }
 
@@ -1060,7 +1055,7 @@ export default function ProductDetail({ product }) {
                   className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
-                  Ring Name <span className="text-red-600 ml-1">*</span>
+                  Ring Name
                 </label>
                 <input
                   id="ring-name"
@@ -1072,18 +1067,11 @@ export default function ProductDetail({ product }) {
                     setRingNameError("");
                   }}
                   placeholder="Name to engrave"
-                  className={`mt-1.5 w-full rounded border bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500 ${
-                    ringNameError ? "border-red-500" : "border-neutral-300"
-                  }`}
+                  className="mt-1.5 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-800 outline-none focus:border-neutral-500"
                 />
-                {ringNameError && (
-                  <p className="mt-1.5 text-sm text-red-600">{ringNameError}</p>
-                )}
-                {!ringNameError && (
-                  <p className="mt-1 text-right text-[10px] text-neutral-500">
-                    {ringName.length}/{NAME_MAX_LENGTH}
-                  </p>
-                )}
+                <p className="mt-1 text-right text-[10px] text-neutral-500">
+                  {ringName.length}/{NAME_MAX_LENGTH}
+                </p>
               </div>
 
               <div className="mt-3">
@@ -1092,7 +1080,7 @@ export default function ProductDetail({ product }) {
                   className="block text-[14px] font-bold"
                   style={{ color: MAROON }}
                 >
-                  Font Style <span className="text-red-600 ml-1">*</span>
+                  Font Style
                 </label>
                 <FontDropdown
                   value={fontId}
@@ -1102,9 +1090,6 @@ export default function ProductDetail({ product }) {
                   }}
                   options={product.fonts || []}
                 />
-                {fontError && (
-                  <p className="mt-1.5 text-sm text-red-600">{fontError}</p>
-                )}
               </div>
 
               <div className="mt-3">
@@ -1161,6 +1146,9 @@ export default function ProductDetail({ product }) {
                       </label>
                     ))}
                   </div>
+                  {symbolSideError && (
+                    <p className="mt-1.5 text-sm text-red-600">{symbolSideError}</p>
+                  )}
                 </fieldset>
               ) : null}
 
