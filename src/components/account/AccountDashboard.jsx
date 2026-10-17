@@ -136,7 +136,7 @@ export default function AccountDashboard() {
                   className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium transition-all rounded-full cursor-pointer ${
                     activeSection === tab.id
                       ? "text-white"
-                      : "text-gray-700 hover:text-gray-900"
+                      : "text-gray-700 hover:text-gray-900 bg-gray-200"
                   }`}
                   style={
                     activeSection === tab.id

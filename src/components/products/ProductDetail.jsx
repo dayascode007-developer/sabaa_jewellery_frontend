@@ -11,8 +11,11 @@ import {
 import { TfiHandPointRight } from "react-icons/tfi";
 import { FaWhatsapp } from "react-icons/fa";
 import { FaArrowRightLong } from "react-icons/fa6";
-import { IoBagHandleOutline, IoCameraOutline } from "react-icons/io5";
-import { IoIosEye } from "react-icons/io";
+import {
+  IoBagHandleOutline,
+  IoCameraOutline,
+  IoEyeOutline,
+} from "react-icons/io5";
 import { addToCart, selectCartItems } from "@/store/slices/cartSlice";
 import { pixelTrack } from "@/lib/pixel";
 import {
@@ -40,6 +43,76 @@ import useStoreSettings from "@/hooks/useStoreSettings";
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
+
+// Portal-based Tooltip component to prevent clipping
+function Tooltip({ text, children, position = "top" }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+  const [mounted, setMounted] = useState(false);
+  const triggerRef = useRef(null);
+
+  useEffect(() => setMounted(true), []);
+
+  const handleMouseEnter = () => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+
+    let top = rect.top - 45;
+    let left = rect.left + rect.width / 2;
+
+    // Check if tooltip would go off-screen horizontally
+    const tooltipWidth = 150; // Estimated width
+    if (left + tooltipWidth / 2 > viewportWidth - 10) {
+      left = viewportWidth - tooltipWidth / 2 - 10;
+    } else if (left - tooltipWidth / 2 < 10) {
+      left = tooltipWidth / 2 + 10;
+    }
+
+    setTooltipPos({ top, left });
+    setShowTooltip(true);
+  };
+
+  return (
+    <>
+      <div
+        ref={triggerRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
+        {children}
+      </div>
+      {mounted &&
+        showTooltip &&
+        createPortal(
+          <div
+            className="fixed text-white px-3 py-2 rounded text-xs whitespace-nowrap z-50 pointer-events-none"
+            style={{
+              top: `${tooltipPos.top}px`,
+              left: `${tooltipPos.left}px`,
+              transform: "translateX(-50%)",
+              backgroundColor: MAROON,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            }}
+          >
+            {text}
+            <div
+              className="absolute w-0 h-0"
+              style={{
+                bottom: "-5px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                borderLeft: "5px solid transparent",
+                borderRight: "5px solid transparent",
+                borderTop: `5px solid ${MAROON}`,
+              }}
+            />
+          </div>,
+          document.body
+        )}
+    </>
+  );
+}
 
 const rupees = (n) =>
   "₹" +
@@ -798,40 +871,131 @@ export default function ProductDetail({ product }) {
                 box-shadow: none !important;
                 border: none !important;
               }
+              .tooltip-wrapper {
+                position: relative;
+                display: inline-block;
+              }
+              .tooltip-wrapper:hover::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                bottom: 120%;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: rgba(0, 0, 0, 0.85);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                white-space: nowrap;
+                font-size: 11px;
+                z-index: 50;
+                pointer-events: none;
+              }
+              .tooltip-wrapper:hover::before {
+                content: '';
+                position: absolute;
+                bottom: 115%;
+                left: 50%;
+                transform: translateX(-50%);
+                border: 4px solid transparent;
+                border-top-color: rgba(0, 0, 0, 0.85);
+                z-index: 50;
+                pointer-events: none;
+              }
+              .tooltip-wrapper.tooltip-left:hover::after {
+                bottom: auto;
+                top: -40px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+              }
+              .tooltip-wrapper.tooltip-left:hover::before {
+                bottom: auto;
+                top: -15px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                border: 4px solid transparent;
+                border-top-color: rgba(0, 0, 0, 0.85);
+              }
+              @media (max-width: 640px) {
+                .tooltip-wrapper:hover::after {
+                  font-size: 10px;
+                  padding: 6px 10px;
+                  bottom: 110%;
+                }
+                .tooltip-wrapper:hover::before {
+                  bottom: 105%;
+                  border-width: 3px;
+                }
+                .tooltip-wrapper.tooltip-left:hover::after {
+                  bottom: 120%;
+                  transform: translateX(-50%);
+                  left: 50%;
+                  right: auto;
+                }
+                .tooltip-wrapper.tooltip-left:hover::before {
+                  bottom: 115%;
+                  left: 50%;
+                  right: auto;
+                  transform: translateX(-50%);
+                  border: 3px solid transparent;
+                  border-top-color: rgba(0, 0, 0, 0.85);
+                }
+              }
             `}</style>
-              <ShareMenu
-                title={product.title}
-                path={`/product/${product.id}-${product.title
-                  .toLowerCase()
-                  .replace(/\s+/g, "-")
-                  .replace(/&/g, "")
-                  .replace(/--+/g, "-")}`}
-              />
+              <Tooltip text="Share this product">
+                <ShareMenu
+                  title={product.title}
+                  path={`/product/${product.id}-${product.title
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")
+                    .replace(/&/g, "")
+                    .replace(/--+/g, "-")}`}
+                />
+              </Tooltip>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (!token) {
-                    setPendingAction("wishlist");
-                    setAuthOpen(true);
-                    return;
-                  }
-                  if (wishlisted) {
-                    dispatch(removeFromWishlist(product.id));
-                  } else {
-                    isAddingToWishlist.current = true;
-                    dispatch(addToWishlist(product.id));
-                  }
-                }}
-                className="transition-colors hover:text-neutral-900"
-                title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              <Tooltip
+                text={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
               >
-                {wishlisted ? (
-                  <MdFavorite size={16} style={{ color: MAROON }} />
-                ) : (
-                  <MdFavoriteBorder size={16} />
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!token) {
+                      setPendingAction("wishlist");
+                      setAuthOpen(true);
+                      return;
+                    }
+                    if (wishlisted) {
+                      dispatch(removeFromWishlist(product.id));
+                    } else {
+                      isAddingToWishlist.current = true;
+                      dispatch(addToWishlist(product.id));
+                    }
+                  }}
+                  className="transition-colors hover:text-neutral-900"
+                >
+                  {wishlisted ? (
+                    <MdFavorite size={16} style={{ color: MAROON }} />
+                  ) : (
+                    <MdFavoriteBorder size={16} />
+                  )}
+                </button>
+              </Tooltip>
+
+              <Tooltip text="View similar products">
+                <button
+                  type="button"
+                  onClick={() => {
+                    similarProductsRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }}
+                  className="hidden md:block transition-colors hover:text-neutral-900"
+                >
+                  <IoEyeOutline size={16} />
+                </button>
+              </Tooltip>
             </div>
           </div>
 
@@ -1150,7 +1314,9 @@ export default function ProductDetail({ product }) {
                     ))}
                   </div>
                   {symbolSideError && (
-                    <p className="mt-1.5 text-sm text-red-600">{symbolSideError}</p>
+                    <p className="mt-1.5 text-sm text-red-600">
+                      {symbolSideError}
+                    </p>
                   )}
                 </fieldset>
               ) : null}
@@ -1743,7 +1909,7 @@ export default function ProductDetail({ product }) {
             style={{ color: MAROON, borderColor: MAROON }}
             aria-label="View similar products"
           >
-            <IoIosEye className="h-4 w-4" />
+            <IoEyeOutline className="h-4 w-4" />
             Similar Products
           </button>
 

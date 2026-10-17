@@ -37,7 +37,7 @@ function ContentSection({ section, index }) {
         <div className="flex flex-col gap-8">
           {textFirst ? (
             <>
-              <div className="text-[16px] leading-relaxed text-neutral-700"
+              <div className="text-[16px] leading-relaxed text-neutral-700 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:ml-2 [&_ol]:list-decimal [&_ol]:pl-6"
                 dangerouslySetInnerHTML={{ __html: section.text }} />
               <img src={section.image} alt={section.heading || "Blog section"}
                 className="w-full h-80 object-cover rounded-lg shadow-lg" />
@@ -46,7 +46,7 @@ function ContentSection({ section, index }) {
             <>
               <img src={section.image} alt={section.heading || "Blog section"}
                 className="w-full h-80 object-cover rounded-lg shadow-lg" />
-              <div className="text-[16px] leading-relaxed text-neutral-700"
+              <div className="text-[16px] leading-relaxed text-neutral-700 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:ml-2 [&_ol]:list-decimal [&_ol]:pl-6"
                 dangerouslySetInnerHTML={{ __html: section.text }} />
             </>
           )}
@@ -55,7 +55,7 @@ function ContentSection({ section, index }) {
         <img src={section.image} alt={section.heading || "Blog section"}
           className="w-full h-80 object-cover rounded-lg shadow-lg" />
       ) : (
-        <div className="text-[16px] leading-relaxed text-neutral-700"
+        <div className="text-[16px] leading-relaxed text-neutral-700 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:ml-2 [&_ol]:list-decimal [&_ol]:pl-6"
           dangerouslySetInnerHTML={{ __html: section.text }} />
       )}
     </div>
@@ -124,7 +124,6 @@ export default function BlogDetail({ post }) {
           <div className="space-y-12">
             {post.content && post.content.length > 0 ? (
               <>
-                {console.log("Total sections:", post.content.length, post.content)}
                 {post.content.map((section, i) => (
                   <ContentSection key={i} section={section} index={i} />
                 ))}
