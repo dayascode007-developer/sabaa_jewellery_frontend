@@ -308,7 +308,7 @@ export default function ProductCard({ product }) {
             href={`/product/${product.id}-${toSlug(product.title)}`}
             className="relative z-20 mt-0.5 inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded-full font-[family-name:var(--font-category)] text-[10px] font-medium transition-colors hover:bg-[#7B1E2B] hover:text-white sm:mt-1.5 sm:h-[38px] sm:gap-2 sm:text-[12px]"
             style={{
-              borderWidth: "1.5px",
+              borderWidth: "1px",
               borderColor: MAROON,
               color: MAROON,
               backgroundColor: "transparent",

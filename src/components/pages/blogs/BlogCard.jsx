@@ -156,7 +156,7 @@ export default function BlogCard({ post, featured = false }) {
             {post.title}
           </h3>
 
-          <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-600">
+          <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-600 line-clamp-3">
             {post.excerpt}
           </p>
         </div>

@@ -562,7 +562,7 @@ export default function OrderHistory({ onTrackOrder }) {
               {/* Track Package - Secondary Button */}
               <button
                 onClick={() => onTrackOrder && onTrackOrder(order)}
-                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer flex items-center justify-center gap-1 md:gap-2"
+                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border transition-all hover:opacity-70 cursor-pointer flex items-center justify-center gap-1 md:gap-2"
                 style={{
                   borderColor: MAROON,
                   color: MAROON,
@@ -575,7 +575,7 @@ export default function OrderHistory({ onTrackOrder }) {
               {/* View or Edit Order - Secondary Button */}
               <button
                 onClick={() => handleViewDetails(order)}
-                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 cursor-pointer flex items-center justify-center gap-1 md:gap-2"
+                className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border transition-all hover:opacity-70 cursor-pointer flex items-center justify-center gap-1 md:gap-2"
                 style={{
                   borderColor: MAROON,
                   color: MAROON,
@@ -589,7 +589,7 @@ export default function OrderHistory({ onTrackOrder }) {
               {order.items?.[0]?.has_reviewed ? (
                 <button
                   disabled
-                  className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all opacity-50 cursor-not-allowed flex items-center justify-center gap-1 md:gap-2"
+                  className="flex-1 py-2 md:py-3 px-3 md:px-6 rounded-full font-semibold text-xs md:text-sm border transition-all opacity-50 cursor-not-allowed flex items-center justify-center gap-1 md:gap-2"
                   style={{
                     borderColor: MAROON,
                     color: MAROON,
@@ -602,7 +602,7 @@ export default function OrderHistory({ onTrackOrder }) {
               ) : (
                 <button
                   onClick={() => handleWriteReview(order)}
-                  className="flex-1 py-2 md:py-3 px-2 md:px-6 rounded-full font-semibold text-xs md:text-sm border-2 transition-all hover:opacity-70 flex items-center justify-center gap-1 md:gap-2 cursor-pointer"
+                  className="flex-1 py-2 md:py-3 px-2 md:px-6 rounded-full font-semibold text-xs md:text-sm border transition-all hover:opacity-70 flex items-center justify-center gap-1 md:gap-2 cursor-pointer"
                   style={{
                     borderColor: MAROON,
                     color: MAROON,
