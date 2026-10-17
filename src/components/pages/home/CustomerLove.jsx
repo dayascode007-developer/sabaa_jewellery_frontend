@@ -33,7 +33,9 @@ function Arrow({ direction, onClick, disabled }) {
       onClick={onClick}
       disabled={disabled}
       aria-label={isLeft ? "Previous testimonials" : "Next testimonials"}
-      className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-500 transition hover:border-neutral-400 hover:text-neutral-700 disabled:opacity-30 sm:flex"
+      // All four testimonials fit the row at lg, so there is nothing left to
+      // scroll to and the arrows would only ever sit disabled. Hidden there.
+      className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-500 transition hover:border-neutral-400 hover:text-neutral-700 disabled:opacity-30 sm:flex lg:hidden"
     >
       <svg
         viewBox="0 0 24 24"
@@ -233,7 +235,9 @@ export default function CustomerLove() {
           <Arrow direction="right" onClick={() => scrollByCard("right")} disabled={atEnd} />
         </div>
 
-        <div className="mt-5 flex items-center justify-center gap-1">
+        {/* Hidden at lg alongside the arrows: with the whole set on screen at
+            once every dot is the current one, so they say nothing. */}
+        <div className="mt-5 flex items-center justify-center gap-1 lg:hidden">
           {TESTIMONIALS.map((testimonial, i) => (
             <button
               key={testimonial.id}

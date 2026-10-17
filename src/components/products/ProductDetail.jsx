@@ -86,9 +86,13 @@ function Gallery({ product }) {
   const [lens, setLens] = useState(null);
 
   // The product shot first, then the workshop images shot for its category.
-  // Padded to four so the thumbnail row keeps its shape on sparse categories.
-  const shots = [...(product.gallery ?? [product.image])];
-  while (shots.length < 4) shots.push(null);
+  // Only what the admin actually uploaded: the row used to be padded out to
+  // four, which left blank gradient tiles on any product with fewer images —
+  // clickable, selectable, and showing nothing when picked.
+  const uploaded = (product.gallery ?? []).filter(Boolean);
+  // An empty gallery array is not the same as a missing one, and ?? only
+  // catches the missing case, so fall back on the main image for both.
+  const shots = uploaded.length > 0 ? uploaded : [product.image].filter(Boolean);
 
   const current = shots[active];
   // The magnifier reads the original file, not the resized <Image> output —
@@ -186,24 +190,25 @@ function Gallery({ product }) {
         </div>
       </div>
 
-      {/* Thumbnail gallery with scroll indicator */}
-      <div className="mt-3 relative">
-        <div className="flex gap-2 overflow-x-auto scroll-smooth pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {shots.map((shot, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setActive(i)}
-              aria-label={`View image ${i + 1}`}
-              aria-current={i === active}
-              className={`relative h-16 w-16 shrink-0 overflow-hidden rounded border transition-colors ${
-                i === active
-                  ? "border-[#7B1E2B]"
-                  : "border-neutral-200 hover:border-neutral-400"
-              }`}
-            >
-              {shot ? (
-                typeof shot === "string" && shot.startsWith("http") ? (
+      {/* Thumbnail gallery with scroll indicator. Nothing to choose between
+          with a single shot, and an empty strip would still take its margin. */}
+      {shots.length > 1 ? (
+        <div className="mt-3 relative">
+          <div className="flex gap-2 overflow-x-auto scroll-smooth pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {shots.map((shot, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActive(i)}
+                aria-label={`View image ${i + 1}`}
+                aria-current={i === active}
+                className={`relative h-16 w-16 shrink-0 overflow-hidden rounded border transition-colors ${
+                  i === active
+                    ? "border-[#7B1E2B]"
+                    : "border-neutral-200 hover:border-neutral-400"
+                }`}
+              >
+                {typeof shot === "string" && shot.startsWith("http") ? (
                   <img
                     src={shot}
                     alt=""
@@ -217,14 +222,12 @@ function Gallery({ product }) {
                     sizes="64px"
                     className="object-cover"
                   />
-                )
-              ) : (
-                <span className="block h-full w-full bg-gradient-to-br from-[#EDE3D3] to-[#D8C6A8]" />
-              )}
-            </button>
-          ))}
+                )}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Trust badges - desktop only */}
       <div className="hidden md:mt-6 md:grid md:grid-cols-2 md:gap-4">

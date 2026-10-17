@@ -145,6 +145,15 @@ export default function Header({ hideSearchOnMobile = false }) {
 
   const isLoggedIn = !!token && !!customer && customer.id !== "temp";
 
+  // Both counts come out of the persisted store: empty when the server renders,
+  // refilled from localStorage before the client's first render. Reading them
+  // straight through is the hydration mismatch React reports on the wishlist
+  // badge — the server sent no badge, the client wanted one. Hold them at zero
+  // until mount, the same gate the auth UI below already uses, and let the real
+  // numbers arrive on the next paint.
+  const shownCartCount = mounted ? cartCount : 0;
+  const shownWishlistCount = mounted ? wishlistCount : 0;
+
   // Fix hydration mismatch: only render auth UI after hydration
   useEffect(() => {
     setMounted(true);
@@ -384,12 +393,12 @@ export default function Header({ hideSearchOnMobile = false }) {
                     path={a.icon}
                     className="h-[22px] w-[22px] sm:h-6 sm:w-6"
                   />
-                  {a.key === "heart" && wishlistCount > 0 ? (
+                  {a.key === "heart" && shownWishlistCount > 0 ? (
                     <span
                       className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-white"
                       style={{ backgroundColor: MAROON }}
                     >
-                      {wishlistCount}
+                      {shownWishlistCount}
                     </span>
                   ) : null}
                 </span>
@@ -413,7 +422,7 @@ export default function Header({ hideSearchOnMobile = false }) {
               className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-white"
               style={{ backgroundColor: MAROON }}
             >
-              {cartCount}
+              {shownCartCount}
             </span>
           </Link>
         </nav>
