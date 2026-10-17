@@ -406,6 +406,10 @@ function ItemMark({ kind }) {
           fill
           sizes="24px"
           unoptimized={isSvg}
+          // Eager, not lazy. These mount already on screen, so waiting for an
+          // intersection callback only delays them — which is why the badges
+          // came up empty for a beat each time a menu opened.
+          loading="eager"
           className={isSvg ? "object-contain" : "object-cover"}
         />
       </span>
@@ -431,7 +435,12 @@ function ItemMark({ kind }) {
   );
 }
 
-function MegaPanel({ menu, kind, onNavigate }) {
+// Length of the unroll and the roll-up. Must match the two animations in
+// globals.css — CategoryNav keeps the panel mounted for exactly this long so
+// the roll-up has something to play on.
+const ROLL_MS = 700;
+
+function MegaPanel({ menu, kind, onNavigate, rolling = false }) {
   const allSlug = VIEW_ALL_SLUG[kind];
   const viewAllHref = allSlug
     ? `/category/${allSlug}`
@@ -474,7 +483,18 @@ function MegaPanel({ menu, kind, onNavigate }) {
   useEffect(() => cancelClose, []);
 
   return (
-    <div className="absolute inset-x-0 top-full z-40 border-t border-neutral-200 bg-white shadow-[0_14px_28px_rgba(0,0,0,0.10)]">
+    // The shadow is a filter here rather than a box-shadow on the sheet: the
+    // sheet is clipped, and a clip takes the element's own shadow with it. As
+    // a filter on the uncut parent it follows whatever is currently revealed.
+    <div className="absolute inset-x-0 top-full z-40 [filter:drop-shadow(0_12px_18px_rgba(0,0,0,0.12))]">
+      {/* The sheet. On the way out it must not still catch the cursor, or
+          hovering it would re-open the menu it is busy closing. */}
+      <div
+        className={`${rolling ? "category-rollup" : "category-unroll"} ${
+          rolling ? "pointer-events-none" : "pointer-events-auto"
+        }`}
+      >
+        <div className="border-t border-neutral-200 bg-white">
       <div className="mx-auto grid w-full max-w-[1400px] lg:grid-cols-[1fr_300px]">
         <div className="p-4 sm:p-6">
           {/* Left: the plain links, then one row per group. Right: whichever
@@ -605,6 +625,7 @@ function MegaPanel({ menu, kind, onNavigate }) {
                       alt=""
                       fill
                       sizes="68px"
+                      loading="eager"
                       className="object-cover"
                     />
                   </span>
@@ -633,13 +654,17 @@ function MegaPanel({ menu, kind, onNavigate }) {
         {/* Feature panel */}
         {menu.feature ? (
           <div className="hidden border-l border-neutral-200 p-4 lg:block">
-            <div className="relative aspect-[3/4] w-full overflow-hidden rounded bg-neutral-100">
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded bg-neutral-100 shadow-[0_8px_20px_rgba(0,0,0,0.14)]">
               {menu.feature.image ? (
                 <Image
                   src={menu.feature.image}
                   alt=""
                   fill
                   sizes="300px"
+                  // Same reason as the mark icons: the panel is on screen the
+                  // moment it mounts, so lazy loading buys nothing and costs a
+                  // visible beat of empty space.
+                  loading="eager"
                   className="object-cover"
                 />
               ) : (
@@ -647,24 +672,19 @@ function MegaPanel({ menu, kind, onNavigate }) {
               )}
             </div>
             {menu.feature.caption && (
-              <p className="mt-2 text-[12px] leading-snug text-neutral-700">
-                {menu.feature.caption}
-              </p>
-            )}
-            {menu.feature.href && menu.feature.cta && (
-              <Link
-                href={menu.feature.href}
-                onClick={onNavigate}
-                className="mt-1 inline-flex items-center gap-1 text-[12px] underline"
+              <p
+                className="mt-2.5 text-center text-[14px] leading-snug font-medium"
                 style={{ color: MAROON }}
               >
-                {menu.feature.cta}
-                <span aria-hidden="true">&#8599;</span>
-              </Link>
+                {menu.feature.caption}
+              </p>
             )}
           </div>
         ) : null}
       </div>
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -683,6 +703,19 @@ export default function CategoryNav() {
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
+
+  // Warm the mark icons once, so the first hover on each category does not
+  // pay for its own downloads. Eager loading alone only helps after the panel
+  // is already mounted; this gets them into cache before that. window.Image
+  // rather than Image — next/image owns that name in this file.
+  useEffect(() => {
+    Object.values(MARK_IMAGES).forEach((mark) => {
+      const src = typeof mark === "string" ? mark : mark?.src;
+      if (!src) return;
+      const preload = new window.Image();
+      preload.src = src;
+    });
+  }, []);
 
   // Use Redux nav items if available, fallback to static
   const navItems = navItemsFromRedux.length > 0 ? navItemsFromRedux : NAV_ITEMS;
@@ -716,7 +749,30 @@ export default function CategoryNav() {
     };
   }, [openId, close]);
 
-  const openMenu = navItems.find((item) => item.id === openId)?.menu;
+
+  // openId is already null while the sheet is still rolling up, so the panel
+  // keeps its own copy of what to draw: set when a menu opens, cleared only
+  // once the roll-up has finished. Switching category while open just moves
+  // panelId, so the sheet stays down and only its contents change.
+  const [panelId, setPanelId] = useState(null);
+  const [rolling, setRolling] = useState(false);
+
+  useEffect(() => {
+    if (openId) {
+      setPanelId(openId);
+      setRolling(false);
+      return;
+    }
+    if (!panelId) return;
+    setRolling(true);
+    const t = setTimeout(() => {
+      setPanelId(null);
+      setRolling(false);
+    }, ROLL_MS);
+    return () => clearTimeout(t);
+  }, [openId, panelId]);
+
+  const panelMenu = navItems.find((item) => item.id === panelId)?.menu;
 
   // A category page highlights its nav item — including when the page is one of
   // the item's dropdown children, so /category/hindu-rings lights up "Rings".
@@ -830,13 +886,24 @@ export default function CategoryNav() {
         })}
       </ul>
 
-      {openMenu && openId !== "more" ? (
-        <MegaPanel menu={openMenu} kind={openId} onNavigate={close} />
+      {panelId !== "more" && panelMenu ? (
+        <MegaPanel
+          menu={panelMenu}
+          kind={panelId}
+          onNavigate={close}
+          rolling={rolling}
+        />
       ) : null}
 
-      {openId === "more" ? (
+      {/* More rolls exactly like the category panels. It is driven by panelId
+          rather than openId for the same reason they are: openId is already
+          null while the menu is still winding up. panelMenu, not openMenu,
+          feeds the feature image, or it would blank out mid roll-up. */}
+      {panelId === "more" ? (
         <div
-          className="absolute left-0 right-0 top-full z-40"
+          className={`${rolling ? "category-rollup" : "category-unroll"} ${
+            rolling ? "pointer-events-none" : ""
+          } absolute left-0 right-0 top-full z-40`}
           onMouseLeave={() => setOpenId(null)}
         >
           <CascadingMoreMenu
@@ -844,8 +911,8 @@ export default function CategoryNav() {
             moreCategories={moreCategories}
             staticItems={moreStaticItems}
             onClose={() => setOpenId(null)}
-            featureImage={openMenu?.feature?.image}
-            featureCaption={openMenu?.feature?.caption}
+            featureImage={panelMenu?.feature?.image}
+            featureCaption={panelMenu?.feature?.caption}
           />
         </div>
       ) : null}

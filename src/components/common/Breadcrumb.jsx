@@ -14,7 +14,11 @@ export default function Breadcrumb({ items }) {
         {items.map((item, i) => {
           const isLast = i === items.length - 1;
           return (
-            <li key={item.label} className="flex items-center gap-2">
+            // Keyed by position, not label: a trail can legitimately repeat a
+            // word (Rings > Rings), and two children with the same key is what
+            // React was warning about. The list is fixed and never reordered or
+            // filtered, so the index is stable.
+            <li key={i} className="flex items-center gap-2">
               {isLast ? (
                 <span
                   aria-current="page"

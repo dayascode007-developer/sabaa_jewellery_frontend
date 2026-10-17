@@ -139,3 +139,77 @@ body {
     backgroundPosition: 200% center;
   }
 }
+
+/* Category dropdown, built to read as a sheet of paper on a roller.
+
+   The sheet is REVEALED top to bottom with clip-path rather than rotated.
+   A rotateX under perspective leaves the panel translucent and foreshortened
+   for the whole of its flight, so the page behind it showed through and the
+   block sat out of square. A clip keeps it opaque and rectangular on every
+   frame, and is closer to how paper actually comes off a roll. */
+@keyframes category-unroll {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* The same reveal run backwards: the sheet winds back onto the roller. */
+@keyframes category-rollup {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+/* Slow on purpose: the roll is the point, and at 300ms it was over before it
+   registered. Paired with ROLL_MS in CategoryNav.jsx, which must not be
+   shorter than the roll-up or the panel unmounts mid-animation. */
+.category-unroll {
+  animation: category-unroll 900ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.category-rollup {
+  animation: category-rollup 700ms cubic-bezier(0.55, 0.06, 0.68, 0.19) both;
+}
+
+/* The bottom right corner is cut away so the curl has somewhere to sit. */
+.category-page {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - 46px),
+    calc(100% - 46px) 100%,
+    0 100%
+  );
+}
+
+/* The paper turned back on itself in that corner. */
+.category-curl {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 46px;
+  height: 46px;
+  border-top-left-radius: 50px;
+  background: linear-gradient(
+    315deg,
+    #ffffff 0%,
+    #f5f2ed 38%,
+    #ded7ce 74%,
+    #c7c0b6 100%
+  );
+  box-shadow: -4px -4px 10px rgba(0, 0, 0, 0.13);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-unroll,
+  .category-rollup {
+    animation: none;
+  }
+}

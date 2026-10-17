@@ -22,6 +22,10 @@ export const CATEGORY_LABELS = {
   "all-pendants": "All Pendants",
   "all-earrings": "All Earrings",
   "all-bracelets": "All Bracelets",
+  // Singular spellings, as the nav's View All links use them.
+  "all-pendant": "All Pendants",
+  "all-bracelet": "All Bracelets",
+  "all-anklet": "All Anklets",
 
   // The "Shop by Categories" tiles on the home page.
   "engraving-rings": "Engraving Rings",
@@ -77,6 +81,14 @@ const CATEGORY_ALIASES = {
   "all-pendants": ["hindu-pendants", "christian-pendants", "photo-pendants"],
   "all-earrings": ["jimikki"],
   "all-bracelets": ["bracelet"],
+
+  // The nav's View All slugs are singular, matching the API's own category
+  // names, while the aliases above grew plural. Nothing matched, so
+  // getProductsBySlug fell through to its "show everything" fallback and the
+  // Pendant and Bracelet dropdowns advertised chain photographs. Both
+  // spellings resolve now; neither URL changes.
+  "all-pendant": ["hindu-pendants", "christian-pendants", "photo-pendants"],
+  "all-bracelet": ["bracelet"],
 
   // Bracelets are not tagged by gender in the product data yet, so both
   // sub-category pages draw from the one "bracelet" set. Once the pieces carry
