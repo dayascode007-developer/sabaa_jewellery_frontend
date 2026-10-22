@@ -165,7 +165,8 @@ function Gallery({ product }) {
   const uploaded = (product.gallery ?? []).filter(Boolean);
   // An empty gallery array is not the same as a missing one, and ?? only
   // catches the missing case, so fall back on the main image for both.
-  const shots = uploaded.length > 0 ? uploaded : [product.image].filter(Boolean);
+  const shots =
+    uploaded.length > 0 ? uploaded : [product.image].filter(Boolean);
 
   const current = shots[active];
   // The magnifier reads the original file, not the resized <Image> output —
@@ -1344,8 +1345,7 @@ export default function ProductDetail({ product }) {
               Renders nothing at all unless this product has a try-on model. */}
 
           {/* See it on yourself before deciding, so it sits with the buying
-              choice rather than below the fold with the specifications.
-              Renders nothing at all unless this product has a model, which is most of them. */}
+              choice rather than below the fold with the specifications. */}
           {product.ar_model_id ? (
             <div className="mt-5 md:hidden">
               <TryOnButton
@@ -1353,7 +1353,11 @@ export default function ProductDetail({ product }) {
                 title={product.title}
               />
             </div>
-          ) : null}
+          ) : (
+            <p className="mt-5 text-sm text-red-500 font-bold md:hidden">
+              Virtual Try-On is not currently available for this item.
+            </p>
+          )}
 
           {/* Mobile Layout - WhatsApp assist + Add to cart */}
           <div className="mt-5 flex flex-wrap items-start gap-4 md:hidden">
@@ -1602,7 +1606,7 @@ export default function ProductDetail({ product }) {
               </div>
 
               {/* Try it on Button */}
-              {product.ar_model_id ? (
+              {product.ar_model_id && (
                 <div
                   className="flex-1"
                   style={{
@@ -1630,7 +1634,7 @@ export default function ProductDetail({ product }) {
                     />
                   </div>
                 </div>
-              ) : null}
+              )}
 
               {/* Add to Cart Button */}
               <button
@@ -1676,6 +1680,13 @@ export default function ProductDetail({ product }) {
             {(product?.limit_purchases === true || product?.maxQty === 1) && (
               <p className="text-[12px] text-neutral-600">
                 * Maximum allowed qty 1
+              </p>
+            )}
+
+            {/* Try AR not available message */}
+            {!product.ar_model_id && (
+              <p className="mt-3 text-sm text-red-500 font-bold">
+                Virtual Try-On is not currently available for this item.
               </p>
             )}
 
