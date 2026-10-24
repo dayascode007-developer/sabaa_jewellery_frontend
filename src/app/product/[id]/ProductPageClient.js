@@ -16,8 +16,9 @@ import { fetchProductById } from "@/store/api/categoriesApi";
 const deriveIsCustomisable = (product) => {
   return (
     product?.sub_main_category_id === 14 ||
-    product?.subcategories?.some((sub) => sub.id === 14)
-  ) || false;
+    product?.subcategories?.some((sub) => sub.id === 14) ||
+    false
+  );
 };
 
 // Transform API product data to match ProductCard/Detail format
@@ -34,7 +35,7 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
   price: parseFloat(apiProduct.sale_price) || 0,
   mrp: parseFloat(apiProduct.regular_price) || 0,
 
-  // Image
+  // Images
   image: apiProduct.main_image || null,
   gallery: [
     apiProduct.main_image,
@@ -122,7 +123,7 @@ export default function ProductPageClient() {
   const params = useParams();
   // Extract ID from slug format: "150-hgv" -> "150"
   const slug = params?.id;
-  const productId = slug?.split('-')[0];
+  const productId = slug?.split("-")[0];
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showShimmer, setShowShimmer] = useState(false);
