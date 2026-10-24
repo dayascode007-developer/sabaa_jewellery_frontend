@@ -533,67 +533,6 @@ export const CUSTOMER_VOICES = [
     duration: "0:31",
     youtubeUrl: "#",
   },
-  {
-    id: "v5",
-    name: "Ayesha",
-    city: "Salem",
-    avatar: voiceAvatar5,
-    title: "Our customer voice 5",
-    lines: [
-      "Ordered an Impon chain for my mother.",
-      "She was delighted with the finish.",
-      "Will order again soon.",
-    ],
-    audio: null,
-    duration: "06:40",
-    youtubeUrl: "#",
-  },
-  {
-    id: "v6",
-    name: "Rajesh",
-    city: "Erode",
-    // Swapped with v1 — see the note there.
-    avatar: voiceAvatar1,
-    title: "Our customer voice 6",
-    lines: [
-      "The symbol ring is exactly what I wanted.",
-      "Craftsmanship is genuinely excellent.",
-      "Worth every rupee.",
-    ],
-    audio: null,
-    duration: "05:18",
-    youtubeUrl: "#",
-  },
-  {
-    id: "v7",
-    name: "Divya",
-    city: "Tirunelveli",
-    avatar: voiceAvatar7,
-    title: "Our customer voice 7",
-    lines: [
-      "Beautiful photo ring, the image is so clear.",
-      "Delivery was quicker than expected.",
-      "Thank you so much!",
-    ],
-    audio: null,
-    duration: "07:02",
-    youtubeUrl: "#",
-  },
-  {
-    id: "v8",
-    name: "Muthu",
-    city: "Thanjavur",
-    avatar: voiceAvatar8,
-    title: "Our customer voice 8",
-    lines: [
-      "Bought kids chains for both my children.",
-      "Light weight and very well made.",
-      "Highly satisfied with the service.",
-    ],
-    audio: null,
-    duration: "04:55",
-    youtubeUrl: "#",
-  },
 ];
 
 // Full-width promo strip. Headline, badges and both buttons are painted into
@@ -660,7 +599,7 @@ export const TRUST_ITEMS = [
   {
     id: "trusted",
     icon: "people",
-    lines: ["Trusted by 5000+", "Happy Customers"],
+    lines: ["Trusted by 5 Lakhs+", "Happy Customers"],
   },
   { id: "quality", icon: "ring", lines: ["Premium Quality", "Rings"] },
   { id: "delivery", icon: "truck", lines: ["Fast & Secure", "Delivery"] },

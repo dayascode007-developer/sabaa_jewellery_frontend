@@ -8,13 +8,18 @@ import { NAV_ITEMS } from "@/constants/homeData";
 import { logout } from "@/store/slices/authSlice";
 import { clearWishlist } from "@/store/slices/wishlistSlice";
 import { clearCartLocal } from "@/store/slices/cartSlice";
-import { fetchCategories, selectNavItems, selectCategoriesLoading } from "@/store/slices/categoriesSlice";
+import {
+  fetchCategories,
+  selectNavItems,
+  selectCategoriesLoading,
+} from "@/store/slices/categoriesSlice";
 import { MobileDrawerShimmer } from "@/components/shimmer-loader/Shimmer-loader";
 import { AiOutlineLogout } from "react-icons/ai";
 import { BiSolidUserCircle } from "react-icons/bi";
 import { IoMdLogIn } from "react-icons/io";
 import LogoutConfirmModal from "@/components/account/LogoutConfirmModal";
 import Image from "next/image";
+import sabaaLogo from "@/assets/logo/New High Quality Sabaa Logo.webp";
 // Decorative artwork for the drawer, from assets/side_bar.
 import drawerTopArt from "@/assets/side_bar/image2.webp"; // gold chain with the heart
 import drawerBottomArt from "@/assets/side_bar/side bar image.webp"; // ring, flowers, wave
@@ -178,7 +183,9 @@ function Chevron({ open }) {
       strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+      className={`h-4 w-4 shrink-0 transition-transform ${
+        open ? "rotate-180" : ""
+      }`}
       aria-hidden="true"
     >
       <path d="m6 9 6 6 6-6" />
@@ -264,261 +271,283 @@ export default function MobileDrawer({ open, onClose }) {
         }`}
         style={{ perspective: "1100px", perspectiveOrigin: "left center" }}
       >
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu"
-        // visibility is switched off only AFTER the fold closes (the delay on
-        // the visibility transition), so the animation plays out in full and a
-        // closed menu's links cannot be reached with Tab.
-        // Cream instead of white, as in the reference. Rounded on the right
-        // only — the left edge meets the side of the screen. overflow-hidden
-        // clips the artwork to those rounded corners too.
-        className={`relative flex h-full w-full flex-col overflow-hidden rounded-r-3xl bg-[#F8F2E9] shadow-2xl [backface-visibility:hidden] motion-reduce:transition-none ${
-          open
-            ? "visible [transition:transform_480ms_cubic-bezier(0.22,0.9,0.3,1),visibility_0s]"
-            : "invisible [transition:transform_380ms_cubic-bezier(0.55,0,0.8,0.4),visibility_0s_380ms]"
-        }`}
-        style={{
-          transformOrigin: "left center",
-          transform: open ? "rotateY(0deg)" : "rotateY(-90deg)",
-        }}
-      >
-        {/* Shading across the sheet while it turns — darkest on the far edge,
+        <aside
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+          // visibility is switched off only AFTER the fold closes (the delay on
+          // the visibility transition), so the animation plays out in full and a
+          // closed menu's links cannot be reached with Tab.
+          // Cream instead of white, as in the reference. Rounded on the right
+          // only — the left edge meets the side of the screen. overflow-hidden
+          // clips the artwork to those rounded corners too.
+          className={`relative flex h-full w-full flex-col overflow-hidden rounded-r-3xl bg-[#F8F2E9] shadow-2xl [backface-visibility:hidden] motion-reduce:transition-none ${
+            open
+              ? "visible [transition:transform_480ms_cubic-bezier(0.22,0.9,0.3,1),visibility_0s]"
+              : "invisible [transition:transform_380ms_cubic-bezier(0.55,0,0.8,0.4),visibility_0s_380ms]"
+          }`}
+          style={{
+            transformOrigin: "left center",
+            transform: open ? "rotateY(0deg)" : "rotateY(-90deg)",
+          }}
+        >
+          {/* Shading across the sheet while it turns — darkest on the far edge,
             fading out as it flattens — which is what makes it read as paper
             catching the light rather than a flat card swinging round. */}
-        <span
-          aria-hidden="true"
-          className={`pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-black/5 via-black/20 to-black/45 motion-reduce:transition-none ${
-            open
-              ? "opacity-0 [transition:opacity_480ms_ease-out]"
-              : "opacity-100 [transition:opacity_380ms_ease-in]"
-          }`}
-        />
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-black/5 via-black/20 to-black/45 motion-reduce:transition-none ${
+              open
+                ? "opacity-0 [transition:opacity_480ms_ease-out]"
+                : "opacity-100 [transition:opacity_380ms_ease-in]"
+            }`}
+          />
 
-        {/* Top-right: the gold chain with its heart, tucked into the corner
+          {/* Top-right: the gold chain with its heart, tucked into the corner
             behind the close button. The file is a wide landscape, so it is
             cropped to its right-hand side, where the heart hangs, and faded
             out along its left and bottom edges so it melts into the cream
             rather than ending in a hard line. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute top-0 right-0 z-0 h-[150px] w-[62%]"
-          style={{
-            WebkitMaskImage:
-              "radial-gradient(120% 110% at 100% 0%, #000 55%, transparent 100%)",
-            maskImage:
-              "radial-gradient(120% 110% at 100% 0%, #000 55%, transparent 100%)",
-          }}
-        >
-          <Image
-            src={drawerTopArt}
-            alt=""
-            fill
-            sizes="200px"
-            className="object-cover"
-            style={{ objectPosition: "82% 70%" }}
-          />
-        </div>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute top-0 right-0 z-0 h-[150px] w-[62%]"
+            style={{
+              WebkitMaskImage:
+                "radial-gradient(120% 110% at 100% 0%, #000 55%, transparent 100%)",
+              maskImage:
+                "radial-gradient(120% 110% at 100% 0%, #000 55%, transparent 100%)",
+            }}
+          >
+            <Image
+              src={drawerTopArt}
+              alt=""
+              fill
+              sizes="200px"
+              className="object-cover"
+              style={{ objectPosition: "82% 70%" }}
+            />
+          </div>
 
-        {/* Bottom: the ring on its stone, the flowers and the green wave with
+          {/* Bottom: the ring on its stone, the flowers and the green wave with
             gold leaves. Faded out at the top so the list above sits on plain
             cream and the art rises out of it. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 aspect-[1515/1038]"
-          style={{
-            WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 28%)",
-            maskImage: "linear-gradient(to bottom, transparent 0%, #000 28%)",
-          }}
-        >
-          <Image
-            src={drawerBottomArt}
-            alt=""
-            fill
-            sizes="360px"
-            className="object-cover object-bottom"
-          />
-        </div>
-
-        {/* Everything interactive sits above the two pieces of art. */}
-        <div className="relative z-[1] flex items-center justify-between px-6 pt-6 pb-4">
-          {/* Show SABAA if not logged in, Avatar icon + Name + Login icon if logged in */}
-          {isLoggedIn && customer ? (
-            <button
-              type="button"
-              onClick={() => router.push("/account")}
-              className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-70 transition-opacity"
-            >
-              <BiSolidUserCircle
-                className="h-7 w-7 flex-shrink-0"
-                style={{ color: MAROON }}
-                title={customer.name || "User"}
-              />
-              <span className="font-[family-name:var(--font-category)] text-[18px] truncate max-w-[96px]" style={{ color: GOLD }}>
-                {customer.name?.length > 5
-                  ? `${customer.name.substring(0, 5)}...`
-                  : customer.name}
-              </span>
-              <IoMdLogIn
-                className="h-7 w-7 flex-shrink-0"
-                style={{ color: GOLD }}
-              />
-            </button>
-          ) : (
-            <span
-              className="font-[family-name:var(--font-display)] text-xl"
-              style={{ color: MAROON }}
-            >
-              Sabaa
-            </span>
-          )}
-
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close menu"
-            // Darker than before so it still reads over the chain artwork.
-            className="flex-shrink-0 p-1 text-[#3B2A1E] transition-opacity hover:opacity-70"
-          >
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Above the art. The bottom padding leaves the ring artwork clear
-            once the list has been scrolled to its end. */}
-        <nav className="relative z-[1] min-h-0 flex-1 overflow-y-auto px-5 pt-3 pb-40">
-          {loading && navItemsFromRedux.length === 0 ? (
-            <MobileDrawerShimmer />
-          ) : (
-            <ul>
-              {navItems.map((item) => {
-              const isExpanded = expandedId === item.id;
-              // Flatten the mega-menu columns into one list for the drawer.
-              // A column with a heading is a sub-main plus its children. A
-              // column without one holds a sub-main that has no children
-              // (Initial Rings, Raasi Rings…) — the same level, so it is styled
-              // like a heading too, while keeping its own link.
-              const links = item.menu
-                ? [
-                    // Sub-mains that have children come first, then the ones
-                    // that stand alone — otherwise a childless sub-main lands
-                    // between a heading and its own subcategories and reads as
-                    // if it belonged to it.
-                    ...item.menu.columns.filter((c) => c.heading),
-                    ...item.menu.columns.filter((c) => !c.heading),
-                  ].flatMap((c) =>
-                    c.heading
-                      ? [{ label: c.heading, href: "#", isHeading: true }, ...c.items]
-                      : c.items.map((link) => ({ ...link, isHeading: true })),
-                  )
-                : null;
-
-              return (
-                // The divider starts under the label rather than under the
-                // icon, as in the reference — so it is drawn as a line inset
-                // by the badge's width instead of a full-width border.
-                <li key={item.id} className="relative">
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute right-0 bottom-0 left-[3.75rem] h-px"
-                    style={{ backgroundColor: RULE }}
-                  />
-                  {links ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                        aria-expanded={isExpanded}
-                        className="flex w-full items-center gap-4 py-3.5 text-left"
-                      >
-                        <DrawerBadge id={item.id} />
-                        <span
-                          className="flex-1 font-[family-name:var(--font-category)] text-[17px]"
-                          style={{ color: INK }}
-                        >
-                          {item.label}
-                        </span>
-                        <span style={{ color: INK }}>
-                          <Chevron open={isExpanded} />
-                        </span>
-                      </button>
-
-                      {isExpanded ? (
-                        // Indented to line up under the label, on a faint wash
-                        // of the badge colour rather than grey.
-                        <ul
-                          className="mb-2 ml-[3.75rem] rounded-md py-1"
-                          style={{ backgroundColor: "rgba(241,229,210,0.55)" }}
-                        >
-                          {links.map((link) => (
-                            <li key={link.label}>
-                              <Link
-                                href={link.href}
-                                onClick={onClose}
-                                // Sub-mains sit a size up from their children,
-                                // so the two levels read apart at a glance.
-                                className={`block px-3 py-2 ${
-                                  link.isHeading
-                                    ? "text-[16px] font-semibold text-[#7B1E2B]"
-                                    : "text-[14px] text-[#5A4636]"
-                                }`}
-                              >
-                                {link.label}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      onClick={onClose}
-                      className="flex w-full items-center gap-4 py-3.5"
-                    >
-                      <DrawerBadge id={item.id} />
-                      <span
-                        className="flex-1 font-[family-name:var(--font-category)] text-[17px]"
-                        style={{ color: INK }}
-                      >
-                        {item.label}
-                      </span>
-                      {/* On every row, as in the reference. Here it only marks
-                          the row — this item has no dropdown to open. */}
-                      <span style={{ color: INK }}>
-                        <Chevron open={false} />
-                      </span>
-                    </Link>
-                  )}
-                </li>
-              );
-            })}
-            </ul>
-          )}
-        </nav>
-
-        {/* Logout Section - Only show if logged in */}
-        {isLoggedIn && (
-          // Sits over the bottom artwork, so it gets a soft cream backing to
-          // stay readable.
           <div
-            className="relative z-[1] mx-5 mb-4 rounded-lg p-1 backdrop-blur-[2px]"
-            style={{ backgroundColor: "rgba(248,242,233,0.85)" }}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-0 aspect-[1515/1038]"
+            style={{
+              WebkitMaskImage:
+                "linear-gradient(to bottom, transparent 0%, #000 28%)",
+              maskImage: "linear-gradient(to bottom, transparent 0%, #000 28%)",
+            }}
           >
+            <Image
+              src={drawerBottomArt}
+              alt=""
+              fill
+              sizes="360px"
+              className="object-cover object-bottom"
+            />
+          </div>
+
+          {/* Everything interactive sits above the two pieces of art. */}
+          <div className="relative z-[1] flex items-center justify-between px-6 pt-6 pb-4">
+            {/* Show SABAA if not logged in, Avatar icon + Name + Login icon if logged in */}
+            {isLoggedIn && customer ? (
+              <button
+                type="button"
+                onClick={() => router.push("/account")}
+                className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-70 transition-opacity"
+              >
+                <BiSolidUserCircle
+                  className="h-7 w-7 flex-shrink-0"
+                  style={{ color: MAROON }}
+                  title={customer.name || "User"}
+                />
+                <span
+                  className="font-[family-name:var(--font-category)] text-[18px] truncate max-w-[96px]"
+                  style={{ color: GOLD }}
+                >
+                  {customer.name?.length > 5
+                    ? `${customer.name.substring(0, 5)}...`
+                    : customer.name}
+                </span>
+                <IoMdLogIn
+                  className="h-7 w-7 flex-shrink-0"
+                  style={{ color: GOLD }}
+                />
+              </button>
+            ) : (
+              <Image
+                src={sabaaLogo}
+                alt="Sabaa Jewel Arts"
+                height={56}
+                width="auto"
+                className="h-14 w-auto"
+              />
+            )}
+
             <button
               type="button"
-              onClick={handleLogoutClick}
-              className="flex w-full items-center justify-start gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors rounded font-[family-name:var(--font-category)] text-[14px] font-medium"
+              onClick={onClose}
+              aria-label="Close menu"
+              // Darker than before so it still reads over the chain artwork.
+              className="flex-shrink-0 p-1 text-[#3B2A1E] transition-opacity hover:opacity-70"
             >
-              <AiOutlineLogout className="h-5 w-5" />
-              <span>Logout</span>
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              >
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
             </button>
           </div>
-        )}
-      </aside>
+
+          {/* Above the art. The bottom padding leaves the ring artwork clear
+            once the list has been scrolled to its end. */}
+          <nav className="relative z-[1] min-h-0 flex-1 overflow-y-auto px-5 pt-3 pb-40">
+            {loading && navItemsFromRedux.length === 0 ? (
+              <MobileDrawerShimmer />
+            ) : (
+              <ul>
+                {navItems.map((item) => {
+                  const isExpanded = expandedId === item.id;
+                  // Flatten the mega-menu columns into one list for the drawer.
+                  // A column with a heading is a sub-main plus its children. A
+                  // column without one holds a sub-main that has no children
+                  // (Initial Rings, Raasi Rings…) — the same level, so it is styled
+                  // like a heading too, while keeping its own link.
+                  const links = item.menu
+                    ? [
+                        // Sub-mains that have children come first, then the ones
+                        // that stand alone — otherwise a childless sub-main lands
+                        // between a heading and its own subcategories and reads as
+                        // if it belonged to it.
+                        ...item.menu.columns.filter((c) => c.heading),
+                        ...item.menu.columns.filter((c) => !c.heading),
+                      ].flatMap((c) =>
+                        c.heading
+                          ? [
+                              { label: c.heading, href: "#", isHeading: true },
+                              ...c.items,
+                            ]
+                          : c.items.map((link) => ({
+                              ...link,
+                              isHeading: true,
+                            }))
+                      )
+                    : null;
+
+                  return (
+                    // The divider starts under the label rather than under the
+                    // icon, as in the reference — so it is drawn as a line inset
+                    // by the badge's width instead of a full-width border.
+                    <li key={item.id} className="relative">
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute right-0 bottom-0 left-[3.75rem] h-px"
+                        style={{ backgroundColor: RULE }}
+                      />
+                      {links ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedId(isExpanded ? null : item.id)
+                            }
+                            aria-expanded={isExpanded}
+                            className="flex w-full items-center gap-4 py-3.5 text-left"
+                          >
+                            <DrawerBadge id={item.id} />
+                            <span
+                              className="flex-1 font-[family-name:var(--font-category)] text-[17px]"
+                              style={{ color: INK }}
+                            >
+                              {item.label}
+                            </span>
+                            <span style={{ color: INK }}>
+                              <Chevron open={isExpanded} />
+                            </span>
+                          </button>
+
+                          {isExpanded ? (
+                            // Indented to line up under the label, on a faint wash
+                            // of the badge colour rather than grey.
+                            <ul
+                              className="mb-2 ml-[3.75rem] rounded-md py-1"
+                              style={{
+                                backgroundColor: "rgba(241,229,210,0.55)",
+                              }}
+                            >
+                              {links.map((link) => (
+                                <li key={link.label}>
+                                  <Link
+                                    href={link.href}
+                                    onClick={onClose}
+                                    // Sub-mains sit a size up from their children,
+                                    // so the two levels read apart at a glance.
+                                    className={`block px-3 py-2 ${
+                                      link.isHeading
+                                        ? "text-[16px] font-semibold text-[#7B1E2B]"
+                                        : "text-[14px] text-[#5A4636]"
+                                    }`}
+                                  >
+                                    {link.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          onClick={onClose}
+                          className="flex w-full items-center gap-4 py-3.5"
+                        >
+                          <DrawerBadge id={item.id} />
+                          <span
+                            className="flex-1 font-[family-name:var(--font-category)] text-[17px]"
+                            style={{ color: INK }}
+                          >
+                            {item.label}
+                          </span>
+                          {/* On every row, as in the reference. Here it only marks
+                          the row — this item has no dropdown to open. */}
+                          <span style={{ color: INK }}>
+                            <Chevron open={false} />
+                          </span>
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </nav>
+
+          {/* Logout Section - Only show if logged in */}
+          {isLoggedIn && (
+            // Sits over the bottom artwork, so it gets a soft cream backing to
+            // stay readable.
+            <div
+              className="relative z-[1] mx-5 mb-4 rounded-lg p-1 backdrop-blur-[2px]"
+              style={{ backgroundColor: "rgba(248,242,233,0.85)" }}
+            >
+              <button
+                type="button"
+                onClick={handleLogoutClick}
+                className="flex w-full items-center justify-start gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors rounded font-[family-name:var(--font-category)] text-[14px] font-medium"
+              >
+                <AiOutlineLogout className="h-5 w-5" />
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
+        </aside>
       </div>
 
       {/* Logout Confirmation Modal */}

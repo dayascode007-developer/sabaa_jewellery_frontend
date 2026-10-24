@@ -266,7 +266,7 @@ export default function Header({ hideSearchOnMobile = false }) {
 
         {/* Search — full width on its own row until md, then inline */}
         <div
-          className={`order-last w-full min-w-0 md:order-none md:mx-auto md:max-w-2xl relative ${hideSearchOnMobile ? 'hidden md:block' : ''}`}
+          className={`order-last w-full min-w-0 md:order-none md:mx-auto md:max-w-2xl relative ${hideSearchOnMobile ? 'hidden lg:block' : ''}`}
           ref={searchContainerRef}
         >
           {/* Flat hairline pill, no drop shadow — in the reference the bar sits
@@ -316,7 +316,7 @@ export default function Header({ hideSearchOnMobile = false }) {
 
         {/* Actions */}
         <nav
-          className="ml-auto flex shrink-0 items-center gap-3.5 sm:gap-5 md:ml-0"
+          className={`ml-auto flex shrink-0 items-center gap-3.5 sm:gap-5 ${!hideSearchOnMobile ? 'md:ml-0' : ''}`}
           style={{ color: MAROON }}
         >
           {actions.map((a) =>

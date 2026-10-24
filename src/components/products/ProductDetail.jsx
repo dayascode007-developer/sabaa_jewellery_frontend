@@ -155,8 +155,14 @@ const LENS_RATIO = 0.3;
 
 function Gallery({ product }) {
   const [active, setActive] = useState(0);
+  const [revealed, setRevealed] = useState(false);
   // null when the cursor is away; { x, y } as percentages while hovering.
   const [lens, setLens] = useState(null);
+
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => setRevealed(true));
+    return () => cancelAnimationFrame(timer);
+  }, []);
 
   // The product shot first, then the workshop images shot for its category.
   // Only what the admin actually uploaded: the row used to be padded out to
@@ -235,7 +241,9 @@ function Gallery({ product }) {
               <img
                 src={current}
                 alt={product.title}
-                className="absolute inset-0 h-full w-full object-cover"
+                className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out ${
+                  revealed ? "scale-100" : "scale-75"
+                }`}
               />
             ) : (
               <Image
@@ -243,7 +251,9 @@ function Gallery({ product }) {
                 alt={product.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 45vw"
-                className="object-cover"
+                className={`object-cover transition-transform duration-500 ease-out ${
+                  revealed ? "scale-100" : "scale-75"
+                }`}
                 priority
               />
             )
@@ -475,11 +485,17 @@ function Accordion({ sections, description }) {
                 <path d="m6 9 6 6 6-6" />
               </svg>
             </button>
-            {isOpen ? (
+            <div
+              className="overflow-hidden transition-all duration-300 ease-in-out"
+              style={{
+                maxHeight: isOpen ? "1000px" : "0px",
+                opacity: isOpen ? 1 : 0,
+              }}
+            >
               <p className="font-[family-name:var(--font-heading)] px-4 pb-4 text-[12px] leading-relaxed text-neutral-600 whitespace-pre-wrap">
                 {row.body}
               </p>
-            ) : null}
+            </div>
           </div>
         );
       })}
@@ -734,12 +750,6 @@ export default function ProductDetail({ product }) {
     // Validation: Ring size required
     if (product.sizes && product.sizes.length > 0 && !size) {
       setSizeError("Please select a ring size");
-      hasErrors = true;
-    }
-
-    // Validation: Enamel color required
-    if (product.colors && product.colors.length > 0 && !colorId) {
-      setColorError("Please select an enamel color");
       hasErrors = true;
     }
 
@@ -1186,7 +1196,7 @@ export default function ProductDetail({ product }) {
                 className="block text-[14px] font-bold"
                 style={{ color: MAROON }}
               >
-                Enamel Color <span className="text-red-600 ml-1">*</span>
+                Enamel Color
               </label>
               <select
                 id="color"

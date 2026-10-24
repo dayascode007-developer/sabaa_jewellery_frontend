@@ -187,6 +187,22 @@ export default function OrderDetailsModal({ isOpen, order, onClose }) {
               <span>Total</span>
               <span style={{ color: MAROON }}>{formatRupees(order.total_amount)}</span>
             </div>
+            {order.advanced_amount > 0 && (
+              <>
+                <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
+                  <span className="text-gray-600">Advanced Amount</span>
+                  <span className="font-medium" style={{ color: "#3B82F6" }}>
+                    {formatRupees(order.advanced_amount)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Balance Amount</span>
+                  <span className="font-medium" style={{ color: "#10B981" }}>
+                    {formatRupees(Number(order.total_amount) - Number(order.advanced_amount))}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Delivery Address */}

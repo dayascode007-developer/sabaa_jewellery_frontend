@@ -245,7 +245,7 @@ export default function ProductPageClient() {
     <div className="min-h-screen w-full bg-[#FFF8F0] pb-16 lg:pb-0">
       <SiteHeader hideSearchOnMobile={true} />
 
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <Breadcrumb
           items={[
             { label: "Home", href: "/" },
