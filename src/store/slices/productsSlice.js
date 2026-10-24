@@ -34,6 +34,7 @@ export const mapApiProduct = (product, category = null) => ({
     product.main_image,
     ...(product.sub_images?.map((img) => img.image_url) || []),
   ].filter(Boolean),
+  style_preview_image: product.style_preview_image || null,
 
   // Code/SKU
   code: product.sku || "",

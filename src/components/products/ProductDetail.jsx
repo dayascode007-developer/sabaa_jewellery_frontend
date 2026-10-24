@@ -38,11 +38,30 @@ import CustomerLove from "../pages/home/CustomerLove";
 import CustomerUnboxing from "../pages/home/CustomerUnboxing";
 import CancellationPolicyModal from "@/components/modals/CancellationPolicyModal";
 import RingStylePreview from "@/components/products/RingStylePreview";
+import PhotoRingPreview from "@/components/products/PhotoRingPreview";
 import TryOnButton from "@/components/products/TryOnOverlay";
 import useStoreSettings from "@/hooks/useStoreSettings";
 
 const MAROON = "#7B1E2B";
 const WHATSAPP = "#25D366";
+
+// Ring type configuration for photo frame dimensions
+const RING_TYPE_CONFIG = {
+  square: {
+    width: "55%",
+    height: "70%",
+    borderRadius: "50px",
+    top: "50%",
+    left: "50%",
+  },
+  rounded: {
+    width: "45%",
+    height: "45%",
+    borderRadius: "50%",
+    top: "50%",
+    left: "50%",
+  },
+};
 
 // Portal-based Tooltip component to prevent clipping
 function Tooltip({ text, children, position = "top" }) {
@@ -660,6 +679,7 @@ export default function ProductDetail({ product }) {
   const [qty, setQty] = useState(1);
   const [giftWrap, setGiftWrap] = useState(false);
   const [customerPhoto, setCustomerPhoto] = useState(null);
+  const [customerPhotoUrl, setCustomerPhotoUrl] = useState(null);
 
   // Engraving options. Only rings carry them — a chain has no "ring name".
   const [ringName, setRingName] = useState("");
@@ -688,6 +708,21 @@ export default function ProductDetail({ product }) {
   // Portalled to <body>, which does not exist during the server render.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // Create and manage customer photo preview URL
+  useEffect(() => {
+    if (!customerPhoto) {
+      setCustomerPhotoUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(customerPhoto);
+    setCustomerPhotoUrl(url);
+
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [customerPhoto]);
 
   // ViewContent — what retargeting is built on: it is how Meta knows which ring
   // to show someone who looked and left. Keyed on the product id so switching
@@ -816,7 +851,17 @@ export default function ProductDetail({ product }) {
 
       setAdded(true);
     } catch (error) {
-      alert("Failed to add to cart: " + error.message);
+      // Get error message from error object or error payload
+      const errorMessage =
+        error?.payload?.message || error?.message || "Unknown error";
+
+      // Check if it's a photo upload error and display it below the photo field
+      if (errorMessage.includes("5MB") || errorMessage.includes("Photo size")) {
+        setPhotoError(errorMessage);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        alert("Failed to add to cart: " + errorMessage);
+      }
     }
   };
 
@@ -844,6 +889,52 @@ export default function ProductDetail({ product }) {
                 symbols={product.symbols}
                 colors={product.colors}
               />
+            </div>
+          ) : null}
+
+          {/* Display Style Preview */}
+          {product && product.style_preview_image ? (
+            <div className="mt-6">
+              <p
+                className="text-center text-[13px] font-medium mb-2"
+                style={{ color: MAROON }}
+              >
+                Style Preview
+              </p>
+              <div className="mx-auto max-w-[400px] rounded-lg border border-[#EFDCD4] overflow-hidden bg-[#FFFDFB] relative">
+                {/* Ring base image */}
+                <img
+                  src={product.style_preview_image}
+                  alt="Style Preview"
+                  className="w-full h-auto object-contain"
+                  style={{ maxHeight: "300px", display: "block" }}
+                />
+
+                {/* Customer photo overlay for Real Photo Ring */}
+                {isRealPhotoRing && customerPhotoUrl && (
+                  <div
+                    className="absolute overflow-hidden"
+                    style={{
+                      ...RING_TYPE_CONFIG[product.ring_type || "square"],
+                      transform: "translate(-50%, -50%)",
+                      borderRadius:
+                        RING_TYPE_CONFIG[product.ring_type || "square"]
+                          .borderRadius,
+                    }}
+                  >
+                    <img
+                      src={customerPhotoUrl}
+                      alt="Your Photo"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+              <p className="text-center text-[11px] text-gray-500 mt-2">
+                {isRealPhotoRing && customerPhoto
+                  ? "Your photo will be engraved on the ring."
+                  : "Indicative only — the finished engraving is cut by hand."}
+              </p>
             </div>
           ) : null}
         </div>

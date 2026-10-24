@@ -40,6 +40,7 @@ const transformApiProduct = (apiProduct, categoryName = "") => ({
     apiProduct.main_image,
     ...(apiProduct.sub_images?.map((img) => img.image_url) || []),
   ].filter(Boolean),
+  style_preview_image: apiProduct.style_preview_image || null,
 
   // Code/SKU
   code: apiProduct.sku || "",

@@ -20,7 +20,9 @@ export const addToCart = createAsyncThunk(
       const response = await addToCartApi(cartItem);
       return response.data || cartItem;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue({
+        message: error.message || "Failed to add to cart"
+      });
     }
   }
 );
