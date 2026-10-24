@@ -48,14 +48,12 @@ import murugaRing from "@/assets/CustomizeRing/muruga ring (1).webp";
 import craftedRing from "@/assets/CustomizeRing/crafted with tradition ring (1).webp";
 
 // One portrait per customer voice, in the order they appear below.
-import voiceAvatar1 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_05 PM-1.webp";
-import voiceAvatar2 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_06 PM-2.webp";
-import voiceAvatar3 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_08 PM-3.webp";
-import voiceAvatar4 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_09 PM-4.webp";
-import voiceAvatar5 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_10 PM-5.webp";
-import voiceAvatar6 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_11 PM-6.webp";
-import voiceAvatar7 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_13 PM-7.webp";
-import voiceAvatar8 from "@/assets/voice_Testimonial/ChatGPT Image Oct 14, 2026, 03_45_14 PM-8.webp";
+
+import voiceAvatar2 from "@/assets/voice_Testimonial/imran.webp";
+import voiceAvatar3 from "@/assets/voice_Testimonial/men.webp";
+import voiceAvatar4 from "@/assets/voice_Testimonial/lakshmi.webp";
+import voiceAvatar6 from "@/assets/voice_Testimonial/meena.webp";
+
 import vijayRing from "@/assets/CustomizeRing/vijay ring (1).webp";
 
 import newArrivalsBg from "@/assets/banner/Bg card image (1).webp";
